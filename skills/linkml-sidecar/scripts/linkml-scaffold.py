@@ -135,9 +135,10 @@ KTL_VALIDATE_STEP = "uvx --from rust-just==1.47.0 just lokf-check-refs"
 KTL_SCHEMA_DIR = ".lokf/schema"
 LOKF_CORE = KTL_SCHEMA_DIR + "/lokf.yaml"
 OLD_LOKF_CORE = ".lokf/lokf.yaml"
-# Where the schema's folder is, worked out from the mode and never read from
-# the environment: SCHEMA_FOLDER from the host root, SCHEMA_FOLDER_WIN the same
-# for mklink, and SCHEMA_SRC from .linkml/, as LINKML_SCHEMA_SOURCE_DIR says.
+# place_schema works these out from SCHEMA_DIR and never reads them from the
+# environment. SCHEMA_FOLDER is the schema's folder from the host root,
+# SCHEMA_FOLDER_WIN the same path for mklink, and SCHEMA_SRC the folder from
+# .linkml/, as LINKML_SCHEMA_SOURCE_DIR names it.
 PLACES = ("SCHEMA_FOLDER", "SCHEMA_FOLDER_WIN", "SCHEMA_SRC")
 # The files the skill owns, as (template path, destination inside .linkml/).
 # Each is in the template's `_skip_if_exists`, or outside the template. The
@@ -570,8 +571,8 @@ def preseed(host, stage, facts, mode, dry, adopt):
     for path in dummy_files(mode):
         rel = path.relative_to(TEMPLATES / "linkml" / "schema" / mode)
         if rel.name == "schema.yaml" and mode == "lokf":
-            # The domain schema goes in .lokf/schema/ once the sidecar has landed
-            # (write_domain_schema). The folder the template expects says so.
+            # write_domain_schema puts the domain schema in .lokf/schema/ once the
+            # staged files are in .linkml/. The folder the template expects says so.
             write(stage / "src" / slug / "schema" / "README.md", render(read(TEMPLATES / "linkml" / "schema-folder-README.md"), facts), dry)
             continue
         if rel.name == "schema.yaml":
@@ -881,14 +882,14 @@ def lint_config(host):
     return (
         f"# Written by linkml-sidecar for a schema in {KTL_SCHEMA_DIR}/, beside LOKF's\n"
         "# core schema. `just lint` lints every file in that folder, lokf.yaml too.\n"
-        "# Its camelCase slot names and its enum values that are not snake_case\n"
-        "# are excused by name, and nothing else is: the host's own names are\n"
-        "# still held to snake_case. canonical_prefixes is off, because LOKF maps\n"
-        "# vivo and adms to the namespaces that prefixmaps names core and ADMS,\n"
-        "# and the rule lists no exceptions. Regenerate the list when\n"
-        f"# {LOKF_CORE} moves to a new floor (the linkml-sidecar\n"
-        "# repair does). Another schema file in the folder, such as a copy lokf\n"
-        "# adapt wrote, is linted too: excuse its names here by hand.\n"
+        "# LOKF's camelCase slot names and its enum values that are not\n"
+        "# snake_case are excused by name, and nothing else is: the host's own\n"
+        "# names are still held to snake_case. canonical_prefixes is off, because\n"
+        "# LOKF maps vivo and adms to the namespaces that prefixmaps names core\n"
+        "# and ADMS, and the rule takes no list of exceptions. Regenerate the\n"
+        f"# list when {LOKF_CORE} moves to a new floor (the\n"
+        "# linkml-sidecar repair does). Another schema file in the folder, such\n"
+        "# as a copy lokf adapt wrote, is linted too: list its names here.\n"
         "extends: recommended\n"
         "rules:\n"
         "  standard_naming:\n"

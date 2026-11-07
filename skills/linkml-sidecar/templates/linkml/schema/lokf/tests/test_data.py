@@ -3,9 +3,9 @@
 Every file under tests/data/valid and tests/data/problem/valid validates
 against the class its name starts with, and every file under
 tests/data/invalid fails to. The schema is the bundle's domain schema in
-.lokf/schema/, where config.public.mk's LINKML_SCHEMA_SOURCE_DIR points; just
-puts that line in the environment, and a bare pytest falls back to the same
-folder. The test loads the schema through SchemaView, which resolves its
+.lokf/schema/, where config.public.mk's LINKML_SCHEMA_SOURCE_DIR points. The
+just recipes put that line in the environment, and a bare pytest falls back
+to the same folder. The test loads the schema through SchemaView, which resolves its
 import of lokf.yaml beside it from the schema file. Before linkml 1.12.0
 (PR 3855), linkml.validator.validate() given a path resolved it from the
 working directory instead.
