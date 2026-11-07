@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-07
+
 ### Added
 
 - **The preflight warns when a sidecar's schema still imports `.lokf/lokf.yaml`, and points to the move.** `--repair .linkmllint.yaml` refuses until the copy is in `.lokf/schema/`.
