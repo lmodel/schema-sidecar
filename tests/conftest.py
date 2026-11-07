@@ -186,7 +186,7 @@ def add_lokf(root: Path, stub_schema=True, before_schema=False) -> Path:
     if before_schema:
         shutil.copy(FIXTURES / "lokf-before-schema" / "justfile", target / "justfile")
     if not stub_schema:
-        (target / "lokf.yaml").unlink()
+        (target / "schema" / "lokf.yaml").unlink()
     return target
 
 

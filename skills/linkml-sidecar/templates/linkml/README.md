@@ -40,7 +40,7 @@ This is a small **sidecar** that holds <PROJ_NAME>'s data model as a [LinkML](ht
 
 ## The doorway
 
-`linkml_schema` at the repository root is `src/<PROJ_SLUG>/schema/` under an ordinary, visible name, for folder pickers and file managers that hide dot-folders. Git carries the link; a sync service does not, so `just linkml-link` recreates it on a machine where it is missing (Windows: `mklink /J linkml_schema .linkml\src\<PROJ_SLUG>\schema`). Everything below works without it.
+`linkml_schema` at the repository root is `<SCHEMA_FOLDER>/` under an ordinary, visible name, for folder pickers and file managers that hide dot-folders. Git carries the link; a sync service does not, so `just linkml-link` recreates it on a machine where it is missing (Windows: `mklink /J linkml_schema <SCHEMA_FOLDER_WIN>`). Everything below works without it.
 
 ## Use it
 
@@ -62,8 +62,8 @@ Or `cd .linkml` and drop `--justfile .linkml/justfile`. Without `just`:
 ```bash
 cd .linkml
 uv sync --group dev
-uv run linkml-lint src/<PROJ_SLUG>/schema
-uv run gen-project --config-file generators.yaml -d project src/<PROJ_SLUG>/schema/<PROJ_SLUG>.yaml
+uv run linkml-lint <SCHEMA_SRC>
+uv run gen-project --config-file generators.yaml -d project <SCHEMA_SRC>/<PROJ_SLUG>.yaml
 ```
 
 Use these, not a `linkml-lint` or `gen-project` installed elsewhere: the versions are pinned in `uv.lock`.
@@ -87,11 +87,13 @@ Run it on a clean tree, read the diff, and commit `uv.lock` and `.copier-answers
 
 ## With a knowledge bundle (`.lokf/`)
 
-When the host carries a [KTL](https://github.com/noelmcloughlin/knowledge-trust-ladder) bundle, this schema imports LOKF's core schema (`.lokf/lokf.yaml`, pinned at the toolkit's floor) and every class here that is `is_a: Concept` is a type the bundle's concepts may carry. `.lokf/justfile` names this schema as `schema :=`, so `just lokf-validate` and `just lokf-check-refs` check the bundle against both. Keep `.lokf/lokf.yaml` in step with the `lokf` floor, and tell the KTL plugins' "Known LOKF types" setting about each class. LOKF has a slot named `from`, which the template's example runner cannot compile as a dataclass field, so valid examples live under `tests/data/problem/valid/`, the folder the runner skips, and `tests/test_data.py` validates both folders through `linkml.validator`.
+When the host carries a [KTL](https://github.com/noelmcloughlin/knowledge-trust-ladder) bundle, the schema is the bundle's domain schema. It sits in `.lokf/schema/`, where KTL keeps every schema file, and imports LOKF's core schema beside it (`lokf.yaml`, pinned at the toolkit's floor). `config.public.mk` names that folder, so every recipe reads the schema there, and `just lint` lints `lokf.yaml` too. `.linkmllint.yaml` excuses LOKF's own names and turns `canonical_prefixes` off.
+
+Every class here that is `is_a: Concept` is a type the bundle's concepts may carry. `.lokf/justfile` names this schema as `schema :=`, so `just lokf-validate` and `just lokf-check-refs` check the bundle against both. Keep `.lokf/schema/lokf.yaml` in step with the `lokf` floor, and tell the KTL plugins' "Known LOKF types" setting about each class. LOKF has a slot named `from`, which the template's example runner cannot compile as a dataclass field. So valid examples live under `tests/data/problem/valid/`, the folder the runner skips, and `tests/test_data.py` validates both folders through `linkml.validator`.
 
 ## Remove it
 
-Three deletions and two edits, nothing else references it: `rm -rf .linkml linkml_schema` and the workflow `linkml-sidecar.yaml`, then drop the sidecar aside from `README.md` and the `## Schema` section from `llms.txt`. A `.lokf/justfile` that names the schema is reset to `schema := ""` (or, on an older justfile, to `uv run lokf validate {{ bundle }}` in both validate recipes), and `[tool.lokf] schema` is removed from `.lokf/pyproject.toml`.
+Three deletions and two edits, nothing else references it: `rm -rf .linkml linkml_schema` and the workflow `linkml-sidecar.yaml`, then drop the sidecar aside from `README.md` and the `## Schema` section from `llms.txt`. Beside a knowledge bundle, the schema stays in `.lokf/schema/` as the bundle's domain schema, and `.lokf/justfile` still names it. To remove it as well, `git rm` it, reset the justfile's line to `schema := ""` (or, on an older justfile, both validate recipes to `uv run lokf validate {{ bundle }}`), and remove `[tool.lokf] schema` from `.lokf/pyproject.toml`.
 
 ## Learn more
 

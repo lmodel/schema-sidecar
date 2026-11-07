@@ -34,7 +34,7 @@ def test_every_step_runs_in_the_sidecar_and_installs_from_the_lock():
 def test_it_triggers_on_the_sidecar_and_the_pinned_core_schema():
     triggers = DOC[True] if True in DOC else DOC["on"]
     for event in ("pull_request", "push"):
-        assert ".linkml/**" in triggers[event]["paths"] and ".lokf/lokf.yaml" in triggers[event]["paths"]
+        assert ".linkml/**" in triggers[event]["paths"] and ".lokf/schema/**" in triggers[event]["paths"]
     assert "workflow_dispatch" in triggers
 
 

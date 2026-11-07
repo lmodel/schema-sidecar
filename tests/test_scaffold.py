@@ -289,25 +289,43 @@ def test_a_ktl_host_gets_the_lokf_dummy_the_lint_config_and_the_wired_justfile(t
     result = scaffold(host)
     assert result, result.out
     side = host / ".linkml"
-    schema = read(side / "src" / "demo" / "schema" / "demo.yaml")
-    assert "  - ../../../../.lokf/lokf\n" in schema and "ExampleConcept:\n    is_a: Concept" in schema
+    # The domain schema sits in .lokf/schema/ beside LOKF core's copy, as KTL keeps every schema file.
+    schema = read(host / ".lokf" / "schema" / "demo.yaml")
+    assert "  - lokf\n" in schema and "ExampleConcept:\n    is_a: Concept" in schema
+    assert not (side / "src" / "demo" / "schema" / "demo.yaml").exists()
+    assert "`.lokf/schema/demo.yaml`" in read(side / "src" / "demo" / "schema" / "README.md")
+    assert 'LINKML_SCHEMA_SOURCE_DIR="../.lokf/schema"' in read(side / "config.public.mk")
+    assert "# says where the schema is: .lokf/schema/ in the host" in read(side / "README.md")
+    assert "uv run linkml-lint ../.lokf/schema\n" in read(side / "README.md")
+    assert os.readlink(host / "linkml_schema") == ".lokf/schema"
+    assert 'target=".lokf/schema"' in read(side / "project.justfile")
+    assert "`.lokf/schema/demo.yaml`" in read(host / "README.md") and "`.lokf/schema/demo.yaml`" in read(host / "llms.txt")
     valid = read(side / "tests" / "data" / "problem" / "valid" / "ExampleConcept-001.yaml")
     assert not (side / "tests" / "data" / "valid" / "ExampleConcept-001.yaml").exists()
     assert "id: https://fixture.example/knowledge/examples/example-concept\n" in valid and "type: ExampleConcept\n" in valid
     assert "SchemaView" in read(side / "tests" / "test_data.py")
     lint = read(side / ".linkmllint.yaml")
-    assert "exclude: [isPartOf, hasPart, dependsOn]" in lint
+    assert "exclude: [isPartOf, hasPart, dependsOn]" in lint and "  canonical_prefixes:\n    level: disabled\n" in lint
     assert 'LINKML_GENERATORS_DOC_ARGS="--render-imports"' in read(side / "config.public.mk")
     justfile = read(host / ".lokf" / "justfile")
-    assert 'schema := "../.linkml/src/demo/schema/demo.yaml"' in justfile
+    assert 'schema := "schema/demo.yaml"' in justfile
     assert justfile.count("--schema {{ file_name(schema) }}") == 2 and "cd {{ parent_directory(schema) }}" in justfile
     assert "--check-refs --schema" in justfile
-    assert tool_lokf_schema(host) == "../.linkml/src/demo/schema/demo.yaml"
+    assert tool_lokf_schema(host) == "schema/demo.yaml"
     assert "lokf validate" in read(host / "llms.txt")
     assert matches(result.out, r"^handoff: \.lokf/justfile wired") and "BASE_IRI=https://fixture.example/knowledge/" in result.out
     # The template's workflows still validate inline, so all three are named, with the line the runners can run.
     assert matches(result.out, WORKFLOWS_HANDOFF), result.out
-    assert tokens_left(side) == []
+    assert tokens_left(side) == [] and tokens_left(host / ".lokf" / "schema") == []
+
+
+def test_a_ktl_host_with_a_schema_of_that_name_in_the_folder_is_refused(tmp_path):
+    host = make_host(tmp_path)
+    add_lokf(host)
+    write(host / ".lokf" / "schema" / "demo.yaml", "id: https://w3id.org/acme/demo\nname: demo\n")
+    result = scaffold(host)
+    assert result.rc == 3 and ".lokf/schema/demo.yaml already exists" in result.out, result.out
+    assert not (host / ".linkml").exists() and read(host / ".lokf" / "schema" / "demo.yaml") == "id: https://w3id.org/acme/demo\nname: demo\n"
 
 
 def test_mode_plain_overrides_a_ktl_host(tmp_path):
@@ -339,12 +357,12 @@ def test_a_ktl_justfile_that_carries_the_variable_gets_only_that_line_set(tmp_pa
     assert result, result.out
     justfile = read(host / ".lokf" / "justfile")
     # Exactly one line changes, the variable; the template's recipes are left as they are.
-    assert justfile.replace('schema := "../.linkml/src/demo/schema/demo.yaml"', 'schema := ""') == original
+    assert justfile.replace('schema := "schema/demo.yaml"', 'schema := ""') == original
     assert "the template's own recipes take it from there" in result.out
     # That template's workflows run the recipe already, so they need no telling.
     assert not matches(result.out, WORKFLOWS_HANDOFF), result.out
     # A bare lokf command reads the same path from pyproject.toml.
-    assert tool_lokf_schema(host) == "../.linkml/src/demo/schema/demo.yaml"
+    assert tool_lokf_schema(host) == "schema/demo.yaml"
 
 
 def test_a_tool_lokf_table_gets_the_schema_or_is_told(tmp_path):
@@ -353,7 +371,7 @@ def test_a_tool_lokf_table_gets_the_schema_or_is_told(tmp_path):
     pyproject = host / ".lokf" / "pyproject.toml"
     write(pyproject, read(pyproject) + "\n[tool.lokf]\n\n[tool.other]\nschema = \"x\"\n")
     assert scaffold(host)
-    assert tool_lokf_schema(host) == "../.linkml/src/demo/schema/demo.yaml"
+    assert tool_lokf_schema(host) == "schema/demo.yaml"
     assert '[tool.other]\nschema = "x"\n' in read(pyproject)
 
     host = make_host(tmp_path / "other-schema")
@@ -362,7 +380,7 @@ def test_a_tool_lokf_table_gets_the_schema_or_is_told(tmp_path):
     original = read(pyproject) + '\n[tool.lokf]\nschema = "elsewhere.yaml"\n'
     write(pyproject, original)
     result = scaffold(host)
-    assert result and '[tool.lokf] schema is "elsewhere.yaml"; set it to "../.linkml/src/demo/schema/demo.yaml"' in result.out, result.out
+    assert result and '[tool.lokf] schema is "elsewhere.yaml"; set it to "schema/demo.yaml"' in result.out, result.out
     assert read(pyproject) == original
 
     # lokf refuses an empty path, so the empty line is filled in where it stands.
@@ -371,7 +389,7 @@ def test_a_tool_lokf_table_gets_the_schema_or_is_told(tmp_path):
     pyproject = host / ".lokf" / "pyproject.toml"
     write(pyproject, read(pyproject) + '\n[tool.lokf]\nschema = ""  # set by hand\n')
     assert scaffold(host)
-    assert 'schema = "../.linkml/src/demo/schema/demo.yaml"  # set by hand\n' in read(pyproject)
+    assert 'schema = "schema/demo.yaml"  # set by hand\n' in read(pyproject)
 
     # A subtable alone leaves [tool.lokf] free to declare.
     host = make_host(tmp_path / "subtable")
@@ -379,7 +397,7 @@ def test_a_tool_lokf_table_gets_the_schema_or_is_told(tmp_path):
     pyproject = host / ".lokf" / "pyproject.toml"
     write(pyproject, read(pyproject) + "\n[tool.lokf.extra]\nk = 1\n")
     assert scaffold(host)
-    assert tool_lokf_schema(host) == "../.linkml/src/demo/schema/demo.yaml"
+    assert tool_lokf_schema(host) == "schema/demo.yaml"
 
 
 def test_a_tool_lokf_table_spelled_another_way_is_told_not_doubled(tmp_path):
@@ -509,7 +527,9 @@ def test_the_doorway_recipe_creates_refuses_and_is_a_no_op(tmp_path):
 
 def test_every_template_token_is_one_the_scaffold_knows():
     """A template may carry only tokens the scaffold substitutes, so none can survive a run."""
-    known = set(re.findall(r'"([A-Z_]+)",', (TEMPLATES.parent / "scripts" / "linkml-scaffold.py").read_text(encoding="utf-8").split("TOKENS = (")[1].split(")")[0]))
+    script = (TEMPLATES.parent / "scripts" / "linkml-scaffold.py").read_text(encoding="utf-8")
+    known = set(re.findall(r'"([A-Z_]+)",', script.split("TOKENS = (")[1].split(")")[0]))
+    known |= set(re.findall(r'"([A-Z_]+)"', script.split("PLACES = (")[1].split(")")[0]))
     found = set()
     for path in TEMPLATES.rglob("*"):
         if path.is_file():
@@ -585,7 +605,7 @@ def test_dry_run_prints_the_same_handoff_lines(tmp_path):
 def test_dry_run_on_a_ktl_host_without_a_toolkit_fails_as_the_real_run_would(tmp_path):
     host = make_host(tmp_path)
     add_lokf(host)
-    (host / ".lokf" / "lokf.yaml").unlink()
+    (host / ".lokf" / "schema" / "lokf.yaml").unlink()
     (host / ".lokf" / "pyproject.toml").unlink()
     result = scaffold(host, "--dry-run")
     assert result.rc == 2 and "has no pyproject.toml" in result.out, result.out
@@ -608,6 +628,49 @@ def test_repair_relays_the_lint_config_and_the_doorway_recipe(tmp_path):
     assert result and read(justfile).count(MARKER) == 1, result.out
     again = bash(SCAFFOLD, "--host", str(host), "--repair", "project.justfile", env=env)
     assert again and read(justfile).count(MARKER) == 1 and "already carries the doorway recipe" in again.out
+
+
+def test_repair_restores_a_ktl_sidecar_s_files_where_ktl_mode_put_them(tmp_path):
+    """In KTL mode the dummy is .lokf/schema/<slug>.yaml, the sidecar's own, not an adopted schema."""
+    host = make_host(tmp_path)
+    add_lokf(host)
+    assert scaffold(host)
+    # A deleted schema takes its id with it, so the facts come from the environment, as on a first run.
+    env = dict(FACTS, LINKML_TEMPLATE_SKIP_PIN_CHECK="1")
+    for rel in (".lokf/schema/demo.yaml", ".linkml/README.md", ".linkml/src/demo/schema/README.md", ".linkml/tests/test_data.py"):
+        path = host / rel
+        original = read(path)
+        path.unlink()
+        result = bash(SCAFFOLD, "--host", str(host), "--repair", rel, env=env)
+        assert result and read(path) == original, (rel, result.out)
+    assert "## Where the schema is" not in read(host / ".linkml" / "README.md")
+
+
+def test_repair_refuses_the_lint_config_without_the_copy_in_the_schema_folder(tmp_path):
+    """The scaffold reads the excused names from .lokf/schema/lokf.yaml. Without it the list would be empty, and `just lint` would fail."""
+    host = make_host(tmp_path)
+    add_lokf(host)
+    assert scaffold(host)
+    env = {"LINKML_TEMPLATE_SKIP_PIN_CHECK": "1"}
+    lint = host / ".linkml" / ".linkmllint.yaml"
+    original = read(lint)
+    core = host / ".lokf" / "schema" / "lokf.yaml"
+    core.rename(host / ".lokf" / "lokf.yaml")
+    result = bash(SCAFFOLD, "--host", str(host), "--repair", ".linkmllint.yaml", env=env)
+    assert result.rc == 2 and "move the schema and .lokf/lokf.yaml into .lokf/schema/ first" in result.out and read(lint) == original, result.out
+    (host / ".lokf" / "lokf.yaml").unlink()
+    result = bash(SCAFFOLD, "--host", str(host), "--repair", ".linkmllint.yaml", env=env)
+    assert result.rc == 2 and "the scaffold's KTL mode pins it" in result.out, result.out
+
+
+def test_a_root_copy_of_lokf_core_is_left_alone_and_named_in_the_handoff(tmp_path):
+    host = make_host(tmp_path)
+    add_lokf(host)
+    old = host / ".lokf" / "lokf.yaml"
+    write(old, read(host / ".lokf" / "schema" / "lokf.yaml"))
+    result = scaffold(host)
+    assert result and matches(result.out, r"^handoff: \.lokf/lokf\.yaml is the layout before KTL 0\.62\.0"), result.out
+    assert old.is_file() and "  - lokf\n" in read(host / ".lokf" / "schema" / "demo.yaml")
 
 
 def test_repair_refuses_the_lint_config_on_a_plain_host(tmp_path):
@@ -710,10 +773,17 @@ def test_the_real_template_passes_the_gate_on_an_adopted_schema(tmp_path):
 @pytest.mark.slow
 def test_the_real_template_passes_both_gates_on_a_ktl_host(tmp_path):
     host = slow_host(tmp_path, with_lokf=True)
-    assert (host / ".lokf" / "lokf.yaml").is_file()
+    assert (host / ".lokf" / "schema" / "lokf.yaml").is_file() and not (host / ".lokf" / "lokf.yaml").exists()
+    # The domain schema sits beside the real lokf.yaml, so `just lint` lints both and the excused names must cover LOKF's.
+    assert (host / ".lokf" / "schema" / "demo.yaml").is_file() and not (host / ".linkml" / "src" / "demo" / "schema" / "demo.yaml").exists()
     for recipe in ("install", "lint", "test", "site"):
         result = gate(host, recipe)
         assert result, f"just {recipe} failed:\n{result.out[-3000:]}"
+    # Without the canonical_prefixes line, LOKF core's own prefixes fail the lint: the folder's copy is linted.
+    lint = host / ".linkml" / ".linkmllint.yaml"
+    write(lint, read(lint).replace("  canonical_prefixes:\n    level: disabled\n", ""))
+    result = gate(host, "lint")
+    assert result.rc != 0 and "lokf.yaml" in result.out and "canonical_prefixes" in result.out, result.out[-3000:]
     for recipe in ("lokf-install", "lokf-validate", "lokf-check-refs"):
         result = run(["just", recipe], cwd=host / ".lokf")
         assert result, f"just {recipe} failed:\n{result.out[-3000:]}"

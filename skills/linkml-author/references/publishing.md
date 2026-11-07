@@ -31,7 +31,7 @@ A tagged release that attaches the schema is the address a vendoring importer co
 
 An import by URL fetches someone else's server on every build, so a copy comes first. In order of preference:
 
-1. **A vendored copy, pinned.** Copy the module tree, or the merged file, into the importer's repository at a tag. Record the tag and the checksum, and upgrade on purpose. linkml discussion 3298 describes the same pattern from the Ontology Development Kit: the local mirror is the source of truth, and one recipe moves it. KTL pins `lokf.yaml` beside the domain schema this way, and refreshes it when the `lokf` floor moves. For an adapted vocabulary, `lokf adapt --check` says when the copy is stale.
+1. **A vendored copy, pinned.** Copy the module tree, or the merged file, into the importer's repository at a tag. Record the tag and the checksum, and upgrade on purpose. linkml discussion 3298 describes the same pattern from the Ontology Development Kit: the local mirror is the source of truth, and one recipe moves it. KTL pins `lokf.yaml` in `.lokf/schema/` this way, and refreshes it when the `lokf` floor moves. For an adapted vocabulary, `lokf adapt --check` says when the copy is stale.
 2. **A persistent identifier.** `imports: [biolink:biolink-model]` with `biolink: https://w3id.org/biolink/` declared, as biolink-model issue 1278 describes; w3id serves the file. The identifier is the schema's `id` namespace, which is the rule the sidecar applies to `SCHEMA_ID` as well.
 3. **Never a raw code-host URL.** A branch moves, a file is renamed, and the IRI it builds is not the project's to keep.
 

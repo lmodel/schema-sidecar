@@ -1,7 +1,7 @@
 ## Schema
 
 The data model of this repository is a LinkML schema at
-`.linkml/src/<PROJ_SLUG>/schema/<PROJ_SLUG>.yaml`, also reachable as
+`<SCHEMA_FOLDER>/<PROJ_SLUG>.yaml`, also reachable as
 `linkml_schema/`. Read it before the code it describes. Every class, field
 and enum is defined once there, with its meaning mapped to public
 vocabularies. The JSON Schema, OWL and the rest under `.linkml/project/`

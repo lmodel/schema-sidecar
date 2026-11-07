@@ -259,10 +259,37 @@ def test_reads_a_ktl_bundle_and_warns_without_a_base_iri(tmp_path):
     host = make_host(tmp_path)
     add_lokf(host)
     result = preflight(host)
-    assert result and matches(result.out, r"^ok      lokf .*with-KTL mode; lokf floor >=0\.9\.0; \.lokf/lokf\.yaml pinned; \.lokf/justfile schema not wired; \[tool\.lokf\] schema absent; base_iri https://fixture\.example/knowledge/"), result.out
+    assert result and matches(result.out, r"^ok      lokf .*with-KTL mode; lokf floor >=0\.9\.0; \.lokf/schema/lokf\.yaml pinned; \.lokf/justfile schema not wired; \[tool\.lokf\] schema absent; base_iri https://fixture\.example/knowledge/"), result.out
     write(host / ".lokf" / "knowledge" / "index.md", "---\ntitle: no base\n---\n")
     result = preflight(host)
     assert result and matches(result.out, r"^warn    lokf .*no base_iri"), result.out
+
+
+@pytest.mark.parametrize("imported", ["../../../../.lokf/lokf", "'../../../../.lokf/lokf.yaml'  # LOKF core"], ids=["bare", "quoted"])
+def test_tells_a_sidecar_from_before_the_schema_folder_to_move_its_schema(tmp_path, imported):
+    """KTL keeps every schema file in .lokf/schema/. A sidecar scaffolded before KTL 0.62.0 keeps its schema in .linkml/src/ and imports .lokf/lokf.yaml by its path."""
+    host = make_host(tmp_path)
+    add_lokf(host)
+    write(host / ".lokf" / "lokf.yaml", read(host / ".lokf" / "schema" / "lokf.yaml"))
+    write(host / ".linkml" / ".copier-answers.yml", OURS + "project_slug: demo\n")
+    write(host / ".linkml" / "src" / "demo" / "schema" / "demo.yaml", SCHEMA.replace("  - linkml:types\n", f"  - linkml:types\n  - {imported}\n"))
+    result = preflight(host)
+    warned = [line for line in result.out.splitlines() if line.startswith("warn    lokf") and "layout before KTL 0.62.0" in line]
+    assert result and len(warned) == 1, result.out
+    assert ".linkml/src/demo/schema/demo.yaml imports .lokf/lokf.yaml" in warned[0] and "move the schema and lokf.yaml into .lokf/schema/" in warned[0], warned[0]
+
+
+def test_reads_a_sidecar_whose_schema_is_in_the_schema_folder(tmp_path):
+    """KTL mode writes the domain schema as .lokf/schema/<slug>.yaml, and config.public.mk points the recipes there."""
+    host = make_host(tmp_path)
+    add_lokf(host)
+    write(host / ".linkml" / ".copier-answers.yml", OURS + "project_slug: demo\n")
+    write(host / ".linkml" / "config.public.mk", 'LINKML_SCHEMA_NAME="demo"\nLINKML_SCHEMA_SOURCE_DIR="../.lokf/schema"\n')
+    write(host / ".lokf" / "schema" / "demo.yaml", SCHEMA.replace("  - linkml:types\n", "  - linkml:types\n  - lokf\n"))
+    result = preflight(host)
+    assert result and matches(result.out, r"^ok      project +schema \.lokf/schema/demo\.yaml;"), result.out
+    assert matches(result.out, r"^info    doorway +no linkml_schema doorway \(ln -s \.lokf/schema linkml_schema,"), result.out
+    assert "layout before KTL 0.62.0" not in result.out, result.out
 
 
 def test_warns_about_a_pages_collision_a_workflow_clash_and_a_uv_workspace(tmp_path):

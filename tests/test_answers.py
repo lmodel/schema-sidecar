@@ -74,11 +74,37 @@ def test_render_substitutes_every_token_and_refuses_a_leftover():
 
 def test_the_lint_config_excuses_only_the_camel_case_slots_of_the_pinned_schema(tmp_path):
     host = tmp_path
-    write(host / ".lokf" / "lokf.yaml", (FIXTURES / "lokf" / "lokf.yaml").read_text())
+    write(host / ".lokf" / "schema" / "lokf.yaml", (FIXTURES / "lokf" / "schema" / "lokf.yaml").read_text())
     assert mod.lokf_slot_names(host) == ["id", "type", "title", "description", "concepts", "isPartOf", "hasPart", "dependsOn"]
     config = mod.lint_config(host)
     assert "exclude: [isPartOf, hasPart, dependsOn]" in config
     assert "extends: recommended" in config
+
+
+def test_the_lint_config_excuses_the_enum_values_of_the_pinned_schema_too(tmp_path):
+    """`just lint` lints lokf.yaml beside the domain schema, so its enum values are linted as its own."""
+    host = tmp_path
+    core = (FIXTURES / "lokf" / "schema" / "lokf.yaml").read_text()
+    enums = (
+        "enums:\n"
+        "  HttpMethod:\n"
+        "    description: >-\n"
+        "      Optional: a folded line that reads like a key.\n"
+        "    permissible_values:\n"
+        "      GET:\n"
+        "        description: read\n"
+        "      'how-to':\n"
+        "      tutorial:\n"
+        "  RelationType:\n"
+        "    permissible_values:\n"
+        "      isPartOf:\n"
+        "      wasRevisionOf:\n"
+    )
+    write(host / ".lokf" / "schema" / "lokf.yaml", core + "\n" + enums)
+    assert mod.lokf_value_names(host) == ["GET", "how-to", "tutorial", "isPartOf", "wasRevisionOf"]
+    config = mod.lint_config(host)
+    assert "exclude: [isPartOf, hasPart, dependsOn, GET, how-to, wasRevisionOf]" in config
+    assert "  canonical_prefixes:\n    level: disabled\n" in config
 
 
 def test_the_lint_config_is_empty_handed_without_a_pinned_schema(tmp_path):
