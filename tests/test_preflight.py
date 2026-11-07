@@ -259,10 +259,40 @@ def test_reads_a_ktl_bundle_and_warns_without_a_base_iri(tmp_path):
     host = make_host(tmp_path)
     add_lokf(host)
     result = preflight(host)
-    assert result and matches(result.out, r"^ok      lokf .*with-KTL mode; lokf floor >=0\.9\.0; \.lokf/lokf\.yaml pinned; \.lokf/justfile schema not wired; \[tool\.lokf\] schema absent; base_iri https://fixture\.example/knowledge/"), result.out
+    assert result and matches(result.out, r"^ok      lokf .*with-KTL mode; lokf floor >=0\.9\.0; \.lokf/schema/lokf\.yaml pinned; \.lokf/justfile schema not wired; \[tool\.lokf\] schema absent; base_iri https://fixture\.example/knowledge/"), result.out
     write(host / ".lokf" / "knowledge" / "index.md", "---\ntitle: no base\n---\n")
     result = preflight(host)
     assert result and matches(result.out, r"^warn    lokf .*no base_iri"), result.out
+
+
+@pytest.mark.parametrize(
+    ("imported", "root_copy", "folder_copy", "told"),
+    [
+        ("../../../../.lokf/lokf", True, False, r"git mv \.lokf/lokf\.yaml \.lokf/schema/lokf\.yaml"),
+        ("'../../../../.lokf/lokf.yaml'  # LOKF core", True, True, r"git rm \.lokf/lokf\.yaml"),
+        ("../../../../.lokf/lokf", False, True, r"pin it in \.lokf/schema/"),
+        ("../../../../.lokf/schema/lokf", True, True, None),
+    ],
+    ids=["only the root copy", "both copies, quoted", "neither copy at the root", "the schema folder's copy"],
+)
+def test_tells_a_sidecar_that_imports_the_root_copy_of_lokf_core_to_move_it(tmp_path, imported, root_copy, folder_copy, told):
+    """KTL keeps LOKF core's copy in .lokf/schema/; a schema scaffolded before KTL 0.62.0 imports .lokf/lokf.yaml by its path."""
+    host = make_host(tmp_path)
+    add_lokf(host)
+    core = read(host / ".lokf" / "schema" / "lokf.yaml")
+    if root_copy:
+        write(host / ".lokf" / "lokf.yaml", core)
+    if not folder_copy:
+        (host / ".lokf" / "schema" / "lokf.yaml").unlink()
+    write(host / ".linkml" / ".copier-answers.yml", OURS + "project_slug: demo\n")
+    write(host / ".linkml" / "src" / "demo" / "schema" / "demo.yaml", SCHEMA.replace("  - linkml:types\n", f"  - linkml:types\n  - {imported}\n"))
+    result = preflight(host)
+    warned = [line for line in result.out.splitlines() if line.startswith("warn    lokf") and "layout before KTL 0.62.0" in line]
+    if told is None:
+        assert result and not warned, result.out
+    else:
+        assert result and len(warned) == 1 and re.search(told, warned[0]), result.out
+        assert ".linkml/src/demo/schema/demo.yaml imports .lokf/lokf.yaml" in warned[0] and "--repair .linkmllint.yaml" in warned[0], warned[0]
 
 
 def test_warns_about_a_pages_collision_a_workflow_clash_and_a_uv_workspace(tmp_path):

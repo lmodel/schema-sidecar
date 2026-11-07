@@ -30,12 +30,12 @@ on:
   pull_request:
     paths:
       - ".linkml/**"
-      - ".lokf/lokf.yaml"
+      - ".lokf/schema/lokf.yaml"
       - "**/workflows/linkml-sidecar.yaml"
   push:
     paths:
       - ".linkml/**"
-      - ".lokf/lokf.yaml"
+      - ".lokf/schema/lokf.yaml"
       - "**/workflows/linkml-sidecar.yaml"
   workflow_dispatch:
 

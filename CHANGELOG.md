@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- **The preflight warns when a sidecar's schema still imports `.lokf/lokf.yaml`, and says how to move it.** `--repair .linkmllint.yaml` refuses until the copy is in `.lokf/schema/`.
+
+### Changed
+
+- **KTL mode pins LOKF core as `.lokf/schema/lokf.yaml`, where Knowledge Trust Ladder 0.62.0 keeps every schema file.** The dummy imports it from there, and the workflow triggers on it. The scaffold leaves a root `.lokf/lokf.yaml` in place and names it in the hand-off.
+
 ## [0.4.0] - 2026-10-29
 
 ### Added

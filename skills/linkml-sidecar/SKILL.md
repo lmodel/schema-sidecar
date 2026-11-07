@@ -63,7 +63,7 @@ Resolve every fact from real project sources before running anything; the scaffo
 
 The scaffold refuses `--gitignored` when `.linkml/` already holds tracked files: the line would hide them.
 
-**KTL mode.** When `.lokf/` exists, the sidecar's dummy schema becomes the bundle's *domain schema*. It imports LOKF's core schema, every class in it that is `is_a: Concept` is a type the bundle's concepts may carry, and `lokf validate --schema` checks the bundle against both. The scaffold pins `.lokf/lokf.yaml` out of the installed toolkit when it is absent, writes a dummy that imports it and a lint config that excuses LOKF's own camelCase slot names, and names the schema in `.lokf/justfile`. [references/ktl.md](references/ktl.md) says what each piece does, what ktl-librarian's recipe asks for, and the one upstream bug the justfile edit works around. An adopted schema is not made the domain schema: the scaffold runs in plain mode and says so in the hand-off. linkml-author connects it later if its maintainers want that.
+**KTL mode.** When `.lokf/` exists, the sidecar's dummy schema becomes the bundle's *domain schema*. It imports LOKF's core schema, every class in it that is `is_a: Concept` is a type the bundle's concepts may carry, and `lokf validate --schema` checks the bundle against both. The scaffold pins `.lokf/schema/lokf.yaml` out of the installed toolkit when it is absent, writes a dummy that imports it and a lint config that excuses LOKF's own camelCase slot names, and names the schema in `.lokf/justfile`. [references/ktl.md](references/ktl.md) says what each piece does, what ktl-librarian's recipe asks for, and the one upstream bug the justfile edit works around. An adopted schema is not made the domain schema: the scaffold runs in plain mode and says so in the hand-off. linkml-author connects it later if its maintainers want that.
 
 ## Step 1 - Scaffold
 
@@ -79,7 +79,7 @@ Run it from the host's root (`--host DIR` otherwise). Every line it prints start
 
 1. **Refuses** a sidecar in `.linkml/`, a schema project at the root or one directory down, a `.linkml/` holding project files without answers, and, without `--adopt` or `--dummy`, a schema the host already holds. It installs around configuration files alone in `.linkml/`.
 2. **Checks the facts** against the template's own rules (the name and slug patterns, the license list, an IRI that names no code host; an adopted schema's `id` is exempt, since it was chosen before).
-3. **Pins `.lokf/lokf.yaml`** in KTL mode, out of the installed toolkit (`uv sync` in `.lokf/` first), and stops before writing anything if that cannot be done.
+3. **Pins `.lokf/schema/lokf.yaml`** in KTL mode, out of the installed toolkit (`uv sync` in `.lokf/` first), and stops before writing anything if that cannot be done.
 4. **Verifies the pin**: `git ls-remote` on the template, and the tag must name the commit the script records. Only then is the template run with `--trust`.
 5. **Pre-seeds the files this skill owns** into a staging directory beside `.linkml/`, substituting the facts as literal text through Python's `str.replace`, never sed:
 
@@ -162,4 +162,4 @@ linkml-author's first run replaces the dummy with the host's model, from the cod
 - in KTL mode:
   - on a `.lokf/` from before ktl-sidecar's `schema` variable, that the validate step of `knowledge-registrar.yaml`, `knowledge-librarian.yaml` and `knowledge-release.yaml` should run `uvx --from rust-just==1.47.0 just lokf-check-refs`, so CI checks the bundle against the schema too;
   - that the KTL plugins' "Known LOKF types" setting needs each domain class;
-  - that `.lokf/lokf.yaml` moves when the `lokf` floor does.
+  - that `.lokf/schema/lokf.yaml` moves when the `lokf` floor does.

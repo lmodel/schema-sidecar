@@ -124,6 +124,11 @@ GENERATORS = "generators.yaml"
 GENERATORS_VAR = "LINKML_GENERATORS_CONFIG_YAML"
 KTL_WORKFLOWS = ("knowledge-registrar.yaml", "knowledge-librarian.yaml", "knowledge-release.yaml")
 KTL_VALIDATE_STEP = "uvx --from rust-just==1.47.0 just lokf-check-refs"
+# KTL keeps every schema file in .lokf/schema/, LOKF core's copy among them
+# (ktl-librarian's domain-schema.md, step 1). The KTL dummy imports it from
+# there, and a copy at the root of .lokf/ is the layout before KTL 0.62.0.
+LOKF_CORE = ".lokf/schema/lokf.yaml"
+OLD_LOKF_CORE = ".lokf/lokf.yaml"
 # The files the skill owns, as (template path, destination inside .linkml/).
 # Each is in the template's `_skip_if_exists`, or outside the template. The
 # dummy schema, its test and its data come from templates/linkml/schema/<mode>/.
@@ -779,7 +784,7 @@ def lokf_slot_names(host):
     """The top-level slot names of the pinned LOKF schema, read from its YAML text."""
     names = []
     try:
-        text = read(host / ".lokf" / "lokf.yaml")
+        text = read(host / LOKF_CORE)
     except OSError:
         return names
     in_slots = False
@@ -798,13 +803,13 @@ def lint_config(host):
     odd = [n for n in lokf_slot_names(host) if not re.fullmatch(r"[a-z][a-z0-9_]*", n)]
     names = ", ".join(odd) if odd else ""
     return (
-        "# Written by linkml-sidecar for a schema that imports LOKF's (.lokf/lokf.yaml).\n"
+        f"# Written by linkml-sidecar for a schema that imports LOKF's ({LOKF_CORE}).\n"
         "# linkml-lint's standard_naming rule walks the import closure, so LOKF's\n"
         "# camelCase slot names would fail `just lint` here. They are excused by\n"
         "# name, and nothing else is: the host's own slots are still held to\n"
-        "# snake_case. Regenerate the list when .lokf/lokf.yaml moves to a new\n"
-        "# floor (the linkml-sidecar repair does): names that are not snake_case\n"
-        "# under its top-level `slots:`.\n"
+        f"# snake_case. Regenerate the list when {LOKF_CORE} moves to a\n"
+        "# new floor (the linkml-sidecar repair does): names that are not\n"
+        "# snake_case under its top-level `slots:`.\n"
         "extends: recommended\n"
         "rules:\n"
         "  standard_naming:\n"
@@ -816,18 +821,24 @@ def lint_config(host):
 
 
 def pin_lokf_schema(host, dry):
-    """The pinned core schema beside the bundle, so the sidecar's schema can import it (ktl-librarian's domain-schema.md, step 1)."""
+    """The pinned core schema in .lokf/schema/, so the sidecar's schema can import it (ktl-librarian's domain-schema.md, step 1).
+
+    A copy at the root of .lokf/ is left where it is, since a schema there may
+    still import it.
+    """
     lokf = host / ".lokf"
-    target = lokf / "lokf.yaml"
+    target = host / LOKF_CORE
+    if (host / OLD_LOKF_CORE).is_file():
+        say("handoff", f"{OLD_LOKF_CORE} is the layout before KTL 0.62.0, and the sidecar reads {LOKF_CORE}; git rm the old copy once no schema imports it")
     if target.is_file():
-        say("scaffold", ".lokf/lokf.yaml is pinned already")
+        say("scaffold", f"{LOKF_CORE} is pinned already")
         return
     if not (lokf / "pyproject.toml").is_file():
         raise Refused(2, ".lokf/ has no pyproject.toml, so the lokf toolkit cannot be installed to copy lokf.yaml out of; run ktl-sidecar first")
     if not shutil.which("uv"):
-        raise Refused(2, "uv is needed to install the lokf toolkit and copy lokf.yaml beside the bundle")
+        raise Refused(2, f"uv is needed to install the lokf toolkit and copy lokf.yaml to {LOKF_CORE}")
     if dry:
-        say("scaffold", "would copy the toolkit's lokf.yaml to .lokf/lokf.yaml (uv sync, then importlib.resources)")
+        say("scaffold", f"would copy the toolkit's lokf.yaml to {LOKF_CORE} (uv sync, then importlib.resources)")
         return
     sync = subprocess.run(["uv", "sync"], cwd=str(lokf), capture_output=True, text=True)
     if sync.returncode != 0:
@@ -837,8 +848,9 @@ def pin_lokf_schema(host, dry):
     path = found.stdout.strip().splitlines()[-1] if found.returncode == 0 and found.stdout.strip() else ""
     if not path or not Path(path).is_file():
         raise Refused(2, f"could not find lokf.yaml in the installed toolkit: {found.stderr.strip()[-400:]}")
+    target.parent.mkdir(exist_ok=True)
     shutil.copyfile(path, target)
-    say("scaffold", f"copied {path} to .lokf/lokf.yaml")
+    say("scaffold", f"copied {path} to {LOKF_CORE}")
 
 
 def say_ktl_workflows():
@@ -1101,6 +1113,10 @@ def repair(host, facts, mode, target, dry):
     if rel == ".linkmllint.yaml":
         if mode != "lokf":
             raise Refused(2, ".linkmllint.yaml is written in KTL mode only (the host has no .lokf/, or --mode plain was given)")
+        if not (host / LOKF_CORE).is_file():
+            # Without the copy the list would be empty, and `just lint` would fail on LOKF's names.
+            moved = f"; git mv {OLD_LOKF_CORE} there and change the schema's import of .lokf/lokf to .lokf/schema/lokf first" if (host / OLD_LOKF_CORE).is_file() else "; the scaffold's KTL mode pins it"
+            raise Refused(2, f"{LOKF_CORE} is not there, and the lint config is read from it{moved}")
         write(host / SIDECAR / rel, lint_config(host), dry)
         return
     if rel == "project.justfile":

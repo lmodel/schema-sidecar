@@ -74,7 +74,7 @@ def test_render_substitutes_every_token_and_refuses_a_leftover():
 
 def test_the_lint_config_excuses_only_the_camel_case_slots_of_the_pinned_schema(tmp_path):
     host = tmp_path
-    write(host / ".lokf" / "lokf.yaml", (FIXTURES / "lokf" / "lokf.yaml").read_text())
+    write(host / ".lokf" / "schema" / "lokf.yaml", (FIXTURES / "lokf" / "schema" / "lokf.yaml").read_text())
     assert mod.lokf_slot_names(host) == ["id", "type", "title", "description", "concepts", "isPartOf", "hasPart", "dependsOn"]
     config = mod.lint_config(host)
     assert "exclude: [isPartOf, hasPart, dependsOn]" in config

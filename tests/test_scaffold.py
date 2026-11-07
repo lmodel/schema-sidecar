@@ -290,7 +290,7 @@ def test_a_ktl_host_gets_the_lokf_dummy_the_lint_config_and_the_wired_justfile(t
     assert result, result.out
     side = host / ".linkml"
     schema = read(side / "src" / "demo" / "schema" / "demo.yaml")
-    assert "  - ../../../../.lokf/lokf\n" in schema and "ExampleConcept:\n    is_a: Concept" in schema
+    assert "  - ../../../../.lokf/schema/lokf\n" in schema and "ExampleConcept:\n    is_a: Concept" in schema
     valid = read(side / "tests" / "data" / "problem" / "valid" / "ExampleConcept-001.yaml")
     assert not (side / "tests" / "data" / "valid" / "ExampleConcept-001.yaml").exists()
     assert "id: https://fixture.example/knowledge/examples/example-concept\n" in valid and "type: ExampleConcept\n" in valid
@@ -585,7 +585,7 @@ def test_dry_run_prints_the_same_handoff_lines(tmp_path):
 def test_dry_run_on_a_ktl_host_without_a_toolkit_fails_as_the_real_run_would(tmp_path):
     host = make_host(tmp_path)
     add_lokf(host)
-    (host / ".lokf" / "lokf.yaml").unlink()
+    (host / ".lokf" / "schema" / "lokf.yaml").unlink()
     (host / ".lokf" / "pyproject.toml").unlink()
     result = scaffold(host, "--dry-run")
     assert result.rc == 2 and "has no pyproject.toml" in result.out, result.out
@@ -608,6 +608,33 @@ def test_repair_relays_the_lint_config_and_the_doorway_recipe(tmp_path):
     assert result and read(justfile).count(MARKER) == 1, result.out
     again = bash(SCAFFOLD, "--host", str(host), "--repair", "project.justfile", env=env)
     assert again and read(justfile).count(MARKER) == 1 and "already carries the doorway recipe" in again.out
+
+
+def test_repair_refuses_the_lint_config_without_the_copy_in_the_schema_folder(tmp_path):
+    """The excused names are read from .lokf/schema/lokf.yaml; without it the list would be empty and `just lint` would fail."""
+    host = make_host(tmp_path)
+    add_lokf(host)
+    assert scaffold(host)
+    env = {"LINKML_TEMPLATE_SKIP_PIN_CHECK": "1"}
+    lint = host / ".linkml" / ".linkmllint.yaml"
+    original = read(lint)
+    core = host / ".lokf" / "schema" / "lokf.yaml"
+    core.rename(host / ".lokf" / "lokf.yaml")
+    result = bash(SCAFFOLD, "--host", str(host), "--repair", ".linkmllint.yaml", env=env)
+    assert result.rc == 2 and "git mv .lokf/lokf.yaml there" in result.out and read(lint) == original, result.out
+    (host / ".lokf" / "lokf.yaml").unlink()
+    result = bash(SCAFFOLD, "--host", str(host), "--repair", ".linkmllint.yaml", env=env)
+    assert result.rc == 2 and "the scaffold's KTL mode pins it" in result.out, result.out
+
+
+def test_a_root_copy_of_lokf_core_is_left_alone_and_named_in_the_handoff(tmp_path):
+    host = make_host(tmp_path)
+    add_lokf(host)
+    old = host / ".lokf" / "lokf.yaml"
+    write(old, read(host / ".lokf" / "schema" / "lokf.yaml"))
+    result = scaffold(host)
+    assert result and matches(result.out, r"^handoff: \.lokf/lokf\.yaml is the layout before KTL 0\.62\.0"), result.out
+    assert old.is_file() and "  - ../../../../.lokf/schema/lokf\n" in read(host / ".linkml" / "src" / "demo" / "schema" / "demo.yaml")
 
 
 def test_repair_refuses_the_lint_config_on_a_plain_host(tmp_path):
@@ -710,7 +737,7 @@ def test_the_real_template_passes_the_gate_on_an_adopted_schema(tmp_path):
 @pytest.mark.slow
 def test_the_real_template_passes_both_gates_on_a_ktl_host(tmp_path):
     host = slow_host(tmp_path, with_lokf=True)
-    assert (host / ".lokf" / "lokf.yaml").is_file()
+    assert (host / ".lokf" / "schema" / "lokf.yaml").is_file() and not (host / ".lokf" / "lokf.yaml").exists()
     for recipe in ("install", "lint", "test", "site"):
         result = gate(host, recipe)
         assert result, f"just {recipe} failed:\n{result.out[-3000:]}"

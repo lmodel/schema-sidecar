@@ -443,7 +443,8 @@ fi
 # ---- KTL -------------------------------------------------------------------
 if [ -d "$root/.lokf" ]; then
   floor="$(sed -n 's/.*"lokf\[build\]>=\([0-9.]*\)".*/\1/p' "$root/.lokf/pyproject.toml" 2>/dev/null | head -n 1)"
-  pinned="absent (the scaffold copies it out of the installed toolkit)"; [ -f "$root/.lokf/lokf.yaml" ] && pinned="pinned"
+  # KTL keeps LOKF core's copy in .lokf/schema/ beside the other schema files; .lokf/lokf.yaml is the layout before KTL 0.62.0.
+  pinned="absent (the scaffold copies it out of the installed toolkit)"; [ -f "$root/.lokf/schema/lokf.yaml" ] && pinned="pinned"
   # ktl-sidecar's template carries `schema := ""` until a schema is named.
   named="$(sed -n 's/^schema := "\(.*\)"$/\1/p' "$root/.lokf/justfile" 2>/dev/null | head -n 1)"
   wired="not wired"; [ -n "$named" ] && wired="wired ($named)"
@@ -462,7 +463,13 @@ if [ -d "$root/.lokf" ]; then
     "$adapted"*) src="${first#"$adapted"}"; wired="wired ($named, a copy lokf adapt wrote from ${src%; do not edit.})" ;;
   esac
   base="$(sed -n 's/^base_iri: *//p' "$root/.lokf/knowledge/index.md" 2>/dev/null | head -n 1)"
-  ok lokf "KTL bundle present: with-KTL mode; lokf floor >=${floor:-?}; .lokf/lokf.yaml $pinned; .lokf/justfile schema $wired; [tool.lokf] schema ${tool:-absent}; base_iri ${base:-unknown}"
+  ok lokf "KTL bundle present: with-KTL mode; lokf floor >=${floor:-?}; .lokf/schema/lokf.yaml $pinned; .lokf/justfile schema $wired; [tool.lokf] schema ${tool:-absent}; base_iri ${base:-unknown}"
+  # A sidecar scaffolded before KTL 0.62.0 imports the root copy by its path, as `- ../../../../.lokf/lokf`.
+  if [ -n "$name" ] && grep -qE "^[[:space:]]*-[[:space:]]*[\"']?(\.\./)+\.lokf/lokf(\.yaml)?[\"']?[[:space:]]*(#.*)?$" "$sidecar/$schema" 2>/dev/null; then
+    move="git mv .lokf/lokf.yaml .lokf/schema/lokf.yaml"; [ -f "$root/.lokf/schema/lokf.yaml" ] && move="git rm .lokf/lokf.yaml"
+    [ -f "$root/.lokf/lokf.yaml" ] || move="pin it in .lokf/schema/ (references/ktl.md)"
+    warn lokf "$shown imports .lokf/lokf.yaml, the layout before KTL 0.62.0: $move, change the import to .lokf/schema/lokf, then linkml-sidecar --repair .linkmllint.yaml"
+  fi
   [ -n "$tool" ] && [ "${tool#./}" != "${named#./}" ] && warn lokf "[tool.lokf] schema in .lokf/pyproject.toml is $tool and .lokf/justfile's schema line is ${named:-empty}: a bare lokf command and the recipes check against different schemas; set both to one path"
   [ -z "$base" ] && warn lokf "no base_iri in .lokf/knowledge/index.md - the dummy concept's id needs it (BASE_IRI)"
   [ -z "$named" ] && [ "$kind" != none ] && info lokf "the schema is not the bundle's domain schema until .lokf/justfile names it (schema :=); a schema beside an unwired bundle stays what it is"

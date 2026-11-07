@@ -26,9 +26,9 @@ default_range: string
 
 imports:
   - linkml:types
-  # The pinned copy of LOKF's core schema beside the bundle, at the toolkit's
+  # The pinned copy of LOKF's core schema in .lokf/schema/, at the toolkit's
   # floor version. LinkML resolves the path relative to this file.
-  - ../../../../.lokf/lokf
+  - ../../../../.lokf/schema/lokf
 
 classes:
 
