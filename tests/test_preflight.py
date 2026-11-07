@@ -276,7 +276,7 @@ def test_reads_a_ktl_bundle_and_warns_without_a_base_iri(tmp_path):
     ids=["only the root copy", "both copies, quoted", "neither copy at the root", "the schema folder's copy"],
 )
 def test_tells_a_sidecar_that_imports_the_root_copy_of_lokf_core_to_move_it(tmp_path, imported, root_copy, folder_copy, told):
-    """KTL keeps LOKF core's copy in .lokf/schema/; a schema scaffolded before KTL 0.62.0 imports .lokf/lokf.yaml by its path."""
+    """KTL keeps LOKF core's copy in .lokf/schema/. A schema scaffolded before KTL 0.62.0 imports .lokf/lokf.yaml by its path."""
     host = make_host(tmp_path)
     add_lokf(host)
     core = read(host / ".lokf" / "schema" / "lokf.yaml")

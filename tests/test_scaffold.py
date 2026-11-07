@@ -611,7 +611,7 @@ def test_repair_relays_the_lint_config_and_the_doorway_recipe(tmp_path):
 
 
 def test_repair_refuses_the_lint_config_without_the_copy_in_the_schema_folder(tmp_path):
-    """The excused names are read from .lokf/schema/lokf.yaml; without it the list would be empty and `just lint` would fail."""
+    """The scaffold reads the excused names from .lokf/schema/lokf.yaml. Without it the list would be empty, and `just lint` would fail."""
     host = make_host(tmp_path)
     add_lokf(host)
     assert scaffold(host)

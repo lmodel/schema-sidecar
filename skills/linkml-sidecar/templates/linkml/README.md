@@ -87,7 +87,7 @@ Run it on a clean tree, read the diff, and commit `uv.lock` and `.copier-answers
 
 ## With a knowledge bundle (`.lokf/`)
 
-When the host carries a [KTL](https://github.com/noelmcloughlin/knowledge-trust-ladder) bundle, this schema imports LOKF's core schema (`.lokf/schema/lokf.yaml`, pinned at the toolkit's floor) and every class here that is `is_a: Concept` is a type the bundle's concepts may carry. `.lokf/justfile` names this schema as `schema :=`, so `just lokf-validate` and `just lokf-check-refs` check the bundle against both. Keep `.lokf/schema/lokf.yaml` in step with the `lokf` floor, and tell the KTL plugins' "Known LOKF types" setting about each class. LOKF has a slot named `from`, which the template's example runner cannot compile as a dataclass field, so valid examples live under `tests/data/problem/valid/`, the folder the runner skips, and `tests/test_data.py` validates both folders through `linkml.validator`.
+When the host carries a [KTL](https://github.com/noelmcloughlin/knowledge-trust-ladder) bundle, this schema imports LOKF's core schema (`.lokf/schema/lokf.yaml`, pinned at the toolkit's floor) and every class here that is `is_a: Concept` is a type the bundle's concepts may carry. `.lokf/justfile` names this schema as `schema :=`, so `just lokf-validate` and `just lokf-check-refs` check the bundle against both. Keep `.lokf/schema/lokf.yaml` in step with the `lokf` floor, and tell the KTL plugins' "Known LOKF types" setting about each class. LOKF has a slot named `from`, which the template's example runner cannot compile as a dataclass field. So valid examples live under `tests/data/problem/valid/`, the folder the runner skips, and `tests/test_data.py` validates both folders through `linkml.validator`.
 
 ## Remove it
 

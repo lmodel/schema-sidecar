@@ -443,7 +443,7 @@ fi
 # ---- KTL -------------------------------------------------------------------
 if [ -d "$root/.lokf" ]; then
   floor="$(sed -n 's/.*"lokf\[build\]>=\([0-9.]*\)".*/\1/p' "$root/.lokf/pyproject.toml" 2>/dev/null | head -n 1)"
-  # KTL keeps LOKF core's copy in .lokf/schema/ beside the other schema files; .lokf/lokf.yaml is the layout before KTL 0.62.0.
+  # KTL keeps LOKF core's copy in .lokf/schema/ beside the other schema files. Before KTL 0.62.0, the copy sat at .lokf/lokf.yaml.
   pinned="absent (the scaffold copies it out of the installed toolkit)"; [ -f "$root/.lokf/schema/lokf.yaml" ] && pinned="pinned"
   # ktl-sidecar's template carries `schema := ""` until a schema is named.
   named="$(sed -n 's/^schema := "\(.*\)"$/\1/p' "$root/.lokf/justfile" 2>/dev/null | head -n 1)"

@@ -6,7 +6,7 @@ The authority for a domain schema that `lokf validate --schema` checks is ktl-li
 
 **Import.** A schema written for the bundle imports `.lokf/schema/lokf.yaml`, and its classes descend from `Concept`. The sidecar's dummy takes this route, and the rest of this page assumes it unless a line says otherwise.
 
-**Adapt.** A schema that is also published on its own, for importers that never see LOKF, cannot import `lokf.yaml`. LinkML merges the two files into one namespace, and a name both define (`id`, `name`, `description`, `version`) keeps one definition without a warning. slsa and gist are such schemas. Leave the published schema, the source, as it is. Let lokf's `adapt` write a copy into `.lokf/schema/` that imports the `lokf.yaml` beside it ([publishing.md](publishing.md) lists its moves), and set `schema := "schema/<slug>.yaml"` in `.lokf/justfile` to name the copy. The preflight's `lokf` line then says `a copy lokf adapt wrote`.
+**Adapt.** A schema cannot import `lokf.yaml` when it is also published on its own, for importers that never see LOKF. LinkML merges the two files into one namespace, and a name both define (`id`, `name`, `description`, `version`) keeps one definition without a warning. slsa and gist are such schemas. Leave the published schema, the source, as it is. Let lokf's `adapt` write a copy into `.lokf/schema/` that imports the `lokf.yaml` beside it ([publishing.md](publishing.md) lists its moves), and set `schema := "schema/<slug>.yaml"` in `.lokf/justfile` to name the copy. The preflight's `lokf` line then says `a copy lokf adapt wrote`.
 
 On the adapt route:
 

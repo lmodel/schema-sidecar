@@ -126,7 +126,7 @@ KTL_WORKFLOWS = ("knowledge-registrar.yaml", "knowledge-librarian.yaml", "knowle
 KTL_VALIDATE_STEP = "uvx --from rust-just==1.47.0 just lokf-check-refs"
 # KTL keeps every schema file in .lokf/schema/, LOKF core's copy among them
 # (ktl-librarian's domain-schema.md, step 1). The KTL dummy imports it from
-# there, and a copy at the root of .lokf/ is the layout before KTL 0.62.0.
+# there. Before KTL 0.62.0, the copy sat at the root of .lokf/.
 LOKF_CORE = ".lokf/schema/lokf.yaml"
 OLD_LOKF_CORE = ".lokf/lokf.yaml"
 # The files the skill owns, as (template path, destination inside .linkml/).
@@ -823,7 +823,7 @@ def lint_config(host):
 def pin_lokf_schema(host, dry):
     """The pinned core schema in .lokf/schema/, so the sidecar's schema can import it (ktl-librarian's domain-schema.md, step 1).
 
-    A copy at the root of .lokf/ is left where it is, since a schema there may
+    A copy at the root of .lokf/ stays in place, since a schema there may
     still import it.
     """
     lokf = host / ".lokf"
