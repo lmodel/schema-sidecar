@@ -1,10 +1,10 @@
 # Beside a KTL bundle: what the author keeps in mind
 
-The authority for a domain schema that `lokf validate --schema` checks is ktl-librarian's [domain-schema.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-schema.md). linkml-sidecar's [ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md) says how the sidecar sets one up. This page is the author's short form, and applies when the schema is the bundle's domain schema: `.lokf/justfile` names it (`schema :=`), the justfile names a copy `lokf adapt` wrote from it, or the schema imports `.lokf/schema/lokf.yaml`. A `.lokf/` beside a schema that is neither is a bundle about the repository, and nothing here applies until its maintainers make the schema the domain schema.
+The authority for a domain schema that `lokf validate --schema` checks is ktl-librarian's [domain-schema.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-schema.md). linkml-sidecar's [ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md) says how the sidecar sets one up. This page is the author's short form, and applies when the schema is the bundle's domain schema: `.lokf/justfile` names it (`schema :=`), the justfile names a copy `lokf adapt` wrote from it, or the schema imports `lokf`, the copy of LOKF core in `.lokf/schema/`. A `.lokf/` beside a schema that is neither is a bundle about the repository, and nothing here applies until its maintainers make the schema the domain schema.
 
 ## Two routes: import or adapt
 
-**Import.** A schema written for the bundle imports `.lokf/schema/lokf.yaml`, and its classes descend from `Concept`. The sidecar's dummy takes this route, and the rest of this page assumes it unless a line says otherwise.
+**Import.** A schema written for the bundle sits in `.lokf/schema/`, where KTL keeps every schema file, and imports `lokf`, the copy of LOKF core beside it. Its classes descend from `Concept`. The sidecar's dummy takes this route, and the rest of this page assumes it unless a line says otherwise.
 
 **Adapt.** A schema cannot import `lokf.yaml` when it is also published on its own, for importers that never see LOKF. LinkML merges the two files into one namespace, and a name both define (`id`, `name`, `description`, `version`) keeps one definition without a warning. slsa and gist are such schemas. Leave the published schema, the source, as it is. Let lokf's `adapt` write a copy into `.lokf/schema/` that imports the `lokf.yaml` beside it ([publishing.md](publishing.md) lists its moves), and set `schema := "schema/<slug>.yaml"` in `.lokf/justfile` to name the copy. The preflight's `lokf` line then says `a copy lokf adapt wrote`.
 
@@ -20,7 +20,7 @@ On the adapt route:
 
 - **Every class is closed.** A concept fails its class on any key the class does not declare. A built-in LOKF class plus one key of your own is not valid: subclass it and declare the key.
 - **`type` names the class exactly.** A concept of a subclass writes the subclass name, not the parent's; the validator matches concepts against every class at once.
-- **The import stays.** On the import route, `imports: [linkml:types, ../../../../.lokf/schema/lokf]` is how the schema sees `Concept`, `Reference`, `Playbook` and the rest. The path is relative to the schema file, and the pinned copy lives in `.lokf/schema/`.
+- **The import stays.** On the import route, `imports: [linkml:types, lokf]` is how the schema sees `Concept`, `Reference`, `Playbook` and the rest. LinkML resolves the name relative to the schema file, so the schema and the pinned copy stay together in `.lokf/schema/`.
 
 ## What to write
 
@@ -43,7 +43,7 @@ A class `is_a: Concept` joins the bundle's concept union, and so does any descen
 These limits apply on the import route, where the project's own schema imports LOKF.
 
 - The generated dataclasses (`src/<slug>/datamodel/<slug>.py`) do not compile beside LOKF, because LOKF's `from` slot is a Python keyword and `gen-python` does not escape it. The example runner at the end of `just test` instantiates every file under `tests/data/valid/` through the same dataclasses. So valid examples live under `tests/data/problem/valid/`, which the runner skips, and `tests/test_data.py` validates the files of both folders with `linkml.validator`, loading the schema through `SchemaView` so the relative import resolves. Counter-examples stay under `tests/data/invalid/`. The Pydantic models compile. linkml 1.12.0 escapes the field name. Move the valid examples to `tests/data/valid/` once a release also loads data that uses `from` (PR 4083).
-- `linkml-lint` lints LOKF's camelCase slot names through the import closure; the project's `.linkmllint.yaml` excuses exactly those names. Regenerate it when `.lokf/schema/lokf.yaml` changes (in a sidecar, linkml-sidecar `--repair .linkmllint.yaml`).
+- `just lint` lints every file in the schema's folder, `lokf.yaml` among them, so LOKF's camelCase slot names, its enum values and two of its prefixes would fail it. The project's `.linkmllint.yaml` excuses exactly LOKF's names and turns `canonical_prefixes` off. Regenerate it when `.lokf/schema/lokf.yaml` changes (in a sidecar, linkml-sidecar `--repair .linkmllint.yaml`). Another schema file in the folder is linted too: excuse its names in the same file.
 - `gen-doc` renders LOKF's pages too (`--render-imports`), so the docs site shows the whole vocabulary a concept may use.
 
 ## After each change

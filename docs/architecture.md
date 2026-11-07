@@ -43,7 +43,7 @@ Copier runs template code while it renders (`--trust`), so the scaffold first ch
 
 ## With Knowledge Trust Ladder
 
-Beside a [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle, `.lokf/`, the sidecar's schema becomes the bundle's domain schema. It imports LOKF's core schema. Each of its own classes that is `is_a: Concept` is a type the bundle's concepts may carry, and `lokf validate --schema` checks the bundle against both schemas. [ktl.md](../skills/linkml-sidecar/references/ktl.md) says what each piece does. Without a bundle, the sidecar stands alone.
+Beside a [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle, `.lokf/`, the sidecar's schema becomes the bundle's domain schema. It sits in `.lokf/schema/`, where KTL keeps every schema file, and imports LOKF's core schema beside it. The sidecar's recipes read it there. Each of its own classes that is `is_a: Concept` is a type the bundle's concepts may carry, and `lokf validate --schema` checks the bundle against both schemas. [ktl.md](../skills/linkml-sidecar/references/ktl.md) says what each piece does. Without a bundle, the sidecar stands alone.
 
 ## Keeping it current
 

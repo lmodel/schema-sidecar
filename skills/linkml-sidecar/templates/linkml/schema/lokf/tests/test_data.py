@@ -2,10 +2,13 @@
 
 Every file under tests/data/valid and tests/data/problem/valid validates
 against the class its name starts with, and every file under
-tests/data/invalid fails to. The test loads the schema through SchemaView,
-which resolves its relative import of .lokf/schema/lokf.yaml from the schema
-file. Before linkml 1.12.0 (PR 3855), linkml.validator.validate() given a
-path resolved it from the working directory instead.
+tests/data/invalid fails to. The schema is the bundle's domain schema in
+.lokf/schema/, where config.public.mk's LINKML_SCHEMA_SOURCE_DIR points; just
+puts that line in the environment, and a bare pytest falls back to the same
+folder. The test loads the schema through SchemaView, which resolves its
+import of lokf.yaml beside it from the schema file. Before linkml 1.12.0
+(PR 3855), linkml.validator.validate() given a path resolved it from the
+working directory instead.
 
 The generated dataclasses are not imported, and valid examples live under
 problem/valid: LOKF has a slot named `from`, which linkml's Python generator
@@ -28,7 +31,7 @@ from linkml.validator import validate
 from linkml_runtime import SchemaView
 
 HERE = Path(__file__).parent
-SCHEMA = HERE.parent / "src" / "<PROJ_SLUG>" / "schema" / "<PROJ_SLUG>.yaml"
+SCHEMA = HERE.parent / os.environ.get("LINKML_SCHEMA_SOURCE_DIR", "../.lokf/schema") / "<PROJ_SLUG>.yaml"
 DATA_DIR_VALID = HERE / "data" / "valid"
 DATA_DIR_PROBLEM_VALID = HERE / "data" / "problem" / "valid"
 DATA_DIR_INVALID = HERE / "data" / "invalid"

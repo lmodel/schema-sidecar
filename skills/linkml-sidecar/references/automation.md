@@ -6,7 +6,7 @@
 
 | Job | Runs when | Does |
 | --- | --- | --- |
-| `lint-and-test` | a pull request or a push to any branch touching `.linkml/**`, `.lokf/schema/lokf.yaml` or the workflow; dispatch | in `.linkml/`: `uv sync --locked --group dev`, `just lint`, `just test`, on Python 3.12 |
+| `lint-and-test` | a pull request or a push to any branch touching `.linkml/**`, `.lokf/schema/**` or the workflow; dispatch | in `.linkml/`: `uv sync --locked --group dev`, `just lint`, `just test`, on Python 3.12 |
 | `docs` | the same triggers as `lint-and-test`, on the repository's default branch only, after `lint-and-test` passes | `just gen-doc`, `mkdocs build`; the site kept as the `linkml-docs` artifact |
 | `publish-docs` | after `docs`, only while the repository variable `LINKML_DOCS_ENABLED` is `true` | the artifact published under the `linkml/` subpath of the host's `gh-pages` branch; peaceiris replaces that subpath and nothing else, so a site the host already publishes there is left alone and the page of a deleted class is removed |
 

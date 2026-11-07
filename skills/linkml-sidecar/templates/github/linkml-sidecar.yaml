@@ -18,12 +18,12 @@ on:
   pull_request:
     paths:
       - ".linkml/**"
-      - ".lokf/schema/lokf.yaml"
+      - ".lokf/schema/**"
       - ".github/workflows/linkml-sidecar.yaml"
   push:
     paths:
       - ".linkml/**"
-      - ".lokf/schema/lokf.yaml"
+      - ".lokf/schema/**"
       - ".github/workflows/linkml-sidecar.yaml"
   workflow_dispatch:
 

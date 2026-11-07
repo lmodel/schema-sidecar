@@ -6,11 +6,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
-- **The preflight warns when a sidecar's schema still imports `.lokf/lokf.yaml`, and says how to move it.** `--repair .linkmllint.yaml` refuses until the copy is in `.lokf/schema/`.
+- **The preflight warns when a sidecar's schema still imports `.lokf/lokf.yaml`, and points to the move.** `--repair .linkmllint.yaml` refuses until the copy is in `.lokf/schema/`.
 
 ### Changed
 
-- **KTL mode pins LOKF core as `.lokf/schema/lokf.yaml`, where Knowledge Trust Ladder 0.62.0 keeps every schema file.** The dummy imports it from there, and the workflow triggers on it. The scaffold leaves a root `.lokf/lokf.yaml` in place and names it in the hand-off.
+- **KTL mode writes the domain schema as `.lokf/schema/<slug>.yaml`, beside LOKF core's copy, where Knowledge Trust Ladder 0.62.0 keeps every schema file.** `config.public.mk` points the recipes there, the workflow runs on changes to the folder, and `.lokf/justfile` names `schema/<slug>.yaml`. A root `.lokf/lokf.yaml` stays in place, and the hand-off names it.
+- **The KTL lint config also excuses LOKF's enum values and turns `canonical_prefixes` off.** `just lint` lints every file in the folder, `lokf.yaml` among them.
 
 ## [0.4.0] - 2026-10-29
 
