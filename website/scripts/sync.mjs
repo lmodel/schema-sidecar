@@ -168,15 +168,26 @@ function openQuestions(body) {
 
 /** Markdown inline syntax stripped to its words, for titles and descriptions. */
 function plain(md) {
-  return md
+  const text = md
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/`([^`]*)`/g, "$1")
     .replace(/(\*\*|__)(.*?)\1/g, "$2")
-    .replace(/(^|[^\w*])[*_]([^*_]+)[*_](?=[^\w*]|$)/g, "$1$2")
-    .replace(/<[^>]+>/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+    .replace(/(^|[^\w*])[*_]([^*_]+)[*_](?=[^\w*]|$)/g, "$1$2");
+  return withoutTags(text).replace(/\s+/g, " ").trim();
+}
+
+/** Text with its HTML tags and comments removed until none is left: one pass
+ *  over `<<b>script>` would leave `<script>`. A bracket that opens no tag, as
+ *  in `<>` or `a < b and c > d`, stays, and Markdown renders no unclosed tag
+ *  as HTML. */
+function withoutTags(text) {
+  let out = text;
+  for (let previous = ""; out !== previous; ) {
+    previous = out;
+    out = out.replace(/<!--[\s\S]*?-->|<\/?[A-Za-z][^<>]*>/g, "");
+  }
+  return out;
 }
 
 /** The first sentence of the first paragraph, or of the first note, as a page description. */
@@ -267,6 +278,15 @@ const prepare = (body) => picturesToThemedImages(alertsToAsides(body));
 // The bundle, as the toolkit and the report script see it.
 // ---------------------------------------------------------------------------
 
+// The domain schema the justfile's `schema :=` line names, relative to .lokf/
+// as the recipes read it, so the four files carry its classes and relations
+// as `just lokf-convert` does. An empty line leaves the choice to lokf.
+function schemaArgs() {
+  const justfile = resolve(REPO_ROOT, ".lokf", "justfile");
+  const m = existsSync(justfile) && read(justfile).match(/^schema := "([^"]*)"$/m);
+  return m && m[1] ? ["--schema", resolve(REPO_ROOT, ".lokf", m[1])] : [];
+}
+
 function lokfExport() {
   mkdirSync(PUBLIC_KNOWLEDGE, { recursive: true });
   execFileSync(
@@ -279,6 +299,7 @@ function lokfExport() {
       "--quiet",
       "lokf",
       "export",
+      ...schemaArgs(),
       BUNDLE_DIR,
       "--out-dir",
       PUBLIC_KNOWLEDGE,

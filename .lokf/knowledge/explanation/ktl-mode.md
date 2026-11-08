@@ -2,7 +2,7 @@
 type: Explanation
 id: https://w3id.org/ktl/linkml-sidecar/knowledge/explanation/ktl-mode
 title: KTL mode
-description: "What changes when the host carries a .lokf/ Knowledge Trust Ladder bundle: the sidecar's dummy schema becomes the bundle's domain schema, and the scaffold pins .lokf/lokf.yaml, writes an ExampleConcept dummy, excuses LOKF's camelCase slots in the linter and names the schema in .lokf/justfile and as [tool.lokf] schema; an adopted schema is not made the domain schema."
+description: "What changes when the host carries a .lokf/ Knowledge Trust Ladder bundle: the project's schema stays in .linkml/ and imports nothing from .lokf/, the scaffold pins .lokf/schema/lokf.yaml, adds lokf-adapt recipes, writes the bundle a copy at .lokf/schema/<slug>.yaml and names it in .lokf/justfile and as [tool.lokf] schema; an adopted schema gets no copy."
 genre: explanation
 resource: skills/linkml-sidecar/references/ktl.md
 tags:
@@ -10,6 +10,7 @@ tags:
   - lokf
   - domain schema
   - lokf validate
+  - lokf adapt
 about:
   - https://w3id.org/ktl/linkml-sidecar/knowledge/glossary/domain-schema
 references:
@@ -22,7 +23,7 @@ sources:
   - resource: docs/architecture.md
 generated:
   by: process:ktl-librarian
-  at: "2026-10-29T02:19:04Z"
+  at: "2026-11-08T01:05:25Z"
 status: draft
 verified:
   - by: process:ktl-librarian
@@ -31,28 +32,30 @@ verified:
 
 # Overview
 
-The sidecar stands alone. When the host carries a `.lokf/` bundle, the preflight switches on KTL mode, and the sidecar's dummy schema becomes the bundle's domain schema. It imports LOKF's core schema. Each class in it that is `is_a: Concept` is a type the bundle's concepts may carry, and `lokf validate --schema` checks the bundle against both schemas.
+A LinkML project and a KTL bundle are separate things. When the host carries a `.lokf/` bundle, the preflight switches on KTL mode. The scaffold lays down the same project as in plain mode, with the same `Person` dummy, in `.linkml/src/<slug>/schema/`, and the schema imports nothing from `.lokf/`. The bundle gets a copy: `lokf adapt` (lokf 0.9.0 or later) writes `.lokf/schema/<slug>.yaml` from the project's schema, and `.lokf/justfile` names that copy as the bundle's domain schema.
 
-A schema the host already held (`--adopt`) is not made the domain schema: the scaffold runs in plain mode beside the bundle and says so in the hand-off. A bundle beside a schema may be a bundle *about* the repository, as in a schema repository that documents itself. The schema is the bundle's domain schema only when `.lokf/justfile` names it or it imports `.lokf/lokf.yaml`, and its maintainers decide that.
+A schema the host already held (`--adopt`) gets no copy: the scaffold runs in plain mode beside the bundle and says so in the hand-off. A bundle beside a schema may be a bundle *about* the repository, and whether its concepts use the schema's classes is for its maintainers to decide. `--adopt` refuses a file inside `.lokf/`, because a schema there is KTL's.
 
 ## What the scaffold does in KTL mode
 
-1. Pins the core schema beside the bundle: `.lokf/lokf.yaml` is copied out of the installed `lokf` toolkit, at the floor `.lokf/pyproject.toml` names.
-2. Writes a dummy that imports it: one class, `ExampleConcept`, `is_a: Concept`, with one slot of its own.
-3. Excuses LOKF's camelCase relation slots in `.linkml/.linkmllint.yaml`, and nothing else, so the host's own slots are still held to snake_case.
-4. Adds `--render-imports` to gen-doc, so `is_a: Concept` links to a page that exists.
-5. Sets `schema :=` in `.lokf/justfile`, and makes its `lokf-validate` and `lokf-check-refs` recipes pass `--schema`.
-6. Writes the same path as `[tool.lokf] schema` in `.lokf/pyproject.toml`, so a `lokf` command given no `--schema` reads the schema too. A table that already names another schema is printed, not patched.
+1. Pins `.lokf/schema/lokf.yaml` when it is absent, out of the installed `lokf` toolkit, at the floor `.lokf/pyproject.toml` names. A copy at the root of `.lokf/`, KTL's layout before 0.62.0, stays in place.
+2. Appends `lokf-adapt` and `lokf-adapt-check` to `project.justfile`. The first writes the copy; the second fails while the copy is stale against the schema or against `lokf.yaml`. `lokf_adapt_flags` takes adapt's own flags, such as `--root <Class>`.
+3. Writes the copy. `lokf adapt --dry-run` must read the staged dummy before anything moves into `.linkml/`, or the run stops with exit 2. It refuses when `.lokf/schema/<slug>.yaml` already exists.
+4. Sets `schema := "schema/<slug>.yaml"` in `.lokf/justfile`. A justfile that already names a schema keeps it, and the hand-off says to import `<slug>` from it.
+5. Writes the same path as `[tool.lokf] schema` in `.lokf/pyproject.toml`. A table that names another schema is printed, not patched.
 
-## The one workaround, for a lokf 0.8.0 floor
+## What the copy holds
 
-On a justfile from before the `schema :=` variable, the two recipes run from the schema's directory rather than from `.lokf/`. On lokf 0.8.0, `lokf validate` passes the schema to `linkml.validator.validate()`, which drops the schema's path, so a relative import resolves from the working directory. lokf 0.9.0 requires linkml-runtime 1.12, which resolves the import from the schema's own folder, so ktl-sidecar's template passes `--schema` from `.lokf/` with no `cd`. The `cd` form works on both floors, and only a `.lokf/` still at lokf 0.8.0 needs it.
+The copy imports `lokf`, the file beside it. `lokf adapt` re-roots the schema's top classes on `Concept`, so a concept may name them as its `type`; drops the schema's identifier slot for LOKF's `id`; folds a slot whose IRI is one of `Concept`'s into it, as `name` folds into `title`; and renames any other name LOKF also defines, as `Person` becomes `AcmePerson` for the slug `acme`. The copy's `notes` list each move.
 
-## Two more upstream limits
+## Keeping the copy current
 
-- LOKF has a slot named `from`, a Python keyword, so the generated dataclasses cannot be imported on linkml 1.11.1, and the template's example runner needs them. KTL mode keeps its valid example under `tests/data/problem/valid/`, which the runner skips, and its `tests/test_data.py` validates both folders through `linkml.validator.validate()`.
-- `copier update --pretend` fails in a subproject, so there is no dry run of `just update`.
+Edit the schema, never the copy. After each change, run `just lokf-adapt` and commit the copy with it. The sidecar's workflow runs on `.linkml/**` and `.lokf/schema/**` and runs `just lokf-adapt-check` after the tests, so a stale copy fails the gate. When the `lokf` floor moves, copy the new `lokf.yaml` into `.lokf/schema/` and run `lokf-adapt` in the same change.
 
 ## What the host still does by hand
 
-It adds each domain class to the *Known LOKF types* setting of the KTL Registrar and KTL Curator plugins. When the `lokf` floor moves, it refreshes `.lokf/lokf.yaml`, regenerates `.linkmllint.yaml` and re-runs both gates. When the sidecar is removed, `.lokf/justfile` is reset to `schema := ""`, and `[tool.lokf] schema` is removed from `.lokf/pyproject.toml`.
+It adds each class the copy re-roots on `Concept`, and each subclass, to the *Known LOKF types* setting of the KTL Registrar and KTL Curator plugins. On an older `.lokf/`, it changes each KTL workflow's validate step to run `just lokf-check-refs`. When the sidecar is removed, the copy stays; to remove it too, `git rm` it, reset `schema := ""`, and remove `[tool.lokf] schema`.
+
+## An older KTL-mode sidecar
+
+Up to 0.4.x the schema imported `.lokf/lokf.yaml` and was itself the domain schema; 0.5.0 kept it in `.lokf/schema/<slug>.yaml`. The preflight warns about both, and `references/ktl.md` gives the steps to move either to the copy.

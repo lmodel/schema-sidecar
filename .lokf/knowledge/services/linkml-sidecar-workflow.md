@@ -36,7 +36,7 @@ On GitHub, `templates/github/linkml-sidecar.yaml` is installed in Step 5 at `.gi
 
 ## Jobs
 
-- `lint-and-test` runs on a pull request or a push to any branch that touches `.linkml/**`, `.lokf/lokf.yaml` or the workflow, and on dispatch. In `.linkml/` it runs `uv sync --locked --group dev`, `just lint` and `just test` on Python 3.12.
+- `lint-and-test` runs on a pull request or a push to any branch that touches `.linkml/**`, `.lokf/schema/**` or the workflow, and on dispatch. In `.linkml/` it runs `uv sync --locked --group dev`, `just lint` and `just test` on Python 3.12, then `just lokf-adapt-check` when the project has that recipe, so a stale copy in `.lokf/schema/` fails the gate.
 - `docs` runs on the same events, on the default branch only, after the gate. It runs `just gen-doc` and `mkdocs build`, and keeps the site as the `linkml-docs` artifact.
 - `publish-docs` runs after `docs`, only while the repository variable `LINKML_DOCS_ENABLED` is `true`. It publishes the artifact under the `linkml/` subpath of the host's `gh-pages` branch and replaces that subpath and nothing else.
 
