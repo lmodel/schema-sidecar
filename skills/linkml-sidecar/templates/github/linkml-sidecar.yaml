@@ -82,6 +82,17 @@ jobs:
       - name: Generate, test and run the examples
         run: just test
 
+      # Beside a KTL bundle, the copy lokf adapt writes into .lokf/schema/
+      # must match the schema and the pinned lokf.yaml. Only a sidecar
+      # installed beside a bundle has the recipe, so any other skips it.
+      - name: Check the knowledge bundle's copy of the schema
+        run: |
+          if just --summary | tr ' ' '\n' | grep -qx lokf-adapt-check; then
+            just lokf-adapt-check
+          else
+            echo "no lokf-adapt-check recipe: no copy in .lokf/schema/ to check"
+          fi
+
   docs:
     name: Build the documentation site
     # The default branch only: a dispatch on another branch must not publish

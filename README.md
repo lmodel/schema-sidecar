@@ -8,4 +8,4 @@ To install, see [the quick start](https://w3id.org/ktl/linkml-sidecar/docs/insta
 >
 > **Agents:** if `.lokf/knowledge/index.md` exists, read it first. `llms.txt` says how to weigh it.
 
-The sidecar stands alone. Beside a [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle, its schema becomes the bundle's domain schema, as [the architecture](https://w3id.org/ktl/linkml-sidecar/docs/architecture/#with-knowledge-trust-ladder) describes.
+The sidecar stands alone. Beside a [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle, its schema stays its own, and the bundle gets a copy it validates against, as [the architecture](https://w3id.org/ktl/linkml-sidecar/docs/architecture/#with-knowledge-trust-ladder) describes.

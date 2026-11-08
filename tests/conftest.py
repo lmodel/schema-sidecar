@@ -3,7 +3,8 @@
 These tests exercise skills/linkml-sidecar/scripts/ and templates/ on
 throwaway hosts. The fast ones run the scaffold against tests/fake_copier.py,
 which renders the few template files the scaffold touches without the
-network, and a stub `.lokf/` under tests/fixtures/; the preflight runs with
+network, a stub `.lokf/` under tests/fixtures/, and tests/fake_lokf.py in
+place of the toolkit's `lokf adapt`; the preflight runs with
 LINKML_PREFLIGHT_OFFLINE=1, so they make no network call. The slow ones, switched
 on by LINKML_SIDECAR_SLOW=1, run the real copier against a local clone of the
 pinned template (LINKML_TEMPLATE_SRC, or .template-cache/linkml-project-copier
@@ -42,6 +43,7 @@ PREFLIGHT = TEMPLATES / "scripts" / "linkml-preflight.sh"
 WORKFLOW = TEMPLATES / "github" / "linkml-sidecar.yaml"
 FORGEJO_WORKFLOW = TEMPLATES / "forgejo" / "linkml-sidecar.yaml"
 FAKE_COPIER = TESTS / "fake_copier.py"
+FAKE_LOKF = TESTS / "fake_lokf.py"
 FIXTURES = TESTS / "fixtures"
 FACTS = {
     "PROJ_NAME": "demo",
@@ -55,7 +57,7 @@ FACTS = {
     "SCHEMA_ID": "https://w3id.org/acme/demo",
     "DOCS_URL": "https://acme.github.io/demo/linkml/",
 }
-TOKENS = ("<PROJ_", "<SCHEMA_ID>", "<DOCS_URL>", "<BASE_IRI>", "<LICENSE_ID>", "<TODAY>", "<REPO_URL>", "<TEMPLATE_REF>")
+TOKENS = ("<PROJ_", "<SCHEMA_ID>", "<DOCS_URL>", "<LICENSE_ID>", "<TODAY>", "<REPO_URL>", "<TEMPLATE_REF>")
 
 
 def have(tool: str) -> bool:
@@ -191,11 +193,12 @@ def add_lokf(root: Path, stub_schema=True, before_schema=False) -> Path:
 
 
 def scaffold(host: Path, *args, facts=None, env=None, fake=True) -> Result:
-    """Run the scaffold on host with the standard facts; the fake copier unless fake=False."""
+    """Run the scaffold on host with the standard facts; the fake copier and the fake lokf unless fake=False."""
     full = dict(FACTS if facts is None else facts)
     if fake:
         full["LINKML_COPIER"] = f"{sys.executable} {FAKE_COPIER}"
         full["LINKML_TEMPLATE_SRC"] = "gh:linkml/linkml-project-copier"
+        full["LOKF_CMD"] = f"{sys.executable} {FAKE_LOKF}"
     full["LINKML_TEMPLATE_SKIP_PIN_CHECK"] = "1"
     if env:
         full.update(env)
@@ -230,6 +233,7 @@ def _isolated_environment(tmp_path_factory):
     for name in (
         "LINKML_COPIER", "LINKML_TEMPLATE_REF", "LINKML_TEMPLATE_SHA", "LINKML_TEMPLATE_SKIP_PIN_CHECK",
         "LINKML_MODE", "BASE_IRI", "COPYRIGHT_YEAR", "TODAY", "FAKE_COPIER_FAIL", "FAKE_COPIER_GIT", "GIT_DIR", "GIT_WORK_TREE",
+        "LOKF_CMD", "FAKE_LOKF_OLD", "FAKE_LOKF_FAIL",
     ):
         patch.delenv(name, raising=False)
     yield

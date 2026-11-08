@@ -27,12 +27,13 @@ import sys
 from pathlib import Path
 
 JUSTFILE = """# A stand-in for the template's justfile: the variables the recipes and the
-# appended doorway recipe read, and the three recipes the gate names.
+# appended doorway and lokf-adapt recipes read, and the three recipes the gate names.
 set dotenv-load := true
 set dotenv-filename := x'${LINKML_ENVIRONMENT_FILENAME:-config.public.mk}'
 
 schema_name := env_var_or_default("LINKML_SCHEMA_NAME", "_no_schema_given_")
 source_schema_dir := env_var_or_default("LINKML_SCHEMA_SOURCE_DIR", "")
+source_schema_path := source_schema_dir / schema_name + ".yaml"
 
 _default:
     @just --list

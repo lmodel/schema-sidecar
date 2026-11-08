@@ -62,7 +62,7 @@ Example data sits beside the schema's tests: `tests/data/valid/<ClassName>-<anyt
 
 ## Replacing the dummy
 
-A fresh sidecar holds the `Person` example (or, beside a KTL bundle, `ExampleConcept`); an adopted or found schema is already the model, so this section is skipped and the next applies. Read the host first, then write the model in one pass and run the gate:
+A fresh sidecar holds the `Person` example, beside a KTL bundle too; an adopted or found schema is already the model, so this section is skipped and the next applies. Read the host first, then write the model in one pass and run the gate:
 
 1. **Collect the sources.** Gather the code's types and records (`src/`, `models/`, migrations, OpenAPI or GraphQL documents, JSON samples, database DDL) and the documents that define the domain (a specification, a standard, a glossary). Look for a vocabulary the domain already publishes as LinkML or OWL, and import it rather than describe it again.
 2. **Map, do not transcribe.** [references/source-mapping.md](references/source-mapping.md) is the table: a persistent noun becomes a class, a controlled list an enum, a property a slot, a relationship a slot with an object range and an inverse, a containment root a `tree_root` class. Paraphrase descriptions; never paste a standard's text into the schema.
@@ -110,19 +110,17 @@ These settle the questions an author meets most, each stated once:
 
 ## Beside a KTL bundle
 
-The schema is the bundle's *domain schema* when `.lokf/justfile` names it (`schema :=`; the preflight's `lokf` line says `wired`) or it imports `lokf`, the copy of LOKF core in `.lokf/schema/`. A `.lokf/` beside a schema that is neither is a bundle *about* the repository, as in a schema repository that documents itself, and the schema stays what it is. Making it the domain schema is its maintainers' decision, made by adding the import, the lint config and the justfile variable, and never assumed from the bundle's presence. For a domain schema (linkml-sidecar's [references/ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md), and ktl-librarian's [domain-schema.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-schema.md), which is the authority):
+A LinkML project and a `.lokf/` bundle are separate things. The project's schema stays where the project keeps it (`.linkml/src/<slug>/schema/`, or `src/<slug>/schema/` at the root) and imports nothing from `.lokf/`. The bundle validates its concepts against the schema `.lokf/justfile` names (`schema :=`), a file in `.lokf/schema/` beside LOKF core's copy, `lokf.yaml`. When the bundle's concepts use the project's classes, that file is a copy `lokf adapt` writes from the project's schema, and the preflight's `lokf` line says `a copy lokf adapt wrote`. A `.lokf/` with no copy is a bundle *about* the repository, as in a schema repository that documents itself. Giving it a copy is its maintainers' decision, never assumed from the bundle's presence. ktl-librarian's [domain-schema.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-schema.md) is the authority, and linkml-sidecar's [references/ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md) says how a sidecar makes the copy. With a copy:
 
-- a schema written for the bundle sits in `.lokf/schema/` and imports `lokf` beside it: the import route;
-- a schema also published on its own stays as it is, and `lokf adapt` writes the copy the justfile names: the adapt route, which the preflight's `lokf` line reports as `a copy lokf adapt wrote`. Edit the source, never the copy, and adapt again; [references/ktl-domain-schema.md](references/ktl-domain-schema.md) says what the librarian must know under it;
-- a class the bundle's concepts may use is `is_a: Concept`, or a subclass of a LOKF built-in whose meaning fits; its concepts write that class name in `type`, exactly;
-- every class is closed, so a concept carries only the slots its class declares; a built-in plus one key of its own is not valid, which is why the subclass exists;
-- on the import route, keep the `imports:` line and `.lokf/schema/lokf.yaml` as the sidecar set them; when the `lokf` floor in `.lokf/pyproject.toml` moves, refresh the pinned copy and regenerate the project's `.linkmllint.yaml` (in a sidecar, linkml-sidecar `--repair .linkmllint.yaml`);
-- on the import route, a valid example goes under `tests/data/problem/valid/`, not `tests/data/valid/`: the example runner cannot instantiate beside LOKF's `from` slot, and the validator-based `tests/test_data.py` reads both folders; counter-examples stay under `tests/data/invalid/`;
-- after the gate, `cd .lokf && just lokf-validate && just lokf-check-refs`: the bundle against both schemas;
+- edit the project's schema, never the copy; after the gate, `just lokf-adapt` writes the copy again, and `just lokf-adapt-check` fails while it is stale;
+- a class the bundle's concepts may name is one the copy re-roots on `Concept`, or a subclass of one. By default `lokf adapt` re-roots each class with no parent that carries the identifier; `lokf_adapt_flags` in `project.justfile` takes `--root <Class>` for any other;
+- a name the schema shares with LOKF (`id`, `name`, `description`, `Person`, ...) is dropped, folded or renamed in the copy, and the copy's `notes` say which; concepts write the copy's names, so name each rename in the hand-off;
+- every class is closed, so a concept carries only the slots its class declares;
+- after `lokf-adapt`, `cd .lokf && just lokf-validate && just lokf-check-refs`: the bundle against LOKF core and the copy;
 - never loosen the validator to admit a concept; add the class, or fit the concept to a built-in;
 - a new class is one more name for the KTL plugins' "Known LOKF types" setting; say so in the hand-off.
 
-[references/ktl-domain-schema.md](references/ktl-domain-schema.md) carries the rest: what the generated dataclasses cannot do beside LOKF, and why the data test validates instead of loading them.
+A schema in `.lokf/schema/` written for the bundle alone, importing `lokf`, is KTL's file, not a LinkML project's; edit it as a schema file on its own. [references/ktl-domain-schema.md](references/ktl-domain-schema.md) carries the rest.
 
 ## Hand-off
 
@@ -132,6 +130,6 @@ After a change, tell the person:
 - which elements were added, changed or deprecated;
 - what the `authors` line said, and which refactoring moves were offered or made;
 - what was guessed, and from which source;
-- whether the gate passed, and `lokf validate` beside a bundle that names the schema;
+- whether the gate passed and, beside a bundle with a copy, whether `lokf-adapt-check` and `lokf validate` did;
 - which docs pages were updated;
 - what is left for linkml-sidecar (a broken sidecar file, or a schema that could be adopted) or for the KTL plugins (a new type).
