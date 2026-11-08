@@ -1,10 +1,13 @@
-"""The scaffold's pure functions: the facts' validation, the answers file, the slug, the lint config, the placeholder check."""
+"""The scaffold's pure functions: the facts' validation, the answers file, the slug, the lokf adapt command, the placeholder check."""
 
 from __future__ import annotations
 
 import pytest
 
-from conftest import FACTS, FIXTURES, load_scaffold_module, write
+import re
+import shlex
+
+from conftest import FACTS, TEMPLATES, load_scaffold_module
 
 mod = load_scaffold_module()
 
@@ -47,16 +50,8 @@ def test_a_value_with_quotes_is_json_quoted():
 )
 def test_a_bad_fact_is_refused_with_its_name(change, needle):
     with pytest.raises(mod.Refused) as caught:
-        mod.validate(facts(**change), "plain")
+        mod.validate(facts(**change))
     assert caught.value.code == 2 and needle in str(caught.value)
-
-
-def test_lokf_mode_needs_a_base_iri_that_ends_with_a_slash():
-    with pytest.raises(mod.Refused, match="BASE_IRI is not set"):
-        mod.validate(facts(), "lokf")
-    with pytest.raises(mod.Refused, match="end with /"):
-        mod.validate(facts(BASE_IRI="https://acme.example/knowledge"), "lokf")
-    mod.validate(facts(BASE_IRI="https://acme.example/knowledge/"), "lokf")
 
 
 def test_the_slug_is_a_python_package_name():
@@ -67,48 +62,22 @@ def test_the_slug_is_a_python_package_name():
 
 def test_render_substitutes_every_token_and_refuses_a_leftover():
     assert mod.render("<PROJ_NAME> at <SCHEMA_ID>", facts()) == "demo at https://w3id.org/acme/demo"
-    with pytest.raises(mod.Refused, match="BASE_IRI"):
-        mod.render("<BASE_IRI>examples", facts())
+    with pytest.raises(mod.Refused, match="SCHEMA_SRC"):
+        mod.render("<SCHEMA_SRC>/x.yaml", facts())
     assert mod.render("<slug> and <PROJ_SLUG>", facts()) == "<slug> and demo"
 
 
-def test_the_lint_config_excuses_only_the_camel_case_slots_of_the_pinned_schema(tmp_path):
-    host = tmp_path
-    write(host / ".lokf" / "schema" / "lokf.yaml", (FIXTURES / "lokf" / "schema" / "lokf.yaml").read_text())
-    assert mod.lokf_slot_names(host) == ["id", "type", "title", "description", "concepts", "isPartOf", "hasPart", "dependsOn"]
-    config = mod.lint_config(host)
-    assert "exclude: [isPartOf, hasPart, dependsOn]" in config
-    assert "extends: recommended" in config
-
-
-def test_the_lint_config_excuses_the_enum_values_of_the_pinned_schema_too(tmp_path):
-    """`just lint` lints lokf.yaml beside the domain schema, so its enum values are linted as its own."""
-    host = tmp_path
-    core = (FIXTURES / "lokf" / "schema" / "lokf.yaml").read_text()
-    enums = (
-        "enums:\n"
-        "  HttpMethod:\n"
-        "    description: >-\n"
-        "      Optional: a folded line that reads like a key.\n"
-        "    permissible_values:\n"
-        "      GET:\n"
-        "        description: read\n"
-        "      'how-to':\n"
-        "      tutorial:\n"
-        "  RelationType:\n"
-        "    permissible_values:\n"
-        "      isPartOf:\n"
-        "      wasRevisionOf:\n"
-    )
-    write(host / ".lokf" / "schema" / "lokf.yaml", core + "\n" + enums)
-    assert mod.lokf_value_names(host) == ["GET", "how-to", "tutorial", "isPartOf", "wasRevisionOf"]
-    config = mod.lint_config(host)
-    assert "exclude: [isPartOf, hasPart, dependsOn, GET, how-to, wasRevisionOf]" in config
-    assert "  canonical_prefixes:\n    level: disabled\n" in config
-
-
-def test_the_lint_config_is_empty_handed_without_a_pinned_schema(tmp_path):
-    assert "exclude: []" in mod.lint_config(tmp_path)
+def test_the_scaffold_runs_lokf_adapt_as_the_recipe_does():
+    """The copy the scaffold writes is the one `just lokf-adapt-check` holds it to: the same command, the same paths from .linkml/."""
+    recipes = mod.render((TEMPLATES / "project.justfile.lokf").read_text(), facts())
+    default = re.search(r'^lokf_cmd := env_var_or_default\("LOKF_CMD", "([^"]+)"\)$', recipes, re.M)
+    assert default and default.group(1) == mod.LOKF_CMD
+    assert re.search(r'^lokf_adapt_flags := ""$', recipes, re.M)
+    for name, extra in (("lokf-adapt", []), ("lokf-adapt-check", ["--check"])):
+        line = re.search(rf"^{name}:\n    (.+)$", recipes, re.M).group(1)
+        line = line.replace("{{ lokf_cmd }}", default.group(1)).replace("{{ source_schema_path }}", "src/demo/schema/demo.yaml").replace("{{ lokf_adapt_flags }}", "")
+        assert shlex.split(line) == shlex.split(mod.LOKF_CMD) + mod.adapt_args("demo") + extra, name
+    assert "../.lokf/schema/demo.yaml" in mod.adapt_args("demo")
 
 
 def test_the_template_url_forms():

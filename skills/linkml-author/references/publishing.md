@@ -52,7 +52,7 @@ With `prefixes: {nx: https://w3id.org/ai-atlas-nexus/}` and `imports: [nx:common
 
 ## Bringing in a vocabulary that was not designed to sit beside yours
 
-When the vocabulary you need shares names with the schema it must sit beside, a raw import gives the silent merge that [schema-design.md](schema-design.md) describes. lokf's `adapt` makes a copy that can sit beside `lokf.yaml`. It is experimental, in lokf's main branch and not yet released, and was tried on Biolink 4.4.4, over fifteen thousand lines in one file. It makes six moves:
+When the vocabulary you need shares names with the schema it must sit beside, a raw import gives the silent merge that [schema-design.md](schema-design.md) describes. lokf's `adapt`, released in lokf 0.9.0, makes a copy that can sit beside `lokf.yaml`. It was tried on Biolink 4.4.4, over fifteen thousand lines in one file. It makes six moves:
 
 1. fold the vocabulary's imports into one file;
 2. drop its identifier slot and its `type` designator, because the host's `id` and `type` take over;
@@ -61,7 +61,7 @@ When the vocabulary you need shares names with the schema it must sit beside, a 
 5. re-root the top classes on the host's base class;
 6. give every element one canonical form of name.
 
-The command is `lokf adapt VOCAB -o OUT --root Class --lokf PATH --prefix P`. `--dry-run` shows the moves, and `--check` in CI says when the published vocabulary has moved. gist does the same without the toolkit, with a rename list in its justfile and a script that checks the names. Either way the moves are the rules of [schema-design.md](schema-design.md) applied after the fact, which is why a schema written to those rules asks none of this of its importers. Beside a KTL bundle, the copy can be the bundle's domain schema itself: [ktl-domain-schema.md](ktl-domain-schema.md) calls that the adapt route.
+The command is `lokf adapt VOCAB -o OUT --root Class --lokf PATH --prefix P`. `--dry-run` shows the moves, and `--check` in CI says when the published vocabulary has moved. gist does the same without the toolkit, with a rename list in its justfile and a script that checks the names. Either way the moves are the rules of [schema-design.md](schema-design.md) applied after the fact, which is why a schema written to those rules asks none of this of its importers. Beside a KTL bundle, such a copy of the project's own schema, in `.lokf/schema/`, is how the bundle's concepts use its classes ([ktl-domain-schema.md](ktl-domain-schema.md)).
 
 ## Before a release
 

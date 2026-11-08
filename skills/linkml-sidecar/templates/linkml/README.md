@@ -34,7 +34,7 @@ This is a small **sidecar** that holds <PROJ_NAME>'s data model as a [LinkML](ht
 | `README.md` (this file), `LICENSE`, `docs/index.md`, `docs/about.md`, `src/<PROJ_SLUG>/schema/`, `tests/test_data.py`, `tests/data/` | <PROJ_NAME> | editing; copier never touches them (`_skip_if_exists`) |
 | `project.justfile`, `config.public.mk`, the `site_url` and `repo_url` lines of `mkdocs.yml` | both | editing; `copier update` merges |
 | `generators.yaml`, the template's `config.yaml` renamed | <PROJ_NAME> | editing; `just update` no longer changes it, so carry over what the template's changelog says changed in `config.yaml` |
-| `scripts/linkml-preflight.sh`, `.linkmllint.yaml` when present | the `linkml-sidecar` skill | its repair |
+| `scripts/linkml-preflight.sh` | the `linkml-sidecar` skill | its repair |
 
 `CODE_OF_CONDUCT.md` and `CONTRIBUTING.md` here are the template's; the host's own govern.
 
@@ -70,7 +70,7 @@ Use these, not a `linkml-lint` or `gen-project` installed elsewhere: the version
 
 ## Edit the schema
 
-The gate after every change: `lint`, then `gen-project`, then `test`. Example data lives under `tests/data/valid/` and `tests/data/invalid/` as `<ClassName>-<anything>.yaml`; the class is read from the name. Beside a knowledge bundle, valid examples go under `tests/data/problem/valid/` instead (the section below says why). The `linkml-author` skill ([noelmcloughlin/linkml-sidecar](https://github.com/noelmcloughlin/linkml-sidecar)) edits the schema this way and knows the metamodel; install it with `npx skills add noelmcloughlin/linkml-sidecar --skill linkml-author --yes`.
+The gate after every change: `lint`, then `gen-project`, then `test`. Example data lives under `tests/data/valid/` and `tests/data/invalid/` as `<ClassName>-<anything>.yaml`; the class is read from the name. The `linkml-author` skill ([noelmcloughlin/linkml-sidecar](https://github.com/noelmcloughlin/linkml-sidecar)) edits the schema this way and knows the metamodel; install it with `npx skills add noelmcloughlin/linkml-sidecar --skill linkml-author --yes`.
 
 ## Never run here
 
@@ -87,13 +87,13 @@ Run it on a clean tree, read the diff, and commit `uv.lock` and `.copier-answers
 
 ## With a knowledge bundle (`.lokf/`)
 
-When the host carries a [KTL](https://github.com/noelmcloughlin/knowledge-trust-ladder) bundle, the schema is the bundle's domain schema. It sits in `.lokf/schema/`, where KTL keeps every schema file, and imports LOKF's core schema beside it (`lokf.yaml`, pinned at the toolkit's floor). `config.public.mk` names that folder, so every recipe reads the schema there, and `just lint` lints `lokf.yaml` too. `.linkmllint.yaml` excuses LOKF's own names and turns `canonical_prefixes` off.
+A [KTL](https://github.com/noelmcloughlin/knowledge-trust-ladder) bundle beside this project is a separate thing. The schema stays here and imports nothing from `.lokf/`. The bundle validates its concepts against a copy in `.lokf/schema/`, beside LOKF's core schema (`lokf.yaml`), and `.lokf/justfile` names the copy (`schema :=`).
 
-Every class here that is `is_a: Concept` is a type the bundle's concepts may carry. `.lokf/justfile` names this schema as `schema :=`, so `just lokf-validate` and `just lokf-check-refs` check the bundle against both. Keep `.lokf/schema/lokf.yaml` in step with the `lokf` floor, and tell the KTL plugins' "Known LOKF types" setting about each class. LOKF has a slot named `from`, which the template's example runner cannot compile as a dataclass field. So valid examples live under `tests/data/problem/valid/`, the folder the runner skips, and `tests/test_data.py` validates both folders through `linkml.validator`.
+`just lokf-adapt` writes the copy with `lokf adapt`. It re-roots the schema's top classes on LOKF's `Concept`, so a concept may name them as its `type`, and renames each name LOKF also defines, keeping its IRI. The copy's notes list every move. Run it after every schema change and commit the copy with the change. `just lokf-adapt-check`, which the workflow runs, fails while the copy is stale. Tell the KTL plugins' "Known LOKF types" setting about each class the copy re-roots. The two recipes are in `project.justfile` when the sidecar was installed beside a bundle.
 
 ## Remove it
 
-Three deletions and two edits, nothing else references it: `rm -rf .linkml linkml_schema` and the workflow `linkml-sidecar.yaml`, then drop the sidecar aside from `README.md` and the `## Schema` section from `llms.txt`. Beside a knowledge bundle, the schema stays in `.lokf/schema/` as the bundle's domain schema, and `.lokf/justfile` still names it. To remove it as well, `git rm` it, reset the justfile's line to `schema := ""` (or, on an older justfile, both validate recipes to `uv run lokf validate {{ bundle }}`), and remove `[tool.lokf] schema` from `.lokf/pyproject.toml`.
+Three deletions and two edits, nothing else references it: `rm -rf .linkml linkml_schema` and the workflow `linkml-sidecar.yaml`, then drop the sidecar aside from `README.md` and the `## Schema` section from `llms.txt`. Beside a knowledge bundle, the copy stays in `.lokf/schema/`, and `.lokf/justfile` still names it, but nothing writes it again. To remove it as well, `git rm` it, reset the justfile's line to `schema := ""` (or, on an older justfile, both validate recipes to `uv run lokf validate {{ bundle }}`), and remove `[tool.lokf] schema` from `.lokf/pyproject.toml`.
 
 ## Learn more
 
