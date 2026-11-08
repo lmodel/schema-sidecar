@@ -31,7 +31,7 @@ A tagged release that attaches the schema is the address a vendoring importer co
 
 An import by URL fetches someone else's server on every build, so a copy comes first. In order of preference:
 
-1. **A vendored copy, pinned.** Copy the module tree, or the merged file, into the importer's repository at a tag. Record the tag and the checksum, and upgrade on purpose. linkml discussion 3298 describes the same pattern from the Ontology Development Kit: the local mirror is the source of truth, and one recipe moves it. KTL pins `lokf.yaml` beside the domain schema this way, and refreshes it when the `lokf` floor moves. For an adapted vocabulary, `lokf adapt --check` says when the copy is stale.
+1. **A vendored copy, pinned.** Copy the module tree, or the merged file, into the importer's repository at a tag. Record the tag and the checksum, and upgrade on purpose. linkml discussion 3298 describes the same pattern from the Ontology Development Kit: the local mirror is the source of truth, and one recipe moves it. KTL pins `lokf.yaml` in `.lokf/schema/` this way, and refreshes it when the `lokf` floor moves. For an adapted vocabulary, `lokf adapt --check` says when the copy is stale.
 2. **A persistent identifier.** `imports: [biolink:biolink-model]` with `biolink: https://w3id.org/biolink/` declared, as biolink-model issue 1278 describes; w3id serves the file. The identifier is the schema's `id` namespace, which is the rule the sidecar applies to `SCHEMA_ID` as well.
 3. **Never a raw code-host URL.** A branch moves, a file is renamed, and the IRI it builds is not the project's to keep.
 
@@ -52,7 +52,7 @@ With `prefixes: {nx: https://w3id.org/ai-atlas-nexus/}` and `imports: [nx:common
 
 ## Bringing in a vocabulary that was not designed to sit beside yours
 
-When the vocabulary you need shares names with the schema it must sit beside, a raw import gives the silent merge that [schema-design.md](schema-design.md) describes. lokf's `adapt` makes a copy that can sit beside `lokf.yaml`. It is experimental, in lokf's main branch and not yet released, and was tried on Biolink 4.4.4, over fifteen thousand lines in one file. It makes six moves:
+When the vocabulary you need shares names with the schema it must sit beside, a raw import gives the silent merge that [schema-design.md](schema-design.md) describes. lokf's `adapt`, released in lokf 0.9.0, makes a copy that can sit beside `lokf.yaml`. It was tried on Biolink 4.4.4, over fifteen thousand lines in one file. It makes six moves:
 
 1. fold the vocabulary's imports into one file;
 2. drop its identifier slot and its `type` designator, because the host's `id` and `type` take over;
@@ -61,7 +61,7 @@ When the vocabulary you need shares names with the schema it must sit beside, a 
 5. re-root the top classes on the host's base class;
 6. give every element one canonical form of name.
 
-The command is `lokf adapt VOCAB -o OUT --root Class --lokf PATH --prefix P`. `--dry-run` shows the moves, and `--check` in CI says when the published vocabulary has moved. gist does the same without the toolkit, with a rename list in its justfile and a script that checks the names. Either way the moves are the rules of [schema-design.md](schema-design.md) applied after the fact, which is why a schema written to those rules asks none of this of its importers. Beside a KTL bundle, the copy can be the bundle's domain schema itself: [ktl-domain-schema.md](ktl-domain-schema.md) calls that the adapt route.
+The command is `lokf adapt VOCAB -o OUT --root Class --lokf PATH --prefix P`. `--dry-run` shows the moves, and `--check` in CI says when the published vocabulary has moved. gist does the same without the toolkit, with a rename list in its justfile and a script that checks the names. Either way the moves are the rules of [schema-design.md](schema-design.md) applied after the fact, which is why a schema written to those rules asks none of this of its importers. Beside a KTL bundle, such a copy of the project's own schema, in `.lokf/schema/`, is how the bundle's concepts use its classes ([ktl-domain-schema.md](ktl-domain-schema.md)).
 
 ## Before a release
 

@@ -29,7 +29,7 @@ Both skills find a schema by its files, never by its folder's name, as [layouts.
 
 ## Who owns which file
 
-The template owns most of `.linkml/`: the justfile, `pyproject.toml`, `mkdocs.yml` and the rest that copier renders, and only `just update` changes them. The host owns the schema, its tests and example data, the sidecar's README, license and docs pages, and `generators.yaml`. The skill owns the preflight it installed, and `.linkmllint.yaml` beside a KTL bundle. Its repair rewrites them. [The README every sidecar carries](../skills/linkml-sidecar/templates/linkml/README.md) maps every file to its owner.
+The template owns most of `.linkml/`: the justfile, `pyproject.toml`, `mkdocs.yml` and the rest that copier renders, and only `just update` changes them. The host owns the schema, its tests and example data, the sidecar's README, license and docs pages, and `generators.yaml`. The skill owns the preflight it installed, and beside a KTL bundle the `lokf-adapt` recipes it appended to `project.justfile`. Its repair rewrites them. [The README every sidecar carries](../skills/linkml-sidecar/templates/linkml/README.md) maps every file to its owner.
 
 The template assumes it owns a repository root, so it renders workflows, governance files, a `setup` recipe and a `deploy` recipe that are inert or harmful in a subfolder. The scaffold switches each of them off, and [template-assumptions.md](../skills/linkml-sidecar/references/template-assumptions.md) says how, row by row. Its last column marks the rows that a `layout: sidecar` answer would remove. [linkml-project-copier#187](https://github.com/linkml/linkml-project-copier/issues/187) proposes that answer upstream.
 
@@ -43,7 +43,7 @@ Copier runs template code while it renders (`--trust`), so the scaffold first ch
 
 ## With Knowledge Trust Ladder
 
-Beside a [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle, `.lokf/`, the sidecar's schema becomes the bundle's domain schema. It imports LOKF's core schema. Each of its own classes that is `is_a: Concept` is a type the bundle's concepts may carry, and `lokf validate --schema` checks the bundle against both schemas. [ktl.md](../skills/linkml-sidecar/references/ktl.md) says what each piece does. Without a bundle, the sidecar stands alone.
+A [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle, `.lokf/`, is a separate thing from the sidecar. The sidecar's schema stays in `.linkml/` and imports nothing from `.lokf/`. Beside a bundle, `lokf adapt` writes a copy of it into `.lokf/schema/`, beside LOKF's core schema, and `.lokf/justfile` names the copy. The copy's top classes descend from LOKF's `Concept`, so the bundle's concepts may name them as their `type`, and `lokf validate --schema` checks the bundle against LOKF's schema and the copy. `just lokf-adapt` writes the copy again after a schema change, and the workflow fails while it is stale. [ktl.md](../skills/linkml-sidecar/references/ktl.md) says what each piece does. Without a bundle, the sidecar stands alone.
 
 ## Keeping it current
 

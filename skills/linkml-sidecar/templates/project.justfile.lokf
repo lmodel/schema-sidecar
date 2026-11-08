@@ -1,0 +1,24 @@
+# ---- linkml-sidecar: the knowledge bundle's copy (kept across `just update`) ----
+# The KTL bundle in ../.lokf/ is a separate thing: it validates its concepts
+# against a copy of this schema in ../.lokf/schema/, and this schema imports
+# nothing from .lokf/. `lokf adapt` writes the copy. It re-roots the schema's
+# top classes on LOKF's Concept, so a concept may name them as its `type`,
+# drops the identifier for LOKF's `id`, and renames each other name LOKF also
+# defines, keeping its IRI; the copy's notes list every move. The recipes run
+# the lokf that ../.lokf/ pins (0.9.0 or later); LOKF_CMD runs another, such
+# as a checkout: LOKF_CMD="uv run --project ../../lokf lokf" just lokf-adapt
+lokf_cmd := env_var_or_default("LOKF_CMD", "uv run --project ../.lokf lokf")
+# adapt's own flags. By default it re-roots every class that has no parent,
+# is not a mixin and carries the identifier; list --root <Class> for each
+# class a concept may name when that is not the set (lokf adapt --help).
+lokf_adapt_flags := ""
+
+# Write ../.lokf/schema/<PROJ_SLUG>.yaml, the bundle's copy (run after every schema change)
+[group('knowledge bundle')]
+lokf-adapt:
+    {{ lokf_cmd }} adapt {{ source_schema_path }} {{ lokf_adapt_flags }} --lokf ../.lokf/schema/lokf.yaml -o ../.lokf/schema/<PROJ_SLUG>.yaml
+
+# Fail when the bundle's copy is stale against the schema or ../.lokf/schema/lokf.yaml
+[group('knowledge bundle')]
+lokf-adapt-check:
+    {{ lokf_cmd }} adapt {{ source_schema_path }} {{ lokf_adapt_flags }} --lokf ../.lokf/schema/lokf.yaml -o ../.lokf/schema/<PROJ_SLUG>.yaml --check

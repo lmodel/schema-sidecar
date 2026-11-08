@@ -34,13 +34,13 @@ This is a small **sidecar** that holds <PROJ_NAME>'s data model as a [LinkML](ht
 | `README.md` (this file), `LICENSE`, `docs/index.md`, `docs/about.md`, `src/<PROJ_SLUG>/schema/`, `tests/test_data.py`, `tests/data/` | <PROJ_NAME> | editing; copier never touches them (`_skip_if_exists`) |
 | `project.justfile`, `config.public.mk`, the `site_url` and `repo_url` lines of `mkdocs.yml` | both | editing; `copier update` merges |
 | `generators.yaml`, the template's `config.yaml` renamed | <PROJ_NAME> | editing; `just update` no longer changes it, so carry over what the template's changelog says changed in `config.yaml` |
-| `scripts/linkml-preflight.sh`, `.linkmllint.yaml` when present | the `linkml-sidecar` skill | its repair |
+| `scripts/linkml-preflight.sh` | the `linkml-sidecar` skill | its repair |
 
 `CODE_OF_CONDUCT.md` and `CONTRIBUTING.md` here are the template's; the host's own govern.
 
 ## The doorway
 
-`linkml_schema` at the repository root is `src/<PROJ_SLUG>/schema/` under an ordinary, visible name, for folder pickers and file managers that hide dot-folders. Git carries the link; a sync service does not, so `just linkml-link` recreates it on a machine where it is missing (Windows: `mklink /J linkml_schema .linkml\src\<PROJ_SLUG>\schema`). Everything below works without it.
+`linkml_schema` at the repository root is `<SCHEMA_FOLDER>/` under an ordinary, visible name, for folder pickers and file managers that hide dot-folders. Git carries the link; a sync service does not, so `just linkml-link` recreates it on a machine where it is missing (Windows: `mklink /J linkml_schema <SCHEMA_FOLDER_WIN>`). Everything below works without it.
 
 ## Use it
 
@@ -62,15 +62,15 @@ Or `cd .linkml` and drop `--justfile .linkml/justfile`. Without `just`:
 ```bash
 cd .linkml
 uv sync --group dev
-uv run linkml-lint src/<PROJ_SLUG>/schema
-uv run gen-project --config-file generators.yaml -d project src/<PROJ_SLUG>/schema/<PROJ_SLUG>.yaml
+uv run linkml-lint <SCHEMA_SRC>
+uv run gen-project --config-file generators.yaml -d project <SCHEMA_SRC>/<PROJ_SLUG>.yaml
 ```
 
 Use these, not a `linkml-lint` or `gen-project` installed elsewhere: the versions are pinned in `uv.lock`.
 
 ## Edit the schema
 
-The gate after every change: `lint`, then `gen-project`, then `test`. Example data lives under `tests/data/valid/` and `tests/data/invalid/` as `<ClassName>-<anything>.yaml`; the class is read from the name. Beside a knowledge bundle, valid examples go under `tests/data/problem/valid/` instead (the section below says why). The `linkml-author` skill ([noelmcloughlin/linkml-sidecar](https://github.com/noelmcloughlin/linkml-sidecar)) edits the schema this way and knows the metamodel; install it with `npx skills add noelmcloughlin/linkml-sidecar --skill linkml-author --yes`.
+The gate after every change: `lint`, then `gen-project`, then `test`. Example data lives under `tests/data/valid/` and `tests/data/invalid/` as `<ClassName>-<anything>.yaml`; the class is read from the name. The `linkml-author` skill ([noelmcloughlin/linkml-sidecar](https://github.com/noelmcloughlin/linkml-sidecar)) edits the schema this way and knows the metamodel; install it with `npx skills add noelmcloughlin/linkml-sidecar --skill linkml-author --yes`.
 
 ## Never run here
 
@@ -87,11 +87,13 @@ Run it on a clean tree, read the diff, and commit `uv.lock` and `.copier-answers
 
 ## With a knowledge bundle (`.lokf/`)
 
-When the host carries a [KTL](https://github.com/noelmcloughlin/knowledge-trust-ladder) bundle, this schema imports LOKF's core schema (`.lokf/lokf.yaml`, pinned at the toolkit's floor) and every class here that is `is_a: Concept` is a type the bundle's concepts may carry. `.lokf/justfile` names this schema as `schema :=`, so `just lokf-validate` and `just lokf-check-refs` check the bundle against both. Keep `.lokf/lokf.yaml` in step with the `lokf` floor, and tell the KTL plugins' "Known LOKF types" setting about each class. LOKF has a slot named `from`, which the template's example runner cannot compile as a dataclass field, so valid examples live under `tests/data/problem/valid/`, the folder the runner skips, and `tests/test_data.py` validates both folders through `linkml.validator`.
+A [KTL](https://github.com/noelmcloughlin/knowledge-trust-ladder) bundle beside this project is a separate thing. The schema stays here and imports nothing from `.lokf/`. The bundle validates its concepts against a copy in `.lokf/schema/`, beside LOKF's core schema (`lokf.yaml`), and `.lokf/justfile` names the copy (`schema :=`).
+
+`just lokf-adapt` writes the copy with `lokf adapt`. It re-roots the schema's top classes on LOKF's `Concept`, so a concept may name them as its `type`, and renames each name LOKF also defines, keeping its IRI. The copy's notes list every move. Run it after every schema change and commit the copy with the change. `just lokf-adapt-check`, which the workflow runs, fails while the copy is stale. Tell the KTL plugins' "Known LOKF types" setting about each class the copy re-roots. The two recipes are in `project.justfile` when the sidecar was installed beside a bundle.
 
 ## Remove it
 
-Three deletions and two edits, nothing else references it: `rm -rf .linkml linkml_schema` and the workflow `linkml-sidecar.yaml`, then drop the sidecar aside from `README.md` and the `## Schema` section from `llms.txt`. A `.lokf/justfile` that names the schema is reset to `schema := ""` (or, on an older justfile, to `uv run lokf validate {{ bundle }}` in both validate recipes), and `[tool.lokf] schema` is removed from `.lokf/pyproject.toml`.
+Three deletions and two edits, nothing else references it: `rm -rf .linkml linkml_schema` and the workflow `linkml-sidecar.yaml`, then drop the sidecar aside from `README.md` and the `## Schema` section from `llms.txt`. Beside a knowledge bundle, the copy stays in `.lokf/schema/`, and `.lokf/justfile` still names it, but nothing writes it again. To remove it as well, `git rm` it, reset the justfile's line to `schema := ""` (or, on an older justfile, both validate recipes to `uv run lokf validate {{ bundle }}`), and remove `[tool.lokf] schema` from `.lokf/pyproject.toml`.
 
 ## Learn more
 

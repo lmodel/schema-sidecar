@@ -25,10 +25,11 @@
 #   .linkml/generators.yaml; a new sidecar is given that name without asking.
 #   Facts (environment): PROJ_NAME PROJ_SLUG PROJ_DESC GITHUB_ORG REPO_URL
 #   FULL_NAME EMAIL LICENSE_ID SCHEMA_ID DOCS_URL [COPYRIGHT_YEAR] [TODAY]
-#   [BASE_IRI, read from .lokf/knowledge/index.md when absent]
 #   With --adopt, PROJ_SLUG and SCHEMA_ID come from the schema file itself.
 #   Overrides: LINKML_TEMPLATE_SRC (a URL or a local clone), LINKML_COPIER
-#   (the copier command to run instead of uvx), LINKML_TEMPLATE_SKIP_PIN_CHECK=1.
+#   (the copier command to run instead of uvx), LINKML_TEMPLATE_SKIP_PIN_CHECK=1,
+#   and in KTL mode LOKF_CMD (the lokf command, which runs from .linkml/ as
+#   the lokf-adapt recipes run it).
 # Exit: 0 done; 2 usage or a missing tool; 3 refused (a project, a schema or
 #       a file already there stands in the way); 4 copier failed; 5 an
 #       overlay or pointer failed. Nothing but its own staging directory is

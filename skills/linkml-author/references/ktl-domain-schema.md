@@ -1,56 +1,45 @@
 # Beside a KTL bundle: what the author keeps in mind
 
-The authority for a domain schema that `lokf validate --schema` checks is ktl-librarian's [domain-schema.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-schema.md). linkml-sidecar's [ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md) says how the sidecar sets one up. This page is the author's short form, and applies when the schema is the bundle's domain schema: `.lokf/justfile` names it (`schema :=`), the justfile names a copy `lokf adapt` wrote from it, or the schema imports `.lokf/lokf.yaml`. A `.lokf/` beside a schema that is neither is a bundle about the repository, and nothing here applies until its maintainers make the schema the domain schema.
+The authority on the domain schema that `lokf validate --schema` checks is ktl-librarian's [domain-schema.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-schema.md). linkml-sidecar's [ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md) says how a sidecar makes the bundle's copy. This page is the author's short form.
 
-## Two routes: import or adapt
+## Two things, kept apart
 
-**Import.** A schema written for the bundle imports `.lokf/lokf.yaml`, and its classes descend from `Concept`. The sidecar's dummy takes this route, and the rest of this page assumes it unless a line says otherwise.
+A LinkML project owns its schema, in `.linkml/src/<slug>/schema/` (a sidecar) or `src/<slug>/schema/` (a project at the root). The schema imports nothing from `.lokf/`, so its lint, generators, data tests and published releases are the same with or without a bundle.
 
-**Adapt.** A schema that is also published on its own, for importers that never see LOKF, cannot import `lokf.yaml`. LinkML merges the two files into one namespace, and a name both define (`id`, `name`, `description`, `version`) keeps one definition without a warning. slsa and gist are such schemas. Leave the published schema, the source, as it is. Let lokf's `adapt` write a copy into `.lokf/` that imports `lokf.yaml` ([publishing.md](publishing.md) lists its moves), and set `schema := "<slug>.yaml"` in `.lokf/justfile` to name the copy. The preflight's `lokf` line then says `a copy lokf adapt wrote`.
+KTL owns `.lokf/schema/`. It holds `lokf.yaml`, the pinned copy of LOKF core, and the domain schema that `.lokf/justfile` names, with every file that schema imports. When the bundle's concepts should use a project's classes, the domain schema is a copy of the project's schema that `lokf adapt` writes, or a composite of a few lines that imports `lokf` and the copy. The project may sit in this repository or another; the copy is the same either way.
 
-On the adapt route:
+A `.lokf/` with no copy is a bundle *about* the repository, as in a schema repository that documents itself. Nothing here applies to it until its maintainers decide the bundle should use the schema's classes.
 
-- **Edit the source, never the copy.** Run the gate where the source lives, then adapt again. Keep the `lokf adapt` command and its flags in one recipe, and add a second recipe that runs it with `--check`. In CI, `--check` fails when the source or the `lokf` floor has moved and the copy has not. The copy's `notes` record what the flags did, not the flags.
-- **The project's own tests stay as they are.** The source does not import LOKF, so `tests/data/valid/`, the generated dataclasses and the lint config need none of the workarounds below. `cd .lokf && just lokf-validate` checks the bundle against the copy.
-- **The renamed keys are what a concept writes.** `adapt` renames each slot the source shares with LOKF to `<prefix>_<name>` and keeps its IRI, so a concept writes `slsa_id`, not `id`. The copy's `notes` list every rename; name them in the hand-off for the librarian.
-- **A duplicate pair has one half left empty.** Some source slots mean the same as one of LOKF's but carry no IRI that `adapt` can match. Each survives beside LOKF's slot, under its own key or a renamed one: slsa's `slsa_name` beside `title`, and `slsa_description` beside LOKF's `description`. A concept writes LOKF's slot and leaves the other empty. lokf pull request 142 proposes `--fold name=title`, which merges the pair in the copy; once a release carries it, adapt again with the fold.
-- **The plugins' types are the re-rooted classes.** The copy's `notes` name the classes `adapt` re-rooted on `Concept`; they and their descendants are the names for the KTL plugins' "Known LOKF types" setting.
+## What the copy does
+
+`lokf adapt` writes a copy that can sit beside `lokf.yaml`. LinkML merges imported names into one namespace without a warning and keeps the last definition, so a raw import would let a schema's own `id`, `name`, `description` or `Person` replace LOKF's. The copy avoids that:
+
+- **The top classes are re-rooted on `Concept`.** By default adapt re-roots each class that has no parent, is not a mixin and carries the schema's identifier. Pass `--root <Class>` (in a sidecar, through `lokf_adapt_flags` in `project.justfile`) for any other class a concept may name. adapt re-roots on `Concept` only, never on a LOKF class such as `Reference` or `Service`.
+- **The identifier goes.** LOKF's `id` takes its place, so a class that lists the identifier must descend from a root, or adapt refuses it.
+- **A slot whose IRI is one of `Concept`'s folds into it.** A `schema:name` slot folds into `title`, and a `schema:description` slot into `description`.
+- **Every other shared name is renamed and keeps its IRI.** A class becomes `<Prefix><Name>`, as `Person` becomes `AcmePerson`, and a slot becomes `<prefix>_<name>`. It never renames an attribute, so a class attribute named like a LOKF slot keeps its name, and may then clash with that slot in a composite's JSON-LD context.
+- **The copy's `notes` list every move.** Name the renames and the re-rooted classes in the hand-off: concepts write the copy's names, and the KTL plugins' "Known LOKF types" setting lists the re-rooted classes and their subclasses.
+
+A schema written to [schema-design.md](schema-design.md)'s rules needs few of these moves. The fewer names it shares with LOKF, the fewer renames its concepts carry.
+
+## Keeping it current
+
+- **Edit the project's schema, never the copy.** Run the project's gate, then `just lokf-adapt`, and commit the copy with the change.
+- **`just lokf-adapt-check` fails while the copy is stale**, against the schema or against `.lokf/schema/lokf.yaml`. The sidecar's workflow runs it after the tests. Keep the adapt command and its flags in the one recipe, so the check runs what the write ran.
+- **When the `lokf` floor moves**, copy the new toolkit's `lokf.yaml` to `.lokf/schema/` and run `lokf-adapt` in the same change.
 
 ## What the validator expects
 
-- **Every class is closed.** A concept fails its class on any key the class does not declare. A built-in LOKF class plus one key of your own is not valid: subclass it and declare the key.
-- **`type` names the class exactly.** A concept of a subclass writes the subclass name, not the parent's; the validator matches concepts against every class at once.
-- **The import stays.** On the import route, `imports: [linkml:types, ../../../../.lokf/lokf]` is how the schema sees `Concept`, `Reference`, `Playbook` and the rest. The path is relative to the schema file and the pinned copy lives in `.lokf/`.
-
-## What to write
-
-```yaml
-classes:
-  Module:                      # a concept LOKF has no class for
-    is_a: Concept
-    description: One unit of a degree programme.
-    slots: [module_code, ects, semester]
-  SourceSnapshotReference:     # a built-in that fits, plus keys it lacks
-    is_a: Reference
-    description: A reference to a snapshot of a source, with when it was reviewed.
-    slots: [source_kind, reviewed_at]
-```
-
-A class `is_a: Concept` joins the bundle's concept union, and so does any descendant of it. Subclass a built-in whose meaning fits; give a class of its own to what no built-in describes. A published vocabulary the domain schema needs comes in beside `lokf.yaml` through lokf's `adapt` ([publishing.md](publishing.md)), never by a raw import: its `id`, `type` and `name` would merge silently with LOKF's.
-
-## What the generators cannot do here
-
-These limits apply on the import route, where the project's own schema imports LOKF.
-
-- The generated dataclasses (`src/<slug>/datamodel/<slug>.py`) do not compile beside LOKF, because LOKF's `from` slot is a Python keyword and `gen-python` does not escape it. The example runner at the end of `just test` instantiates every file under `tests/data/valid/` through the same dataclasses. So valid examples live under `tests/data/problem/valid/`, which the runner skips, and `tests/test_data.py` validates the files of both folders with `linkml.validator`, loading the schema through `SchemaView` so the relative import resolves. Counter-examples stay under `tests/data/invalid/`. The Pydantic models compile. linkml 1.12.0 escapes the field name. Move the valid examples to `tests/data/valid/` once a release also loads data that uses `from` (PR 4083).
-- `linkml-lint` lints LOKF's camelCase slot names through the import closure; the project's `.linkmllint.yaml` excuses exactly those names. Regenerate it when `.lokf/lokf.yaml` changes (in a sidecar, linkml-sidecar `--repair .linkmllint.yaml`).
-- `gen-doc` renders LOKF's pages too (`--render-imports`), so the docs site shows the whole vocabulary a concept may use.
+- **Every class is closed.** A concept fails its class on any key the class does not declare. A built-in LOKF class plus one key of your own is not valid: give the project a class that declares the key.
+- **`type` names the class exactly**, as the copy names it. A concept of a subclass writes the subclass name, not the parent's; the validator matches concepts against every class at once.
+- **A slot that holds a concept holds its whole IRI.** Range such a slot over a class the copy re-roots, and `--check-refs` checks the target.
 
 ## After each change
 
 ```bash
 just --justfile <project>/justfile lint && just --justfile <project>/justfile gen-project && just --justfile <project>/justfile test
+just --justfile <project>/justfile lokf-adapt
 cd .lokf && just lokf-validate && just lokf-check-refs
 ```
 
-On the adapt route, run the recipe that writes the copy after the first line and before the second, so the bundle is checked against the new copy. Then tell the person which classes are new, so the KTL plugins' "Known LOKF types" setting can list them, and whether any concept in the bundle now needs its `type` changed to a class that declares its keys.
+Then tell the person which classes are new, so the KTL plugins' "Known LOKF types" setting can list them, and which names the copy renamed. Say too whether any concept in the bundle now needs its `type` changed to a class that declares its keys.
