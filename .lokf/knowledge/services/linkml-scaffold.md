@@ -46,13 +46,13 @@ The facts are `PROJ_NAME`, `PROJ_SLUG`, `PROJ_DESC`, `GITHUB_ORG`, `REPO_URL`, `
 
 1. Refuses a sidecar in `.linkml/`, a schema project at the root or one directory down, and a `.linkml/` holding project files without answers. It refuses a schema the host already holds unless `--adopt` or `--dummy` says what to do. It installs around configuration files alone in `.linkml/`.
 2. Checks the facts against the template's own rules. An adopted schema's `id` is exempt, since it was chosen before.
-3. In KTL mode, pins `.lokf/lokf.yaml` out of the installed toolkit.
+3. In KTL mode, pins `.lokf/schema/lokf.yaml` out of the installed toolkit, and stops when `lokf adapt` cannot copy the staged dummy.
 4. Verifies the pin: the tag must name the commit the driver records before the template runs with `--trust`.
 5. Pre-seeds the files the skill owns into a staging directory beside `.linkml/`, substituting facts as literal text through Python's `str.replace`, never sed.
 6. Runs copier for everything else, into the same staging directory.
 7. Neutralises the root assumptions that remain. With `--adopt`, it points `config.public.mk`'s `LINKML_SCHEMA_SOURCE_DIR` at the schema's folder, relative to `.linkml/`. It renames `config.yaml` to `generators.yaml` and names it in `config.public.mk`, unless the host already keeps a `.linkml/generators.yaml`.
 8. Moves the staged files into `.linkml/`, around whatever is already there. A name both hold is a clash: nothing moves, and the run ends with exit 3.
-9. In KTL mode, edits `.lokf/justfile` to name the schema.
+9. In KTL mode, runs `lokf adapt` to write `.lokf/schema/<slug>.yaml`, and names that copy in `.lokf/justfile` and as `[tool.lokf] schema`.
 10. Adds the root pointers, then prints the hand-off facts.
 
 Every line it prints starts with `scaffold:`, `handoff:` or `next:`. It never removes anything but its own staging directory, so a failed run leaves `.linkml/` as it was.
