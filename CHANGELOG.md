@@ -4,28 +4,22 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Added
-
-- **The preflight warns when a KTL bundle validates against the project's own schema.** It names a schema that imports LOKF core from `.lokf/`, a `config.public.mk` that reads the schema from `.lokf/`, and a `.lokf/justfile` line that names a file outside `.lokf/`. `--adopt` refuses a file inside `.lokf/`.
-
-### Changed
-
-- **KTL mode keeps the project's schema in `.linkml/` and gives the bundle a copy.** The schema imports nothing from `.lokf/`. `lokf-adapt` and `lokf-adapt-check` recipes run `lokf adapt` (lokf 0.9.0 or later) to write and check `.lokf/schema/<slug>.yaml`, and `.lokf/justfile` names that copy. The scaffold writes the copy once, and the workflow runs the check. This replaces 0.5.0's move of the schema itself into `.lokf/schema/`.
-
-### Removed
-
-- **KTL mode's LOKF-importing dummy, its lint config, `--render-imports` and `tests/data/problem/valid/`.** A sidecar beside a bundle is the plain project, and `BASE_IRI` is no longer a fact the scaffold needs.
-
-## [0.5.0] - 2026-11-07
+## [0.5.0] - 2026-11-08
 
 ### Added
 
 - **The preflight warns when a sidecar's schema still imports `.lokf/lokf.yaml`, and points to the move.** `--repair .linkmllint.yaml` refuses until the copy is in `.lokf/schema/`.
+- **The preflight warns when a KTL bundle validates against the project's own schema.** It names a schema that imports LOKF core from `.lokf/`, a `config.public.mk` that reads the schema from `.lokf/`, and a `.lokf/justfile` line that names a file outside `.lokf/`. `--adopt` refuses a file inside `.lokf/`.
 
 ### Changed
 
 - **KTL mode writes the domain schema as `.lokf/schema/<slug>.yaml`, beside LOKF core's copy, where Knowledge Trust Ladder 0.62.0 keeps every schema file.** `config.public.mk` points the recipes there, the workflow runs on changes to the folder, and `.lokf/justfile` names `schema/<slug>.yaml`. A root `.lokf/lokf.yaml` stays in place, and the hand-off names it.
 - **The KTL lint config also excuses LOKF's enum values and turns `canonical_prefixes` off.** `just lint` lints every file in the folder, `lokf.yaml` among them.
+- **KTL mode keeps the project's schema in `.linkml/` and gives the bundle a copy.** The schema imports nothing from `.lokf/`. `lokf-adapt` and `lokf-adapt-check` recipes run `lokf adapt` (lokf 0.9.0 or later) to write and check `.lokf/schema/<slug>.yaml`, and `.lokf/justfile` names that copy. The scaffold writes the copy once, and the workflow runs the check. This replaces 0.5.0's move of the schema itself into `.lokf/schema/`.
+
+### Removed
+
+- **KTL mode's LOKF-importing dummy, its lint config, `--render-imports` and `tests/data/problem/valid/`.** A sidecar beside a bundle is the plain project, and `BASE_IRI` is no longer a fact the scaffold needs.
 
 ## [0.4.0] - 2026-10-29
 
