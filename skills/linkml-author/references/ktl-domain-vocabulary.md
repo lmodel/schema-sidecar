@@ -1,12 +1,12 @@
 # Beside a KTL bundle: what the author keeps in mind
 
-The authority on the domain schema that `lokf validate --schema` checks is ktl-librarian's [domain-schema.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-schema.md). linkml-sidecar's [ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md) says how a sidecar makes the bundle's copy. This page is the author's short form.
+The authority on the domain vocabulary, the file that `lokf validate --schema` checks a bundle against, is ktl-librarian's [domain-vocabulary.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-vocabulary.md). linkml-sidecar's [ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md) says how a sidecar makes the bundle's copy. This page is the author's short form.
 
 ## Two things, kept apart
 
-A LinkML project owns its schema, in `.linkml/src/<slug>/schema/` (a sidecar) or `src/<slug>/schema/` (a project at the root). The schema imports nothing from `.lokf/`, so its lint, generators, data tests and published releases are the same with or without a bundle.
+A LinkML project owns its schema, the *domain schema*, in `.linkml/src/<slug>/schema/` (a sidecar) or `src/<slug>/schema/` (a project at the root). It models the domain and imports nothing from `.lokf/`, so its lint, generators, data tests and published releases are the same with or without a bundle.
 
-KTL owns `.lokf/schema/`. It holds `lokf.yaml`, the pinned copy of LOKF core, and the domain schema that `.lokf/justfile` names, with every file that schema imports. When the bundle's concepts should use a project's classes, the domain schema is a copy of the project's schema that `lokf adapt` writes, or a composite of a few lines that imports `lokf` and the copy. The project may sit in this repository or another; the copy is the same either way.
+KTL owns `.lokf/schema/`. It holds `lokf.yaml`, the pinned copy of LOKF core, and the bundle's *domain vocabulary*: the file `.lokf/justfile` names, with every file it imports. The domain vocabulary lists the classes a concept may name beyond LOKF's own, and it always imports `lokf`. When the bundle's concepts should use a project's classes, the domain vocabulary is a copy of the domain schema that `lokf adapt` writes, or a composite of a few lines that imports `lokf` and the copy. Nothing runs the other way: no step writes the schema from the bundle, and the schema never imports `lokf`. The project may sit in this repository or another; the copy is the same either way.
 
 A `.lokf/` with no copy is a bundle *about* the repository, as in a schema repository that documents itself. Nothing here applies to it until its maintainers decide the bundle should use the schema's classes.
 

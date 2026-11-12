@@ -13,6 +13,8 @@ noelmcloughlin/linkml-sidecar --skill linkml-author --yes`), and run
 
 The `.lokf/` knowledge bundle validates its concepts against a copy of
 this schema, `.lokf/schema/<PROJ_SLUG>.yaml`, which `lokf adapt` writes
-(`just --justfile .linkml/justfile lokf-adapt`). Edit the schema, never the
-copy: a concept whose `type` names one of its classes carries only the
-fields that class declares.
+(`just --justfile .linkml/justfile lokf-adapt`). The schema is the
+repository's domain schema, and the copy is the bundle's domain vocabulary.
+Edit the schema, never the copy: a concept whose `type` names one of its
+classes carries only the fields that class declares. Never add a `lokf`
+import to the schema: only a file in `.lokf/schema/` imports it.
