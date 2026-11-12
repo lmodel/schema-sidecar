@@ -4,15 +4,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Security
-
-- **The sidecar copies and the skills pin are at Knowledge Trust Ladder [v0.63.0](https://github.com/noelmcloughlin/knowledge-trust-ladder/compare/v0.62.0...v0.63.0).** The release changed `.github/workflows/knowledge-registrar.yaml`, `.github/workflows/knowledge-librarian.yaml`, `.github/workflows/knowledge-release.yaml`, `.github/workflows/knowledge-sync.yaml`, `.lokf/scripts/knowledge-preflight.sh`, `.lokf/scripts/knowledge-sync.sh`, `.lokf/justfile`, `website/astro.config.mjs`, `website/package-lock.json`, `website/package.json`, `website/scripts/markdown-ktl.mjs` and `.github/workflows/knowledge-website.yaml` here.
-
 ## [0.5.2] - 2026-11-12
 
 ### Changed
 
 - **The project's schema is the *domain schema*, and the bundle's copy is its *domain vocabulary*.** Both skills, their KTL pages and the host templates use the two names, and say that only a file in `.lokf/schema/` imports `lokf`. linkml-author's page for a bundle is now `ktl-domain-vocabulary.md`.
+
+### Security
+
+- **The sidecar copies and the skills pin are at Knowledge Trust Ladder [v0.63.0](https://github.com/noelmcloughlin/knowledge-trust-ladder/compare/v0.62.0...v0.63.0).** The release changed `.github/workflows/knowledge-registrar.yaml`, `.github/workflows/knowledge-librarian.yaml`, `.github/workflows/knowledge-release.yaml`, `.github/workflows/knowledge-sync.yaml`, `.lokf/scripts/knowledge-preflight.sh`, `.lokf/scripts/knowledge-sync.sh`, `.lokf/justfile`, `website/astro.config.mjs`, `website/package-lock.json`, `website/package.json`, `website/scripts/markdown-ktl.mjs` and `.github/workflows/knowledge-website.yaml` here.
 
 ## [0.5.1] - 2026-11-08
 
