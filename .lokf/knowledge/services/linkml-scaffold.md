@@ -2,7 +2,7 @@
 type: Service
 id: https://w3id.org/ktl/linkml-sidecar/knowledge/services/linkml-scaffold
 title: linkml-scaffold.sh
-description: "The scaffold script that does Steps 1 to 3 of linkml-sidecar in one deterministic run: it verifies the template pin, stages the skill's files and copier's output, moves them into .linkml/ around what is already there, keeps the generators' settings in generators.yaml, adopts a schema the host holds with --adopt, names the schema in a KTL bundle's justfile, adds the root pointers, and exits 0, 2, 3, 4 or 5."
+description: "The scaffold script that does Steps 1 to 3 of linkml-sidecar in one deterministic run: it verifies the template pin, stages the skill's files and copier's output, moves them into .linkml/ around what is already there, keeps the generators' settings in generators.yaml, adopts a schema the host holds with --adopt, writes a KTL bundle's domain vocabulary with lokf adapt and names it in the bundle's justfile, adds the root pointers, and exits 0, 2, 3, 4 or 5."
 resource: skills/linkml-sidecar/scripts/linkml-scaffold.sh
 tags:
   - scaffold
@@ -21,7 +21,7 @@ sources:
   - resource: skills/linkml-sidecar/SKILL.md
 generated:
   by: process:ktl-librarian
-  at: "2026-10-22T18:19:05Z"
+  at: "2026-11-12T14:57:42Z"
 status: draft
 verified:
   - by: process:ktl-librarian

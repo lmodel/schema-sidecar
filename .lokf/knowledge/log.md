@@ -2,6 +2,7 @@
 
 ## 2026-11-12
 
+* **Changed**: The gate and linkml-scaffold say the KTL bundle's justfile names the schema's copy, its domain vocabulary, as ktl.md and linkml-author say since 0.5.0.
 * **Added**: Domain vocabulary, from `skills/linkml-author/references/ktl-domain-vocabulary.md`.
 * **Changed**: concepts call the bundle's file in `.lokf/schema/` a domain vocabulary, and keep *domain schema* for a LinkML project's model of a domain.
 * **Changed**: `ktl-domain-schema.md` is now `ktl-domain-vocabulary.md`, and ktl-librarian's recipe is `domain-vocabulary.md`; the two concepts that cite them name the new paths.
