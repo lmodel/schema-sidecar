@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-11-12
+
 ### Changed
 
 - **The project's schema is the *domain schema*, and the bundle's copy is its *domain vocabulary*.** Both skills, their KTL pages and the host templates use the two names, and say that only a file in `.lokf/schema/` imports `lokf`. linkml-author's page for a bundle is now `ktl-domain-vocabulary.md`.
