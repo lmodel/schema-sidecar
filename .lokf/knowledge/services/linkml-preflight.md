@@ -16,7 +16,7 @@ sources:
   - resource: skills/linkml-sidecar/SKILL.md
 generated:
   by: process:ktl-librarian
-  at: "2026-10-22T18:19:05Z"
+  at: "2026-11-12T14:47:34Z"
 status: draft
 verified:
   - by: process:ktl-librarian
@@ -59,7 +59,7 @@ It shows:
 
 It finds a schema by its files, never by its folder's name. It looks for a project in `.linkml/`, at the repository root, in the directory it was started in, and in every directory one level down. Copier answers whose `_src_path` names linkml-project-copier, or a `config.public.mk`, make a project. When `config.public.mk` is absent, the answers' `project_slug` names the schema. A second project is reported on an `also` line. With no project anywhere, it finds schema files by content and prints each on an `ok schema` line.
 
-Only `.linkml/.copier-answers.yml` means a sidecar. A `.linkml/` holding other files is reported as holding configuration files, or as empty. Beside a `.lokf/` bundle, the `lokf` line says whether `.lokf/justfile` names the schema, and the schema is not the bundle's domain schema until it does. `skills/linkml-sidecar/references/layouts.md` states the rule.
+Only `.linkml/.copier-answers.yml` means a sidecar. A `.linkml/` holding other files is reported as holding configuration files, or as empty. Beside a `.lokf/` bundle, the `lokf` line says whether `.lokf/justfile` names a copy of the schema in `.lokf/schema/` as the bundle's domain vocabulary, and the bundle validates against LOKF core alone until it does. `skills/linkml-sidecar/references/layouts.md` states the rule.
 
 ## When a line needs someone else
 

@@ -62,7 +62,7 @@ Resolve every fact from real project sources before running anything; the scaffo
 
 The scaffold refuses `--gitignored` when `.linkml/` already holds tracked files: the line would hide them.
 
-**KTL mode.** When `.lokf/` exists, the project stays the same, and a separate thing from the bundle: its schema stays in `.linkml/` and imports nothing from `.lokf/`. The bundle gets a copy. The scaffold pins `.lokf/schema/lokf.yaml` out of the installed toolkit when it is absent, adds `lokf-adapt` and `lokf-adapt-check` recipes, lets `lokf adapt` (lokf 0.9.0 or later) write `.lokf/schema/<slug>.yaml`, and names that copy in `.lokf/justfile`. The copy's top classes descend from LOKF's `Concept`, so the bundle's concepts may name them as their `type`. [references/ktl.md](references/ktl.md) says what each piece does and how the copy is kept current. An adopted schema gets no copy: the scaffold runs in plain mode and says so in the hand-off.
+**KTL mode.** When `.lokf/` exists, the project stays the same, and separate from the bundle. Its schema, the repository's *domain schema*, stays in `.linkml/` and never imports `lokf`. The bundle gets a copy, its *domain vocabulary*. The scaffold pins `.lokf/schema/lokf.yaml` out of the installed toolkit when it is absent, adds `lokf-adapt` and `lokf-adapt-check` recipes, lets `lokf adapt` (lokf 0.9.0 or later) write `.lokf/schema/<slug>.yaml`, and names that copy in `.lokf/justfile`. The copy's top classes descend from LOKF's `Concept`, so a concept may name them as its `type`. [references/ktl.md](references/ktl.md) says what each piece does and how the copy stays current. An adopted schema gets no copy: the scaffold runs in plain mode and says so in the hand-off.
 
 ## Step 1 - Scaffold
 
