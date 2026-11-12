@@ -8,11 +8,12 @@ resource: skills/linkml-sidecar/references/ktl.md
 tags:
   - ktl
   - lokf
-  - domain schema
+  - domain vocabulary
   - lokf validate
   - lokf adapt
 about:
   - https://w3id.org/ktl/linkml-sidecar/knowledge/glossary/domain-schema
+  - https://w3id.org/ktl/linkml-sidecar/knowledge/glossary/domain-vocabulary
 references:
   - https://w3id.org/ktl/linkml-sidecar/knowledge/references/knowledge-trust-ladder
   - https://w3id.org/ktl/linkml-sidecar/knowledge/playbooks/linkml-author-skill
@@ -23,7 +24,7 @@ sources:
   - resource: docs/architecture.md
 generated:
   by: process:ktl-librarian
-  at: "2026-11-12T13:28:20Z"
+  at: "2026-11-12T14:47:34Z"
 status: draft
 verified:
   - by: process:ktl-librarian
@@ -32,7 +33,7 @@ verified:
 
 # Overview
 
-A LinkML project and a KTL bundle are separate things. When the host carries a `.lokf/` bundle, the preflight switches on KTL mode. The scaffold lays down the same project as in plain mode, with the same `Person` dummy, in `.linkml/src/<slug>/schema/`, and the schema imports nothing from `.lokf/`. The bundle gets a copy: `lokf adapt` (lokf 0.9.0 or later) writes `.lokf/schema/<slug>.yaml` from the project's schema, and `.lokf/justfile` names that copy as the bundle's domain schema.
+A LinkML project and a KTL bundle are separate things. When the host carries a `.lokf/` bundle, the preflight switches on KTL mode. The scaffold lays down the same project as in plain mode, with the same `Person` dummy, in `.linkml/src/<slug>/schema/`, and the schema imports nothing from `.lokf/`. The bundle gets a copy: `lokf adapt` (lokf 0.9.0 or later) writes `.lokf/schema/<slug>.yaml` from the project's schema, and `.lokf/justfile` names that copy as the bundle's domain vocabulary.
 
 A schema the host already held (`--adopt`) gets no copy: the scaffold runs in plain mode beside the bundle and says so in the hand-off. A bundle beside a schema may be a bundle *about* the repository, and whether its concepts use the schema's classes is for its maintainers to decide. `--adopt` refuses a file inside `.lokf/`, because a schema there is KTL's.
 
@@ -58,4 +59,4 @@ It adds each class the copy re-roots on `Concept`, and each subclass, to the *Kn
 
 ## An older KTL-mode sidecar
 
-Up to 0.4.x the schema imported `.lokf/lokf.yaml` and was itself the domain schema; 0.5.0 kept it in `.lokf/schema/<slug>.yaml`. The preflight warns about both, and `references/ktl.md` gives the steps to move either to the copy.
+Up to 0.4.x the schema imported `.lokf/lokf.yaml` and was itself the bundle's domain vocabulary; 0.5.0 kept it in `.lokf/schema/<slug>.yaml`. The preflight warns about both, and `references/ktl.md` gives the steps to move either to the copy.

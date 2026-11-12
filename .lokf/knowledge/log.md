@@ -2,6 +2,8 @@
 
 ## 2026-11-12
 
+* **Added**: Domain vocabulary, from `skills/linkml-author/references/ktl-domain-vocabulary.md`.
+* **Changed**: concepts call the bundle's file in `.lokf/schema/` a domain vocabulary, and keep *domain schema* for a LinkML project's model of a domain.
 * **Changed**: `ktl-domain-schema.md` is now `ktl-domain-vocabulary.md`, and ktl-librarian's recipe is `domain-vocabulary.md`; the two concepts that cite them name the new paths.
 
 ## 2026-10-29

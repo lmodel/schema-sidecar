@@ -19,7 +19,7 @@ sources:
   - resource: skills/linkml-sidecar/references/layouts.md
 generated:
   by: process:ktl-librarian
-  at: "2026-10-22T15:14:26Z"
+  at: "2026-11-12T14:47:34Z"
 status: draft
 verified:
   - by: process:ktl-librarian
@@ -46,4 +46,4 @@ It looks in `.linkml/`, at the repository root, in the directory it was started 
 
 ## Adoption
 
-`--adopt <file>` gives a schema found outside any project the sidecar's toolchain without moving it. It points `config.public.mk`'s `LINKML_SCHEMA_SOURCE_DIR` at the file's folder, so every recipe reads the schema where it is, and the file is never moved, copied, linked or edited. The file must be named `<slug>.yaml`. Beside a `.lokf/` bundle, the adopted schema is not made the domain schema.
+`--adopt <file>` gives a schema found outside any project the sidecar's toolchain without moving it. It points `config.public.mk`'s `LINKML_SCHEMA_SOURCE_DIR` at the file's folder, so every recipe reads the schema where it is, and the file is never moved, copied, linked or edited. The file must be named `<slug>.yaml`. Beside a `.lokf/` bundle, the adopted schema gets no copy in `.lokf/schema/`, so the scaffold makes no domain vocabulary from it.
