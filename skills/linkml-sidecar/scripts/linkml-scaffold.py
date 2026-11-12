@@ -131,7 +131,7 @@ KTL_WORKFLOWS = ("knowledge-registrar.yaml", "knowledge-librarian.yaml", "knowle
 KTL_VALIDATE_STEP = "uvx --from rust-just==1.47.0 just lokf-check-refs"
 # KTL keeps the bundle's files in .lokf/schema/: LOKF core's copy, and the
 # domain vocabulary the justfile names with each file it imports
-# (ktl-librarian's domain-schema.md). A LinkML project's own schema, the
+# (ktl-librarian's domain-vocabulary.md). A LinkML project's own schema, the
 # domain schema, is never one of them. In KTL mode, `lokf adapt` writes a copy of the sidecar's
 # schema there, and the justfile names the copy. Before KTL 0.62.0, the copy
 # of LOKF core sat at the root of .lokf/.
@@ -884,7 +884,7 @@ def say_known_types():
 
 
 def pin_lokf_schema(host, dry):
-    """The pinned core schema in .lokf/schema/, which lokf adapt reads and the copy beside it imports (ktl-librarian's domain-schema.md, step 1).
+    """The pinned core schema in .lokf/schema/, which lokf adapt reads and the copy beside it imports (ktl-librarian's domain-vocabulary.md, step 1).
 
     A copy at the root of .lokf/ stays in place, since a schema there may
     still import it.
@@ -1000,7 +1000,7 @@ def wire_tool_lokf(host, schema, dry):
 
 
 def wire_lokf(host, facts, dry):
-    """`schema :=` and `--schema` in .lokf/justfile (domain-schema.md, step 4), naming the copy, and `[tool.lokf] schema`; an unexpected line is printed, not patched."""
+    """`schema :=` and `--schema` in .lokf/justfile (domain-vocabulary.md, step 4), naming the copy, and `[tool.lokf] schema`; an unexpected line is printed, not patched."""
     justfile = host / ".lokf" / "justfile"
     schema = posixpath.relpath(f"{KTL_SCHEMA_DIR}/{facts['PROJ_SLUG']}.yaml", ".lokf")
     if not justfile.is_file():
@@ -1020,7 +1020,7 @@ def wire_lokf(host, facts, dry):
         say(
             "handoff",
             f'.lokf/justfile already names {named.group(1) or "a schema"}, left alone; for the bundle to use this schema\'s classes too, '
-            f"list {facts['PROJ_SLUG']} under the imports of the domain vocabulary it names, beside lokf (ktl-librarian's domain-schema.md)",
+            f"list {facts['PROJ_SLUG']} under the imports of the domain vocabulary it names, beside lokf (ktl-librarian's domain-vocabulary.md)",
         )
         return
     run_there = "cd {{ parent_directory(schema) }} && uv run --project {{ justfile_directory() }} lokf validate"

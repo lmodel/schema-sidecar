@@ -475,7 +475,7 @@ if [ -d "$root/.lokf" ]; then
     ../.lokf|../.lokf/*) warn lokf "config.public.mk reads the schema from ${srcdir#../}/, as linkml-sidecar 0.5.0 laid it out: the project's schema belongs in .linkml/src/${name:-<slug>}/schema/, and .lokf/schema/ holds a copy; follow references/ktl.md's 'An older KTL-mode sidecar'" ;;
   esac
   case "$named" in
-    ../*) warn lokf ".lokf/justfile's schema line names $named, a file outside .lokf/: name a copy in .lokf/schema/ instead (ktl-librarian's domain-schema.md, step 4)" ;;
+    ../*) warn lokf ".lokf/justfile's schema line names $named, a file outside .lokf/: name a copy in .lokf/schema/ instead (ktl-librarian's domain-vocabulary.md, step 4)" ;;
   esac
   [ -n "$tool" ] && [ "${tool#./}" != "${named#./}" ] && warn lokf "[tool.lokf] schema in .lokf/pyproject.toml is $tool and .lokf/justfile's schema line is ${named:-empty}: a bare lokf command and the recipes check against different schemas; set both to one path"
   [ -z "$named" ] && [ "$kind" != none ] && info lokf "the bundle validates against LOKF core alone until .lokf/justfile names a copy of the schema in .lokf/schema/ (schema :=); a schema beside an unwired bundle stays what it is"

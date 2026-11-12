@@ -1,6 +1,6 @@
 # Beside a KTL bundle: what the author keeps in mind
 
-The authority on the domain vocabulary, the file that `lokf validate --schema` checks a bundle against, is ktl-librarian's [domain-schema.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-schema.md). linkml-sidecar's [ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md) says how a sidecar makes the bundle's copy. This page is the author's short form.
+The authority on the domain vocabulary, the file that `lokf validate --schema` checks a bundle against, is ktl-librarian's [domain-vocabulary.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-vocabulary.md). linkml-sidecar's [ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md) says how a sidecar makes the bundle's copy. This page is the author's short form.
 
 ## Two things, kept apart
 
