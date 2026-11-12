@@ -25,7 +25,7 @@ lmodel, an experiment area for these patterns and not a standard, gives a worked
 
 ## A release asset
 
-A tagged release that attaches the schema is the address a vendoring importer copies from and checks. KTL's knowledge-release workflow attaches `schema-<tag>-<name>.yaml` and its `.sha256` when `.lokf/justfile` names a domain schema, after rewriting the relative `lokf` import to the package's name, and it stops on any other local import. gist attaches `schema-<tag>-gist.yaml` from its own workflow. The tag is the version (linkml-project-copier issue 121 says so for its projects too). The sidecar's own workflow attaches nothing yet.
+A tagged release that attaches the schema is the address a vendoring importer copies from and checks. KTL's knowledge-release workflow attaches `schema-<tag>-<name>.yaml` and its `.sha256` when `.lokf/justfile` names a domain vocabulary, after rewriting the relative `lokf` import to the package's name, and it stops on any other local import. gist attaches `schema-<tag>-gist.yaml` from its own workflow. The tag is the version (linkml-project-copier issue 121 says so for its projects too). The sidecar's own workflow attaches nothing yet.
 
 ## How an importer takes it
 

@@ -1,6 +1,6 @@
 # KTL mode: a copy of the schema for the bundle
 
-This page is for the **scaffold** and for whoever reads its KTL hand-off lines. A LinkML project and a KTL bundle are separate things. The project owns its schema, in `.linkml/src/<slug>/schema/` (or `src/<slug>/schema/` in a project at the root), and the schema imports nothing from `.lokf/`. KTL keeps its own schema files in `.lokf/schema/`: LOKF core's copy, `lokf.yaml`, and the domain schema that `.lokf/justfile` names, with each file it imports. When the bundle's concepts should use the project's classes, that domain schema is a copy of the project's schema, or a file beside it that imports the copy and `lokf`. ktl-librarian's [domain-schema.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-schema.md) is the authority on what the validator expects. This page says how the sidecar makes the copy and keeps it current.
+This page is for the **scaffold** and for whoever reads its KTL hand-off lines. A LinkML project and a KTL bundle are separate things. The project owns its schema, the *domain schema*, in `.linkml/src/<slug>/schema/` (or `src/<slug>/schema/` in a project at the root), and the schema imports nothing from `.lokf/`. KTL keeps the bundle's files in `.lokf/schema/`: LOKF core's copy, `lokf.yaml`, and the *domain vocabulary* that `.lokf/justfile` names, with each file it imports. When the bundle's concepts should use the project's classes, that domain vocabulary is a copy of the domain schema, or a file beside it that imports the copy and `lokf`. ktl-librarian's [domain-schema.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-schema.md) is the authority on what the validator expects. This page says how the sidecar makes the copy and keeps it current.
 
 ## What the scaffold does in KTL mode
 
@@ -16,7 +16,7 @@ When the copy cannot be written, steps 4 and 5 are skipped, and the hand-off say
 
 ## What the copy holds
 
-The copy imports `lokf`, the file beside it. `lokf adapt` makes four kinds of move, and the copy's `notes` list each one:
+The copy imports `lokf`, the file beside it. `lokf adapt` prints that the copy is a *LOKF domain schema*, the toolkit's name for a domain vocabulary. It makes four kinds of move, and the copy's `notes` list each one:
 
 - it re-roots the schema's top classes on `Concept`, so a concept may name them, or a subclass, as its `type`;
 - it drops the schema's identifier slot, because LOKF's `id` takes its place;
