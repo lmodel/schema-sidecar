@@ -1,5 +1,9 @@
 # Change Log
 
+## 2026-11-12
+
+* **Changed**: `ktl-domain-schema.md` is now `ktl-domain-vocabulary.md`, and ktl-librarian's recipe is `domain-vocabulary.md`; the two concepts that cite them name the new paths.
+
 ## 2026-10-29
 
 * **Changed**: KTL mode says the scaffold also writes the schema's path as `[tool.lokf] schema`, that the `cd` workaround is needed only at a lokf 0.8.0 floor, and that removal drops the table's line.

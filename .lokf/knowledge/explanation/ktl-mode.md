@@ -18,12 +18,12 @@ references:
   - https://w3id.org/ktl/linkml-sidecar/knowledge/playbooks/linkml-author-skill
 sources:
   - resource: skills/linkml-sidecar/references/ktl.md
-  - resource: skills/linkml-author/references/ktl-domain-schema.md
+  - resource: skills/linkml-author/references/ktl-domain-vocabulary.md
   - resource: skills/linkml-author/SKILL.md
   - resource: docs/architecture.md
 generated:
   by: process:ktl-librarian
-  at: "2026-11-08T01:05:25Z"
+  at: "2026-11-12T13:28:20Z"
 status: draft
 verified:
   - by: process:ktl-librarian
