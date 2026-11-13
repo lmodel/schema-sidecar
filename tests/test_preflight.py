@@ -255,6 +255,18 @@ def test_a_folder_only_bots_touched_and_a_pathspec_lookalike(tmp_path):
     assert result and matches(result.out, r"""^info    authors    schema folder :!x/: 1 person, 1 commit \("Ann"\);"""), result.out
 
 
+def test_says_where_a_new_project_goes(tmp_path):
+    host = tmp_path / "empty"
+    write(host / "README.md", "# Empty\n")
+    write(host / ".claude" / "settings.json", "{}\n")
+    result = preflight(host)
+    assert result and matches(result.out, r"^info    layout +the folder is empty apart from .*lays the project at the root"), result.out
+    write(host / "app.py", "print(1)\n")
+    write(host / "src" / "main.go", "package main\n")
+    result = preflight(host)
+    assert result and matches(result.out, r"^info    layout +the folder holds app\.py, src/: linkml-sidecar lays a \.linkml/ sidecar"), result.out
+
+
 def test_names_a_ktl_bundle_as_ktl_s_and_reads_nothing_more(tmp_path):
     host = make_host(tmp_path)
     assert not matches(preflight(host).out, r"^\S+ +lokf "), "a line about a bundle that is not there"

@@ -286,6 +286,36 @@ if [ "$kind" = none ]; then
   fi
 fi
 
+# ---- layout: where a new project goes ---------------------------------------
+# With no project or schema yet, an empty folder gets the project at its root
+# and any other a .linkml/ sidecar beside its code. Empty means nothing but
+# git's files, a README, a license and an agent's folders; a .github/ counts
+# only without workflows or Dependabot. The scaffold applies the same list
+# (EMPTY_OK).
+if [ "$kind" = none ]; then
+  extra=""; nextra=0
+  while IFS= read -r e; do
+    [ -n "$e" ] || continue
+    n="${e##*/}"
+    case "$n" in
+      .git|.gitignore|.gitattributes|README|README.md|README.rst|README.txt|README.adoc|LICENSE|LICENSE.md|LICENSE.txt|LICENCE|LICENCE.md|LICENCE.txt|COPYING) continue ;;
+      .claude|.agents|.cursor|.codex|.gemini|.vscode|.idea|.DS_Store|CLAUDE.md|AGENTS.md|GEMINI.md|.linkml-staging-*) continue ;;
+      .github) [ -e "$e/workflows" ] || [ -e "$e/dependabot.yml" ] || continue ;;
+    esac
+    [ -d "$e" ] && n="$n/"
+    nextra=$((nextra + 1))
+    [ "$nextra" -le 5 ] && extra="$extra${extra:+, }$n"
+  done <<EOF
+$(find "$root" -mindepth 1 -maxdepth 1 2>/dev/null | LC_ALL=C sort)
+EOF
+  [ "$nextra" -gt 5 ] && extra="$extra, ..."
+  if [ "$nextra" -eq 0 ]; then
+    info layout "the folder is empty apart from git's files, a README, a license or an agent's folders: linkml-sidecar lays the project at the root, its schema in src/<slug>/schema/, and with no git yet its just setup makes the repository (--layout sidecar for .linkml/)"
+  else
+    info layout "the folder holds $extra: linkml-sidecar lays a .linkml/ sidecar beside them (--layout root for the root)"
+  fi
+fi
+
 # ---- project ---------------------------------------------------------------
 # The project directory as a person reads it: relative to the root, or empty when it is the root.
 sdisp="${sidecar#"$root"}"; sdisp="${sdisp#/}"; sdisp="${sdisp:+$sdisp/}"

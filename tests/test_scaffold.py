@@ -437,6 +437,7 @@ def test_every_template_token_is_one_the_scaffold_knows():
     script = (TEMPLATES.parent / "scripts" / "linkml-scaffold.py").read_text(encoding="utf-8")
     known = set(re.findall(r'"([A-Z_]+)",', script.split("TOKENS = (")[1].split(")")[0]))
     known |= set(re.findall(r'"([A-Z_]+)"', script.split("PLACES = (")[1].split(")")[0]))
+    known |= set(re.findall(r'"([A-Z_]+)"', script.split("ROOT_SWITCHES = (")[1].split(")")[0])) | {"LICENSE_FILE"}
     found = set()
     for path in TEMPLATES.rglob("*"):
         if path.is_file():

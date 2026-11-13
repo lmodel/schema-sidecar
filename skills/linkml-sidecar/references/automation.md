@@ -16,7 +16,8 @@
 
 1. Commit `.linkml/` with its `uv.lock` (Step 4) and the workflow.
 2. To publish the docs, create the repository variable `LINKML_DOCS_ENABLED` with the value `true` (Settings, Secrets and variables, Actions, Variables), and point Pages at the `gh-pages` branch if it is not already. The site appears at the host's Pages URL plus `/linkml/`, which is what `DOCS_URL` should have been set to.
-3. A root `dependabot.yml` can keep the sidecar's Python dependencies current with a `uv` entry whose `directory` is `/.linkml`. The hoisted workflow's own action pins are bumped by the host's existing `github-actions` entry, if it has one.
+3. A root `dependabot.yml` can keep the sidecar's Python dependencies current with a `uv` entry whose `directory` is `/.linkml`. The hoisted workflow's own action pins are bumped by the host's existing `github-actions` entry, if it has one. Suggest the entry to the host in one line; do not scaffold it.
+4. If the host runs no ShellCheck or `actionlint` over its tree, suggest, in one line, coverage for `.linkml/scripts/linkml-preflight.sh` and the workflow.
 
 ## Pins
 

@@ -1,6 +1,6 @@
 # Architecture
 
-This page explains how linkml-sidecar gives a repository a LinkML data model without touching its build, what each of its two skills does, and why. [Install](install.md) says how to get them.
+This page explains how linkml-sidecar gives a repository a LinkML data model, at the root of a new repository or beside the code of an existing one without touching its build, what each of its two skills does, and why. [Install](install.md) says how to get them.
 
 ## A sidecar beside the code
 
@@ -17,13 +17,15 @@ The schema is the source: everything the generators write is build output.
 
 The installer never writes a class, and the author never installs or repairs the sidecar.
 
-## Three cases
+## Four cases
 
-- A repository that *is* a schema project, such as [lmodel/gist](https://github.com/lmodel/gist), runs copier at its root and needs no sidecar. linkml-author works there as it is.
+- An empty repository, or an empty folder with no git yet, gets the project at its root, with the schema in `src/<slug>/schema/` and the template's own README, docs, license and workflows. The repository *is* the schema project.
 
 - A codebase whose maintainers do not want a schema project in their root folder gets the sidecar, around a small dummy schema that linkml-author replaces.
 
 - A repository that holds a LinkML schema but no project gets the sidecar around that schema (`--adopt`), and the schema is neither moved nor changed.
+
+- A repository that already is a schema project, such as [lmodel/gist](https://github.com/lmodel/gist), needs no installer. linkml-author works there as it is.
 
 Both skills find a schema by its files, never by its folder's name, as [layouts.md](../skills/linkml-sidecar/references/layouts.md) sets out.
 

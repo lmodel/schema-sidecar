@@ -159,9 +159,14 @@ def tokens_left(root: Path) -> list[str]:
     return hits
 
 
-def make_host(root: Path, readme=True, license_file=True, git=True) -> Path:
-    """A minimal host repository: a README with an intro and a section, a LICENSE, one commit."""
+def make_host(root: Path, readme=True, license_file=True, git=True, code=True) -> Path:
+    """A minimal host repository: a README with an intro and a section, a LICENSE, a code file, one commit.
+
+    Without the code file (code=False) the folder counts as empty, and the scaffold picks the root layout.
+    """
     root.mkdir(parents=True, exist_ok=True)
+    if code:
+        write(root / "app.py", "print('demo')\n")
     if readme:
         write(root / "README.md", "# Demo\n\nA demo host.\n\n## Usage\n\nRun it.\n")
     if license_file:

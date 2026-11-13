@@ -151,7 +151,6 @@ def main(argv):
         "CODE_OF_CONDUCT.md": "# Code of conduct\n",
         "CONTRIBUTING.md": "# Contributing\n",
         "README.md": f"# {name}\n\nThe template's README.\n",
-        "LICENSE": "The template's license.\n",
         "docs/index.md": "# The template's index\n",
         "docs/about.md": "# The template's about\n",
         "docs/elements/.gitkeep": "",
@@ -167,6 +166,14 @@ def main(argv):
         "tests/data/valid/.gitkeep": "",
         "tests/data/invalid/.gitkeep": "",
     }
+    # As the template's file names say: LICENSE only without an existing
+    # license file, and each optional workflow only when its answer is yes.
+    if not answers.get("existing_license_file"):
+        files["LICENSE"] = f"The template's {answers['license']} license.\n"
+    if answers.get("gh_action_pypi"):
+        files[".github/workflows/pypi-publish.yaml"] = "name: Publish to PyPI\non: [release]\njobs: {}\n"
+    if answers.get("gh_action_docs_preview"):
+        files[".github/workflows/test_pages_build.yaml"] = "name: Preview docs\non: [pull_request]\njobs: {}\n"
     skip_prefixes = tuple(p.format(slug=slug) for p in SKIP_PREFIXES)
     for rel, text in files.items():
         target = dst / rel
