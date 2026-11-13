@@ -1,6 +1,6 @@
 ---
 type: Service
-id: https://w3id.org/ktl/linkml-sidecar/knowledge/services/linkml-scaffold
+id: https://w3id.org/lmodel/schema-sidecar/knowledge/services/linkml-scaffold
 title: linkml-scaffold.sh
 description: "The scaffold script that does Steps 1 to 3 of linkml-sidecar in one deterministic run: it verifies the template pin, stages the skill's files and copier's output, moves them into .linkml/ around what is already there, keeps the generators' settings in generators.yaml, adopts a schema the host holds with --adopt, writes a KTL bundle's domain vocabulary with lokf adapt and names it in the bundle's justfile, adds the root pointers, and exits 0, 2, 3, 4 or 5."
 resource: skills/linkml-sidecar/scripts/linkml-scaffold.sh
@@ -9,12 +9,12 @@ tags:
   - copier
   - exit codes
 isPartOf:
-  - https://w3id.org/ktl/linkml-sidecar/knowledge/playbooks/linkml-sidecar-skill
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/playbooks/linkml-sidecar-skill
 dependsOn:
-  - https://w3id.org/ktl/linkml-sidecar/knowledge/references/linkml-project-copier
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/references/linkml-project-copier
 references:
-  - https://w3id.org/ktl/linkml-sidecar/knowledge/glossary/template-pin
-  - https://w3id.org/ktl/linkml-sidecar/knowledge/references/template-assumptions
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/glossary/template-pin
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/references/template-assumptions
 sources:
   - resource: skills/linkml-sidecar/scripts/linkml-scaffold.sh
   - resource: skills/linkml-sidecar/scripts/linkml-scaffold.py

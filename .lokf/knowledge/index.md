@@ -1,14 +1,14 @@
 ---
 lokf_version: "0.2"
 okf_version: "0.2"
-base_iri: https://w3id.org/ktl/linkml-sidecar/knowledge/
+base_iri: https://w3id.org/lmodel/schema-sidecar/knowledge/
 context: https://w3id.org/lokf/context.jsonld
 title: linkml-sidecar Knowledge Bundle
 description: "Two Agent Skills that give a code repository a LinkML data model as a sidecar: linkml-sidecar installs a hidden .linkml/ project from linkml-project-copier without touching the host's build, and linkml-author turns its dummy schema into the real model and keeps it generated, documented and tested."
 license: https://creativecommons.org/licenses/by/4.0/
 publisher:
   type: Person
-  id: https://w3id.org/ktl/linkml-sidecar/knowledge/person/noel-mcloughlin
+  id: https://w3id.org/lmodel/schema-sidecar/knowledge/person/noel-mcloughlin
   name: Noel McLoughlin
 ---
 
@@ -35,8 +35,8 @@ A [LOKF](https://lokf.nolan-nichols.com) knowledge base for linkml-sidecar. Ever
 # Explanation
 
 * [Three cases, one skill](explanation/two-patterns.md) - Why there are three ways to give a repository a LinkML schema: a schema project runs copier at its root and needs no sidecar, a codebase whose maintainers do not want a schema project in their root folder gets the hidden .linkml/ sidecar around a dummy schema, and a repository holding a schema but no project gets the sidecar around that schema (--adopt).
-* [KTL mode](explanation/ktl-mode.md) - What changes when the host carries a .lokf/ Knowledge Trust Ladder bundle: the project's schema stays in .linkml/ and imports nothing from .lokf/, the scaffold pins .lokf/schema/lokf.yaml, adds lokf-adapt recipes, writes the bundle a copy at .lokf/schema/<slug>.yaml and names it in .lokf/justfile and as [tool.lokf] schema; an adopted schema gets no copy.
 * [Who owns which file](explanation/file-ownership.md) - Who owns each file in a .linkml/ sidecar (the template, the host or the skill) and how each changes, which template recipes never run, and how just update keeps a sidecar current.
+* [Beside a KTL bundle](explanation/beside-a-ktl-bundle.md) - How the skills treat a host that carries a .lokf/ Knowledge Trust Ladder bundle: the bundle is KTL's and neither skill writes there, the schema imports nothing from it, the skills take a schema as far as a published release, and ktl-librarian adapts published schemas into the bundle's domain vocabulary; also how an older sidecar tied to a bundle moves to the plain layout.
 
 # References
 
@@ -44,7 +44,7 @@ A [LOKF](https://lokf.nolan-nichols.com) knowledge base for linkml-sidecar. Ever
 * [linkml-project-copier](references/linkml-project-copier.md) - The upstream copier template (MIT) that every sidecar is made from, pinned at tag v0.5.0 and verified against the commit the scaffold driver records before it runs with --trust.
 * [LinkML](references/linkml.md) - LinkML, the modelling language the sidecar's schema is written in; linkml.io is the canonical site for what it means, its schemas and its generators (JSON Schema, Pydantic, OWL, SHACL, TypeScript, docs).
 * [Agent Skills specification](references/agent-skills-specification.md) - The Agent Skills format both skills follow: a folder with a SKILL.md whose frontmatter carries name, description, license and compatibility, checked in CI with gh skill publish --dry-run.
-* [Knowledge Trust Ladder](references/knowledge-trust-ladder.md) - The Knowledge Trust Ladder (KTL), whose bundle is a .lokf/ folder in the host; beside one, the scaffold writes a copy of the sidecar's schema to .lokf/schema/<slug>.yaml as the bundle's domain vocabulary, and ktl-librarian's domain-vocabulary page is the authority on what lokf validate expects.
+* [Knowledge Trust Ladder](references/knowledge-trust-ladder.md) - The Knowledge Trust Ladder (KTL), whose bundle is a .lokf/ folder in the host; it belongs to KTL, neither skill writes there, and a bundle takes a published release of the schema, which ktl-librarian adapts into the bundle's vocabulary.
 * [Where a LinkML schema lives](references/schema-layouts.md) - The rule both skills apply to find a LinkML schema in any repository: copier answers naming linkml-project-copier, a config.public.mk, or a schema file found by content; where the preflight looks; and how --adopt gives a found schema the toolchain in place.
 * [Schema design for reuse](references/schema-design.md) - linkml-author's page on designing a LinkML schema that others can import and extend: which names reach the data and how a name defined twice across imports is caught (by the gate's gen-project, not by lint), attributes before slots with fundamental names kept as attributes, mixins, prefixed class names, a core plus modules as the shape importers can take a slice of, type designators instead of kind enums, typed references, no enum inheritance, minor releases that only add, and when a schema that exists can still be refactored.
 * [Publishing a schema others can import](references/publishing.md) - linkml-author's page on how a schema reaches an importer: two addresses under its id (every module at schema/module.yaml and one merged file with no imports), a tagged release with a checksummed asset, a vendored copy at a tag or an import by persistent identifier and never by a code-host URL, the importmap and the order an import resolves in, and lokf's adapt for a vocabulary that shares names with yours.
@@ -62,6 +62,6 @@ A [LOKF](https://lokf.nolan-nichols.com) knowledge base for linkml-sidecar. Ever
 * [Doorway](glossary/doorway.md) - The linkml_schema link at the host's root that shows the hidden sidecar's schema folder under an ordinary, visible name.
 * [Dummy schema](glossary/dummy-schema.md) - The small placeholder schema a fresh sidecar holds, a Person example in both plain and KTL mode, which lints clean and which linkml-author replaces with the host's real model.
 * [Template pin](glossary/template-pin.md) - The one place the linkml-project-copier version is fixed: LINKML_TEMPLATE_REF and LINKML_TEMPLATE_SHA in the scaffold driver, a tag verified against its commit before copier runs with --trust.
-* [Domain schema](glossary/domain-schema.md) - A LinkML schema that models a domain, owned by a LinkML project in .linkml/src/<slug>/schema/ or src/<slug>/schema/; it never imports lokf, and a bundle uses its classes through the copy lokf adapt writes into .lokf/schema/, the bundle's domain vocabulary.
+* [Domain schema](glossary/domain-schema.md) - A LinkML schema that models a domain and that a LinkML project owns, in .linkml/src/<slug>/schema/ or src/<slug>/schema/; it imports nothing from .lokf/, and the skills take it as far as a published release, which a KTL bundle may adapt into its domain vocabulary.
 * [The gate](glossary/the-gate.md) - linkml-author's check after every schema edit: lint, then gen-project, then test, through the project's justfile or Makefile, or the three LinkML tools directly for a schema with no project, with lokf adapt and lokf validate after it beside a KTL bundle with a copy of the schema.
-* [Domain vocabulary](glossary/domain-vocabulary.md) - The bundle's file in .lokf/schema/ that .lokf/justfile names on its schema := line, with every file it imports; it always imports lokf, lists the classes a concept may name beyond LOKF's own, and lokf validate --schema checks the bundle against it; in KTL mode it is the copy lokf adapt writes from the sidecar's schema.
+* [Domain vocabulary](glossary/domain-vocabulary.md) - The schema files a KTL bundle keeps in .lokf/schema/: published, curated vocabulary that ktl-librarian builds with lokf adapt from published schemas of this repository or any other, or from none; the bundle's own, which neither skill writes.
