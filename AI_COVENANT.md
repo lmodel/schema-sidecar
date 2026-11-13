@@ -4,7 +4,7 @@ This covenant establishes community norms for responsible AI use in the project.
 
 It applies to this repository:
 
-- <https://github.com/noelmcloughlin/schema-sidecar>
+- <https://github.com/lmodel/schema-sidecar>
 
 ## Core Principle: You Own Your Contributions
 
@@ -30,7 +30,7 @@ AI review tools, such as Claude, Copilot and CodeRabbit, provide **automated qua
 
 ## AI-Assisted Discussions
 
-AI tools can be helpful **thinking aids** when preparing to participate in [issues](https://github.com/noelmcloughlin/schema-sidecar/issues).
+AI tools can be helpful **thinking aids** when preparing to participate in [issues](https://github.com/lmodel/schema-sidecar/issues).
 
 They may be used to:
 

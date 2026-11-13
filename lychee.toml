@@ -22,7 +22,7 @@ exclude = [
   # until the change merges, so validate-repository.sh checks these links
   # against the change's own files instead. The remap below turns a file link
   # into its raw address before this list applies.
-  '^https://raw\.githubusercontent\.com/noelmcloughlin/schema-sidecar/main/',
+  '^https://raw\.githubusercontent\.com/lmodel/schema-sidecar/main/',
 ]
 
 # Regular expressions over the file path. The pages rendered into a host
@@ -46,13 +46,13 @@ exclude_path = [
 # file link must name its raw address.
 #
 # w3id.org/ktl/linkml-sidecar/ still sends a reader to the site's address
-# before the repository's rename, which GitHub Pages no longer serves. Until
-# w3id.org merges the rule that points it at schema-sidecar, lychee checks
-# the same page on the renamed site. Remove this line once
-# https://w3id.org/ktl/linkml-sidecar/ redirects to github.io/schema-sidecar/.
+# before the repository's rename and move, which GitHub Pages no longer
+# serves. Until w3id.org merges the rule that points it at
+# lmodel.github.io/schema-sidecar/, lychee checks the same page there. Remove
+# this line once https://w3id.org/ktl/linkml-sidecar/ redirects to it.
 remap = [
   '^https://github\.com/([^/]+/[^/]+)/blob/([^?#]+)([?#].*)?$ https://raw.githubusercontent.com/$1/$2',
-  '^https://w3id\.org/ktl/linkml-sidecar/(.*)$ https://noelmcloughlin.github.io/schema-sidecar/$1',
+  '^https://w3id\.org/ktl/linkml-sidecar/(.*)$ https://lmodel.github.io/schema-sidecar/$1',
 ]
 
 # The rest of github.com also answers a burst of requests from one runner
