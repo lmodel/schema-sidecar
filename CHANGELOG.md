@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- **An empty repository gets the project at its root.** The scaffold picks the root, with the schema in `src/<slug>/schema/`, when the folder holds nothing but git's files, a README, a license and an agent's folders, and `.linkml/` otherwise; `--layout` overrides. An empty folder below a repository's root is refused until `--layout` says which, since `just setup` there would nest a repository. The preflight's `layout` line says which, and `GH_ACTION_PYPI` and `GH_ACTION_DOCS_PREVIEW` turn on the template's two optional workflows there.
+- **A `merged` recipe in every sidecar's `project.justfile`.** It writes the schema with its imports merged in and its own shape kept, as `project/linkml/<slug>.yaml`: the file a release attaches and a KTL bundle adapts. `--repair project.justfile` no longer gives an adopted schema's sidecar the doorway recipe.
+
+### Changed
+
+- **Neither skill writes in a KTL bundle's `.lokf/` any more.** KTL maintains it, and ktl-librarian builds its domain vocabulary from published schemas. linkml-author edits a file there only when a person names it, and never adds LOKF to a schema outside it. `layouts.md` says how an older sidecar beside a bundle moves.
+
+### Removed
+
+- **KTL mode: the scaffold's `--mode` flag, the `lokf.yaml` pin, the `lokf-adapt` recipes, the `.lokf/justfile` and `[tool.lokf]` edits, the workflow's copy check, `references/ktl.md` and `ktl-domain-vocabulary.md`.** A sidecar's existing `lokf-adapt` recipes stay as the host's own.
+
 ## [0.5.2] - 2026-11-12
 
 ### Changed

@@ -30,12 +30,41 @@ With no project anywhere, the preflight finds the schema files by content, among
 | `info authors schema folder <dir>/: <n> people, <m> commits (<names>)`, or `no person, only <k> bot commits` | weighs whether to offer a refactor, by its [schema-design.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-author/references/schema-design.md); the line is a fact, not a verdict | nothing |
 | `missing sidecar no LinkML project or schema` | waits for one | installs the sidecar with the dummy |
 
+## Where a new project goes
+
+With no project or schema yet, the scaffold picks the layout by what the folder holds, and the preflight's `layout` line says which:
+
+| The folder | Layout | The schema |
+| --- | --- | --- |
+| nothing but git's files, a README, a license, and an agent's folders (`.claude/`, `.agents/`, `.github/` without workflows) | `root`: the copier project is the repository, with the template's own README, docs, license and workflows | `src/<slug>/schema/<slug>.yaml` |
+| anything else | `sidecar`: the project in `.linkml/`, a `linkml_schema` doorway, the hoisted workflow | `.linkml/src/<slug>/schema/<slug>.yaml` |
+| a schema outside any project | `sidecar` with `--adopt` | where it is |
+
+`--layout` overrides the choice. A folder with no git yet counts as empty, and the root project's `just setup` makes the repository. An empty folder below a repository's root is refused until `--layout` says which, since `just setup` there would nest a repository. Both layouts keep the generators' settings in `.linkml/generators.yaml`, so at the root `.linkml/` holds that file and the preflight's copy, `scripts/linkml-preflight.sh`.
+
+### The root run
+
+The scaffold does the same work at the root, with these differences, by the items of SKILL.md's Step 1 list:
+
+- **Pre-seeding (item 4)** lays only the dummy schema, its test and its data, and the preflight in `.linkml/scripts/`. The template's README, docs, license and workflows stand, since the project is the repository.
+- **The answers (item 5)** name the folder's own license file, or none, and the two switches, `GH_ACTION_PYPI` and `GH_ACTION_DOCS_PREVIEW`.
+- **After copier (item 6)** the scaffold patches `mkdocs.yml`, appends the `merged` recipe and moves the generators' settings to `.linkml/generators.yaml`.
+- **The move (item 7)** keeps a README or license the folder holds, as copier keeps it, and a `.gitignore` gains the template's lines. Any other name both hold stops the run with exit 3 before anything moves.
+
 ## How the tools run
 
 Always through the host's own environment, never through a `linkml-lint` or `gen-project` found on the path: the versions the host tested with are the ones that count. The `tools` line names the first that applies: the project's `justfile` (`just --justfile <project>/justfile <recipe>`, or `uvx --from rust-just just` without `just`), its `Makefile` (`make -C <project> <target>`), `uv run` or `poetry run` when the host's `pyproject.toml` names `linkml`, else `uvx --from linkml <tool>` with the version uvx resolved named in the hand-off.
 
 ## Adoption
 
-A schema found outside any project can be given the sidecar's toolchain without moving it. `--adopt <file>` installs the sidecar with no dummy, sets the slug from the file's stem and the id from the file, and points `config.public.mk`'s `LINKML_SCHEMA_SOURCE_DIR` at the file's folder, relative to `.linkml/`. Every recipe derives its paths from that one line, so lint, the generators, the docs and the tests read the schema where it is. The file is never moved, copied, linked or edited. KTL mode leaves the line alone: the project's schema stays in `.linkml/`, and the bundle gets a copy in `.lokf/schema/` ([ktl.md](ktl.md)).
+A schema found outside any project can be given the sidecar's toolchain without moving it. `--adopt <file>` installs the sidecar with no dummy, sets the slug from the file's stem and the id from the file, and points `config.public.mk`'s `LINKML_SCHEMA_SOURCE_DIR` at the file's folder, relative to `.linkml/`. Every recipe derives its paths from that one line, so lint, the generators, the docs and the tests read the schema where it is. The file is never moved, copied, linked or edited.
 
-The folder the template expects, `src/<slug>/schema/`, holds a README that says where the schema is, and no data: the host's classes are not the dummy's, so the hand-off asks for one example per class. The file must be `<slug>.yaml`, because the template names the schema after the slug and reads `.yaml`. Beside a `.lokf/` bundle the adopted schema gets no copy in `.lokf/schema/`. That is a decision for the bundle's maintainers ([ktl.md](ktl.md#an-adopted-schema-and-a-bundle-added-later)). `--adopt` refuses a file inside `.lokf/`, because a schema there is KTL's.
+The folder the template expects, `src/<slug>/schema/`, holds a README that says where the schema is, and no data: the host's classes are not the dummy's, so the hand-off asks for one example per class. The file must be `<slug>.yaml`, because the template names the schema after the slug and reads `.yaml`. `--adopt` refuses a file inside `.lokf/`, a KTL knowledge bundle's folder, which KTL maintains.
+
+## An older sidecar beside a KTL bundle
+
+Up to 0.5.2, linkml-sidecar connected a sidecar to a Knowledge Trust Ladder (KTL) bundle itself, in one of three forms. The preflight's `lokf` line warns about the first two. Each moves to the plain layout on the project's side, as below. The bundle's side is KTL's: after either of the first two moves, `.lokf/justfile` may still name the project's own file, and ktl-librarian's [domain-vocabulary.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-vocabulary.md) says what it names instead.
+
+- **The schema imports LOKF core**, as up to 0.4.x. Remove the `lokf` import and each `is_a` on a LOKF class, and give the top classes an identifier slot of the schema's own. Delete `.linkml/.linkmllint.yaml` and the `--render-imports` in `config.public.mk`. Move the examples under `tests/data/problem/valid/` to `tests/data/valid/`, as instances without `type`, and run `--repair tests/test_data.py`.
+- **The schema sits in `.lokf/schema/`**, as in 0.5.0. Run `git mv .lokf/schema/<slug>.yaml .linkml/src/<slug>/schema/` and delete the `README.md` beside it. Set `LINKML_SCHEMA_SOURCE_DIR="src/<slug>/schema"` in `.linkml/config.public.mk`, set the `target=` line of `project.justfile`'s `linkml-link` recipe to `.linkml/src/<slug>/schema`, and relink `linkml_schema` there. Then follow the first bullet. `--repair` and `--pointers-only` refuse such a sidecar until it is moved.
+- **`project.justfile` carries `lokf-adapt` recipes**, as from 0.5.1. They are the host's own now: nothing rewrites them, and the skills run them only when a person asks.

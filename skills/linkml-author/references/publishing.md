@@ -13,7 +13,7 @@ Package data serves code that is released with the schema. ai-atlas-nexus puts i
 A schema that expects importers is served at two kinds of address under its `id`:
 
 - `<id>/schema/<module>.yaml` for every source file, the umbrella included, at the same relative paths the files have in the repository;
-- `<id>/<name>.yaml` for one merged file with no imports, which `gen-linkml --mergeimports -f yaml <umbrella>` writes. `gen-project` does not write it, so the project adds a recipe of its own.
+- `<id>/<name>.yaml` for one merged file with no imports, which `gen-linkml --mergeimports -f yaml <umbrella>` writes. `gen-project` does not write it. In a project linkml-sidecar made, `just merged` does, as `project/linkml/<name>.yaml`; any other project adds a recipe of its own. Pass `--format yaml`, since `gen-linkml` writes JSON otherwise, and `--no-materialize-attributes`, or every class gets its slots copied in as attributes, which an importer's renames then miss.
 
 Why both. An `imports:` entry written as a URL or a CURIE is fetched with `.yaml` appended, and on 1.12.1 the module's own `./core` imports are then fetched from the module's address, not looked for beside the importing file. So a modular root imports over HTTP as long as every module is served at the same relative path, which is what the first address does. Older releases resolved those imports differently, and not the same way from release to release. The changes are in linkml-runtime pull request 368 and linkml pull requests 2576, 3645 and 3855, so a build that imports by URL pins its toolkit.
 
@@ -25,7 +25,7 @@ lmodel, an experiment area for these patterns and not a standard, gives a worked
 
 ## A release asset
 
-A tagged release that attaches the schema is the address a vendoring importer copies from and checks. KTL's knowledge-release workflow attaches `schema-<tag>-<name>.yaml` and its `.sha256` when `.lokf/justfile` names a domain vocabulary, after rewriting the relative `lokf` import to the package's name, and it stops on any other local import. gist attaches `schema-<tag>-gist.yaml` from its own workflow. The tag is the version (linkml-project-copier issue 121 says so for its projects too). The sidecar's own workflow attaches nothing yet.
+A tagged release that attaches the schema is the address a vendoring importer copies from and checks. gist attaches `schema-<tag>-gist.yaml` from its own workflow. The tag is the version (linkml-project-copier issue 121 says so for its projects too). The sidecar's own workflow attaches nothing yet: attach the file `just merged` writes.
 
 ## How an importer takes it
 
@@ -61,7 +61,7 @@ When the vocabulary you need shares names with the schema it must sit beside, a 
 5. re-root the top classes on the host's base class;
 6. give every element one canonical form of name.
 
-The command is `lokf adapt VOCAB -o OUT --root Class --lokf PATH --prefix P`. `--dry-run` shows the moves, and `--check` in CI says when the published vocabulary has moved. gist does the same without the toolkit, with a rename list in its justfile and a script that checks the names. Either way the moves are the rules of [schema-design.md](schema-design.md) applied after the fact, which is why a schema written to those rules asks none of this of its importers. Beside a KTL bundle, such a copy of the project's own schema, in `.lokf/schema/`, is how the bundle's concepts use its classes ([ktl-domain-vocabulary.md](ktl-domain-vocabulary.md)).
+The command is `lokf adapt VOCAB -o OUT --root Class --lokf PATH --prefix P`. `--dry-run` shows the moves, and `--check` in CI says when the published vocabulary has moved. gist does the same without the toolkit, with a rename list in its justfile and a script that checks the names. Either way the moves are the rules of [schema-design.md](schema-design.md) applied after the fact, which is why a schema written to those rules asks none of this of its importers. A KTL bundle takes a schema the same way: ktl-librarian adapts a published release, beside any others the bundle uses.
 
 ## Before a release
 

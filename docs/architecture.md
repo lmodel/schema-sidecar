@@ -1,6 +1,6 @@
 # Architecture
 
-This page explains how linkml-sidecar gives a repository a LinkML data model without touching its build, what each of its two skills does, and why. [Install](install.md) says how to get them.
+This page explains how linkml-sidecar gives a repository a LinkML data model, at the root of a new repository or beside the code of an existing one without touching its build, what each of its two skills does, and why. [Install](install.md) says how to get them.
 
 ## A sidecar beside the code
 
@@ -17,19 +17,21 @@ The schema is the source: everything the generators write is build output.
 
 The installer never writes a class, and the author never installs or repairs the sidecar.
 
-## Three cases
+## Four cases
 
-- A repository that *is* a schema project, such as [lmodel/gist](https://github.com/lmodel/gist), runs copier at its root and needs no sidecar. linkml-author works there as it is.
+- An empty repository, or an empty folder with no git yet, gets the project at its root, with the schema in `src/<slug>/schema/` and the template's own README, docs, license and workflows. The repository *is* the schema project.
 
 - A codebase whose maintainers do not want a schema project in their root folder gets the sidecar, around a small dummy schema that linkml-author replaces.
 
 - A repository that holds a LinkML schema but no project gets the sidecar around that schema (`--adopt`), and the schema is neither moved nor changed.
 
+- A repository that already is a schema project, such as [lmodel/gist](https://github.com/lmodel/gist), needs no installer. linkml-author works there as it is.
+
 Both skills find a schema by its files, never by its folder's name, as [layouts.md](../skills/linkml-sidecar/references/layouts.md) sets out.
 
 ## Who owns which file
 
-The template owns most of `.linkml/`: the justfile, `pyproject.toml`, `mkdocs.yml` and the rest that copier renders, and only `just update` changes them. The host owns the schema, its tests and example data, the sidecar's README, license and docs pages, and `generators.yaml`. The skill owns the preflight it installed, and beside a KTL bundle the `lokf-adapt` recipes it appended to `project.justfile`. Its repair rewrites them. [The README every sidecar carries](../skills/linkml-sidecar/templates/linkml/README.md) maps every file to its owner.
+The template owns most of `.linkml/`: the justfile, `pyproject.toml`, `mkdocs.yml` and the rest that copier renders, and only `just update` changes them. The host owns the schema, its tests and example data, the sidecar's README, license and docs pages, and `generators.yaml`. The skill owns the preflight it installed and the doorway and `merged` recipes it appended to `project.justfile`. Its repair rewrites them. [The README every sidecar carries](../skills/linkml-sidecar/templates/linkml/README.md) maps every file to its owner.
 
 The template assumes it owns a repository root, so it renders workflows, governance files, a `setup` recipe and a `deploy` recipe that are inert or harmful in a subfolder. The scaffold switches each of them off, and [template-assumptions.md](../skills/linkml-sidecar/references/template-assumptions.md) says how, row by row. Its last column marks the rows that a `layout: sidecar` answer would remove. [linkml-project-copier#187](https://github.com/linkml/linkml-project-copier/issues/187) proposes that answer upstream.
 
@@ -39,11 +41,11 @@ Copier runs template code while it renders (`--trust`), so the scaffold first ch
 
 ## What never runs
 
-`just setup` runs `git init` and commits, which would nest a repository inside the host, and `just deploy` pushes the root of the host's `gh-pages` branch. Neither ever runs. The workflow builds the site and publishes it under the `linkml/` subpath only, once a repository variable says so: to GitHub Pages, or to Codeberg Pages with the Forgejo workflow.
+In a sidecar, `just setup` runs `git init` and commits, which would nest a repository inside the host, and `just deploy` pushes the root of the host's `gh-pages` branch. Neither ever runs there. At the root of a new repository with no git yet, `just setup` is the template's own first run. The workflow builds the site and publishes it under the `linkml/` subpath only, once a repository variable says so: to GitHub Pages, or to Codeberg Pages with the Forgejo workflow.
 
 ## With Knowledge Trust Ladder
 
-A [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle, `.lokf/`, is a separate thing from the sidecar. The sidecar's schema is the repository's *domain schema*: it models the domain, stays in `.linkml/` and imports nothing from `.lokf/`. Beside a bundle, `lokf adapt` writes a copy of it into `.lokf/schema/`, beside LOKF's core schema, and `.lokf/justfile` names the copy. The copy is the bundle's *domain vocabulary*, the classes its concepts may name beyond LOKF's own. Its top classes descend from LOKF's `Concept`, so the bundle's concepts may name them as their `type`, and `lokf validate --schema` checks the bundle against LOKF's schema and the copy. `just lokf-adapt` writes the copy again after a schema change, and the workflow fails while it is stale. [ktl.md](../skills/linkml-sidecar/references/ktl.md) says what each piece does. Without a bundle, the sidecar stands alone.
+A [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle, `.lokf/`, belongs to KTL, which maintains it. Neither skill writes there, and the schema imports nothing from it. The skills take a schema as far as a published release. A bundle's *domain vocabulary* may draw on several published schemas, from this repository or any other, and ktl-librarian builds it with `lokf adapt` ([domain-vocabulary.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-vocabulary.md)).
 
 ## Keeping it current
 

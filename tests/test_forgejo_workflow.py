@@ -49,7 +49,7 @@ def test_every_step_runs_in_the_sidecar_and_installs_from_the_lock():
 def test_it_triggers_on_the_sidecar_and_the_workflow_in_any_folder_forgejo_reads():
     for event in ("pull_request", "push"):
         paths = TRIGGERS[event]["paths"]
-        assert ".linkml/**" in paths and ".lokf/schema/**" in paths and "**/workflows/linkml-sidecar.yaml" in paths
+        assert ".linkml/**" in paths and "**/workflows/linkml-sidecar.yaml" in paths
         assert "branches" not in TRIGGERS[event]
     assert "workflow_dispatch" in TRIGGERS
 

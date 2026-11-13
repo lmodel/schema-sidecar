@@ -255,33 +255,49 @@ def test_a_folder_only_bots_touched_and_a_pathspec_lookalike(tmp_path):
     assert result and matches(result.out, r"""^info    authors    schema folder :!x/: 1 person, 1 commit \("Ann"\);"""), result.out
 
 
-def test_reads_a_ktl_bundle(tmp_path):
+def test_says_where_a_new_project_goes(tmp_path):
+    host = tmp_path / "empty"
+    write(host / "README.md", "# Empty\n")
+    write(host / ".claude" / "settings.json", "{}\n")
+    result = preflight(host)
+    assert result and matches(result.out, r"^info    layout +the folder is empty apart from .*lays the project at the root"), result.out
+    write(host / "app.py", "print(1)\n")
+    write(host / "src" / "main.go", "package main\n")
+    result = preflight(host)
+    assert result and matches(result.out, r"^info    layout +the folder holds app\.py, src/: linkml-sidecar lays a \.linkml/ sidecar"), result.out
+
+
+def test_names_a_ktl_bundle_as_ktl_s_and_reads_nothing_more(tmp_path):
     host = make_host(tmp_path)
+    assert not matches(preflight(host).out, r"^\S+ +lokf "), "a line about a bundle that is not there"
     add_lokf(host)
     result = preflight(host)
-    assert result and matches(result.out, r"^ok      lokf .*with-KTL mode; lokf floor >=0\.9\.0; \.lokf/schema/lokf\.yaml pinned; \.lokf/justfile schema not wired; \[tool\.lokf\] schema absent; base_iri https://fixture\.example/knowledge/"), result.out
+    assert result and matches(result.out, r"^info    lokf +\.lokf/ is a KTL knowledge bundle, which KTL maintains: these skills never write there"), result.out
     assert not matches(result.out, r"^warn    lokf "), result.out
-    write(host / ".lokf" / "knowledge" / "index.md", "---\ntitle: no base\n---\n")
-    result = preflight(host)
-    assert result and "base_iri unknown" in result.out and not matches(result.out, r"^warn    lokf "), result.out
 
 
 @pytest.mark.parametrize(
     "imported",
-    ["../../../../.lokf/lokf", "'../../../../.lokf/lokf.yaml'  # LOKF core", "../../../../.lokf/schema/lokf"],
-    ids=["bare", "quoted", "schema folder"],
+    ["../../../../.lokf/lokf", "'../../../../.lokf/lokf.yaml'  # LOKF core", "../../../../.lokf/schema/lokf", "lokf"],
+    ids=["path", "quoted", "schema folder", "bare name"],
 )
-def test_warns_when_the_project_s_schema_imports_lokf_core_from_the_bundle(tmp_path, imported):
-    """A LinkML project's schema imports nothing from .lokf/; an older KTL-mode sidecar's imported LOKF core by its path."""
+def test_warns_when_the_project_s_schema_imports_lokf_core(tmp_path, imported):
+    """A LinkML project's schema imports nothing from LOKF, with or without a bundle beside it; an older sidecar's imported LOKF core."""
     host = make_host(tmp_path)
-    add_lokf(host)
-    write(host / ".lokf" / "lokf.yaml", read(host / ".lokf" / "schema" / "lokf.yaml"))
     write(host / ".linkml" / ".copier-answers.yml", OURS + "project_slug: demo\n")
     write(host / ".linkml" / "src" / "demo" / "schema" / "demo.yaml", SCHEMA.replace("  - linkml:types\n", f"  - linkml:types\n  - {imported}\n"))
     result = preflight(host)
-    warned = [line for line in result.out.splitlines() if line.startswith("warn    lokf") and "older KTL-mode sidecar" in line]
+    warned = [line for line in result.out.splitlines() if line.startswith("warn    lokf")]
     assert result and len(warned) == 1, result.out
-    assert ".linkml/src/demo/schema/demo.yaml imports LOKF core from .lokf/" in warned[0] and "An older KTL-mode sidecar" in warned[0], warned[0]
+    assert ".linkml/src/demo/schema/demo.yaml imports LOKF core" in warned[0] and "An older sidecar beside a KTL bundle" in warned[0], warned[0]
+
+
+def test_a_lokf_keyword_outside_the_imports_is_no_import(tmp_path):
+    host = make_host(tmp_path)
+    write(host / ".linkml" / ".copier-answers.yml", OURS + "project_slug: demo\n")
+    write(host / ".linkml" / "src" / "demo" / "schema" / "demo.yaml", SCHEMA + "keywords:\n  - lokf\n")
+    result = preflight(host)
+    assert result and not matches(result.out, r"^warn    lokf "), result.out
 
 
 def test_warns_about_a_sidecar_that_reads_its_schema_from_the_bundle(tmp_path):
@@ -343,43 +359,6 @@ def test_the_sidecars_own_workflow_is_no_pages_collision(tmp_path):
     result = preflight(host)
     assert result and matches(result.out, r"^ok      workflows  \.github/workflows/linkml-sidecar\.yaml present"), result.out
     assert not matches(result.out, r"^warn    pages "), result.out
-
-
-def test_a_ktl_justfile_with_an_empty_schema_variable_is_not_wired(tmp_path):
-    host = make_host(tmp_path)
-    add_lokf(host)
-    write(host / ".lokf" / "justfile", 'bundle := "knowledge"\nschema := ""\n')
-    result = preflight(host)
-    assert result and "schema not wired" in result.out, result.out
-    write(host / ".lokf" / "justfile", 'bundle := "knowledge"\nschema := "../.linkml/src/demo/schema/demo.yaml"\n')
-    result = preflight(host)
-    assert result and "schema wired (../.linkml/src/demo/schema/demo.yaml); [tool.lokf] schema absent" in result.out, result.out
-    # An older linkml-sidecar named its project's own schema; the line names a copy in .lokf/schema/.
-    assert matches(result.out, r"^warn    lokf +\.lokf/justfile's schema line names \.\./\.linkml/src/demo/schema/demo\.yaml, a file outside \.lokf/"), result.out
-
-
-def test_a_tool_lokf_schema_is_reported_and_held_to_the_justfile_line(tmp_path):
-    host = make_host(tmp_path)
-    add_lokf(host)
-    pyproject = host / ".lokf" / "pyproject.toml"
-    original = read(pyproject)
-    write(host / ".lokf" / "justfile", 'bundle := "knowledge"\nschema := "schema/demo.yaml"\n')
-    write(pyproject, original + '\n[tool.lokf]\nschema = "./schema/demo.yaml"\n')
-    result = preflight(host)
-    assert result and "[tool.lokf] schema ./schema/demo.yaml;" in result.out, result.out
-    assert not matches(result.out, r"^warn    lokf "), result.out
-    write(pyproject, original + "\n[tool.lokf]\nschema = 'other.yaml'\n")
-    result = preflight(host)
-    assert result and matches(result.out, r"^warn    lokf +\[tool\.lokf\] schema in \.lokf/pyproject\.toml is other\.yaml and \.lokf/justfile's schema line is schema/demo\.yaml"), result.out
-
-
-def test_a_justfile_naming_an_adapted_copy_says_so(tmp_path):
-    host = make_host(tmp_path)
-    add_lokf(host)
-    write(host / ".lokf" / "justfile", 'bundle := "knowledge"\nschema := "demo.yaml"\n')
-    write(host / ".lokf" / "demo.yaml", "# Generated by `lokf adapt` from demo.yaml (demo 1.0.0); do not edit.\nid: https://fixture.example/schema/demo-lokf\n")
-    result = preflight(host)
-    assert result and "schema wired (demo.yaml, a copy lokf adapt wrote from demo.yaml (demo 1.0.0))" in result.out, result.out
 
 
 def test_warns_below_the_repository_root(tmp_path):

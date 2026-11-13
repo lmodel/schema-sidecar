@@ -1,13 +1,11 @@
-"""The scaffold's pure functions: the facts' validation, the answers file, the slug, the lokf adapt command, the placeholder check."""
+"""The scaffold's pure functions: the facts' validation, the answers file, the slug, the placeholder check, the emptiness rule."""
 
 from __future__ import annotations
 
 import pytest
 
-import re
-import shlex
 
-from conftest import FACTS, TEMPLATES, load_scaffold_module
+from conftest import FACTS, load_scaffold_module
 
 mod = load_scaffold_module()
 
@@ -15,9 +13,30 @@ mod = load_scaffold_module()
 def facts(**changes):
     out = {token: "" for token in mod.TOKENS}
     out.update(FACTS)
-    out.update(TEMPLATE_REF="v0.5.0", TODAY="2026-10-07", COPYRIGHT_YEAR="2026")
+    out.update(TEMPLATE_REF="v0.5.0", TODAY="2026-10-07", COPYRIGHT_YEAR="2026", LICENSE_FILE="LICENSE", GH_ACTION_PYPI="false", GH_ACTION_DOCS_PREVIEW="false")
     out.update(changes)
     return out
+
+
+def test_a_root_project_names_the_folder_s_license_and_its_two_switches():
+    text = mod.answers_text(facts(LICENSE_FILE="", GH_ACTION_PYPI="true"))
+    assert 'existing_license_file: ""' in text and "gh_action_pypi: true" in text and "gh_action_docs_preview: false" in text
+    assert mod.answers_text(facts(LICENSE_FILE="COPYING")).count('existing_license_file: "COPYING"') == 1
+
+
+def test_a_switch_that_is_not_true_or_false_is_refused():
+    with pytest.raises(mod.Refused, match="GH_ACTION_PYPI must be true or false"):
+        mod.validate(facts(GH_ACTION_PYPI="yes"))
+
+
+def test_a_folder_with_git_a_readme_a_license_and_agent_folders_is_empty(tmp_path):
+    for name in (".git/HEAD", "README.md", "LICENSE", ".gitignore", ".claude/settings.json", "AGENTS.md", ".github/copilot-instructions.md"):
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_text("x\n")
+    assert mod.not_empty(tmp_path) == []
+    (tmp_path / ".github" / "workflows").mkdir()
+    (tmp_path / "app.py").write_text("x\n")
+    assert mod.not_empty(tmp_path) == [".github/", "app.py"]
 
 
 def test_the_answers_carry_the_facts_and_the_four_fixed_answers():
@@ -65,19 +84,6 @@ def test_render_substitutes_every_token_and_refuses_a_leftover():
     with pytest.raises(mod.Refused, match="SCHEMA_SRC"):
         mod.render("<SCHEMA_SRC>/x.yaml", facts())
     assert mod.render("<slug> and <PROJ_SLUG>", facts()) == "<slug> and demo"
-
-
-def test_the_scaffold_runs_lokf_adapt_as_the_recipe_does():
-    """The copy the scaffold writes is the one `just lokf-adapt-check` holds it to: the same command, the same paths from .linkml/."""
-    recipes = mod.render((TEMPLATES / "project.justfile.lokf").read_text(), facts())
-    default = re.search(r'^lokf_cmd := env_var_or_default\("LOKF_CMD", "([^"]+)"\)$', recipes, re.M)
-    assert default and default.group(1) == mod.LOKF_CMD
-    assert re.search(r'^lokf_adapt_flags := ""$', recipes, re.M)
-    for name, extra in (("lokf-adapt", []), ("lokf-adapt-check", ["--check"])):
-        line = re.search(rf"^{name}:\n    (.+)$", recipes, re.M).group(1)
-        line = line.replace("{{ lokf_cmd }}", default.group(1)).replace("{{ source_schema_path }}", "src/demo/schema/demo.yaml").replace("{{ lokf_adapt_flags }}", "")
-        assert shlex.split(line) == shlex.split(mod.LOKF_CMD) + mod.adapt_args("demo") + extra, name
-    assert "../.lokf/schema/demo.yaml" in mod.adapt_args("demo")
 
 
 def test_the_template_url_forms():

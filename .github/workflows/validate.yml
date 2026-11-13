@@ -204,6 +204,6 @@ jobs:
       # Not codespell-project/actions-codespell: it hands its path to codespell
       # unquoted under /bin/sh, where `**/*.md` means `*/*.md` and matches no
       # file here, so it checked nothing. git ls-files lists the tracked
-      # Markdown, the fixtures and templates included.
+      # Markdown, the templates included.
       - name: codespell
         run: git ls-files -z '*.md' | xargs -0 pipx run --spec codespell==2.4.2 codespell

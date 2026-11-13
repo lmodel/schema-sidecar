@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # linkml-scaffold.sh: Steps 1 to 3 of linkml-sidecar as one deterministic run.
 # It pre-seeds the files the skill owns, runs copier for everything else,
-# neutralises the template's root-install assumptions, names the schema in
-# a KTL bundle's justfile when one is present, adds the root pointers, and
-# prints the hand-off facts. Nothing in it is a judgement: the facts come
+# neutralises the template's root-install assumptions, adds the root
+# pointers, and prints the hand-off facts. It never writes in a KTL bundle's
+# .lokf/, which KTL maintains. Nothing in it is a judgement: the facts come
 # in as environment variables that the skill's Step 0 resolved from real
 # sources.
 #
@@ -18,7 +18,7 @@
 # only when it is 3.8 or later. The half needs only the standard library, so
 # its header names no package for a mirror to refuse.
 #
-# Usage: linkml-scaffold.sh [--dry-run] [--host DIR] [--mode plain|lokf|auto]
+# Usage: linkml-scaffold.sh [--dry-run] [--host DIR]
 #                           [--gitignored] [--adopt SCHEMA | --dummy]
 #                           [--pointers-only] [--repair PATH]
 #   --repair generators.yaml moves a finished project's config.yaml to
@@ -27,9 +27,7 @@
 #   FULL_NAME EMAIL LICENSE_ID SCHEMA_ID DOCS_URL [COPYRIGHT_YEAR] [TODAY]
 #   With --adopt, PROJ_SLUG and SCHEMA_ID come from the schema file itself.
 #   Overrides: LINKML_TEMPLATE_SRC (a URL or a local clone), LINKML_COPIER
-#   (the copier command to run instead of uvx), LINKML_TEMPLATE_SKIP_PIN_CHECK=1,
-#   and in KTL mode LOKF_CMD (the lokf command, which runs from .linkml/ as
-#   the lokf-adapt recipes run it).
+#   (the copier command to run instead of uvx), LINKML_TEMPLATE_SKIP_PIN_CHECK=1.
 # Exit: 0 done; 2 usage or a missing tool; 3 refused (a project, a schema or
 #       a file already there stands in the way); 4 copier failed; 5 an
 #       overlay or pointer failed. Nothing but its own staging directory is

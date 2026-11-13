@@ -6,7 +6,7 @@
 
 | Job | Runs when | Does |
 | --- | --- | --- |
-| `lint-and-test` | a pull request or a push to any branch touching `.linkml/**`, `.lokf/schema/**` (the bundle's copy and LOKF core) or the workflow; dispatch | in `.linkml/`: `uv sync --locked --group dev`, `just lint`, `just test`, and `just lokf-adapt-check` when the sidecar has that recipe, on Python 3.12 |
+| `lint-and-test` | a pull request or a push to any branch touching `.linkml/**` or the workflow; dispatch | in `.linkml/`: `uv sync --locked --group dev`, `just lint` and `just test`, on Python 3.12 |
 | `docs` | the same triggers as `lint-and-test`, on the repository's default branch only, after `lint-and-test` passes | `just gen-doc`, `mkdocs build`; the site kept as the `linkml-docs` artifact |
 | `publish-docs` | after `docs`, only while the repository variable `LINKML_DOCS_ENABLED` is `true` | the artifact published under the `linkml/` subpath of the host's `gh-pages` branch; peaceiris replaces that subpath and nothing else, so a site the host already publishes there is left alone and the page of a deleted class is removed |
 
@@ -16,7 +16,8 @@
 
 1. Commit `.linkml/` with its `uv.lock` (Step 4) and the workflow.
 2. To publish the docs, create the repository variable `LINKML_DOCS_ENABLED` with the value `true` (Settings, Secrets and variables, Actions, Variables), and point Pages at the `gh-pages` branch if it is not already. The site appears at the host's Pages URL plus `/linkml/`, which is what `DOCS_URL` should have been set to.
-3. A root `dependabot.yml` can keep the sidecar's Python dependencies current with a `uv` entry whose `directory` is `/.linkml`. The hoisted workflow's own action pins are bumped by the host's existing `github-actions` entry, if it has one.
+3. A root `dependabot.yml` can keep the sidecar's Python dependencies current with a `uv` entry whose `directory` is `/.linkml`. The hoisted workflow's own action pins are bumped by the host's existing `github-actions` entry, if it has one. Suggest the entry to the host in one line; do not scaffold it.
+4. If the host runs no ShellCheck or `actionlint` over its tree, suggest, in one line, coverage for `.linkml/scripts/linkml-preflight.sh` and the workflow.
 
 ## Pins
 

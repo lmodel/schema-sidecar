@@ -1,8 +1,8 @@
 ---
 name: linkml-author
-description: 'Author and evolve the LinkML schema of any repository that holds one: a linkml-project-copier or linkml-project-cookiecutter project wherever it sits, the `.linkml/` sidecar linkml-sidecar installs, or a schema file on its own. Use when: someone asks to add, change or deprecate a class, slot, enum or type; to model a concept, map a specification, standard or document to a schema, or replace the dummy schema with the real model; to refactor or split a schema; to check schema conventions; or to run lint, gen-project, gen-doc or test. Not for installing or repairing the sidecar; that is linkml-sidecar. Keywords: LinkML, schema authoring, data model, classes, slots, enums, mappings, linkml-lint, gen-project, JSON Schema, Pydantic, OWL, domain schema, LOKF domain vocabulary, KTL.'
+description: 'Author and evolve the LinkML schema of any repository that holds one: a linkml-project-copier or linkml-project-cookiecutter project wherever it sits, the `.linkml/` sidecar linkml-sidecar installs, or a schema file on its own. Use when: someone asks to add, change or deprecate a class, slot, enum or type; to model a concept, map a specification, standard or document to a schema, or replace the dummy schema with the real model; to refactor or split a schema; to check schema conventions; or to run lint, gen-project, gen-doc or test. Not for installing or repairing the sidecar; that is linkml-sidecar. Not for the files of a KTL bundle''s `.lokf/`, which ktl-librarian keeps, unless a person names one. Keywords: LinkML, schema authoring, data model, classes, slots, enums, mappings, linkml-lint, gen-project, JSON Schema, Pydantic, OWL, domain schema, KTL.'
 license: Apache-2.0
-compatibility: 'Requires bash; every LinkML tool runs through the host''s own environment (`just`, `make`, `uv run` or `poetry run` in the schema project), or through a pinned `uvx --from linkml` when the host has none, never a globally installed one. Works with or without a `.lokf/` KTL bundle.'
+compatibility: 'Requires bash; every LinkML tool runs through the host''s own environment (`just`, `make`, `uv run` or `poetry run` in the schema project), or through a pinned `uvx --from linkml` when the host has none, never a globally installed one. Works with or without a `.lokf/` KTL bundle, and never writes in one unasked.'
 ---
 
 # linkml-author
@@ -22,18 +22,20 @@ Turn a project's LinkML schema into the model its code, data and documents descr
 
 > Never edit anything under `project/`, `docs/elements/` or `src/<slug>/datamodel/`: those are generated, and the next recipe overwrites them. Never run `just setup` or `just deploy` in a sidecar. Never loosen a validator to admit data: fix the schema or the data. Never move a schema into a sidecar unasked; it is authored where it is.
 
+> `.lokf/` is a Knowledge Trust Ladder (KTL) bundle's folder, which KTL maintains: its schema files are published, curated vocabulary, and this skill helps a schema reach that state elsewhere. Never create, edit or regenerate a file under `.lokf/`, or run a recipe that writes there, unless the person names the file and asks. Even then, `lokf.yaml` and a file whose first line says `lokf adapt` generated it are written by the lokf toolkit and ktl-librarian, not by hand. Edit any other as a schema on its own, and say in the hand-off that the bundle wants `lokf validate` again. Never add a `lokf` import, an `is_a` on a LOKF class, or a `lokf:` prefix or CURIE to a schema outside `.lokf/`, with or without a bundle beside it; names LOKF also uses, such as `id` or `Person`, are ordinary names there.
+
 ## Step 0 - Find the schema
 
-A LinkML schema can live in any repository, and need not come from a template, so the schema is found by its files, never by its folder. Run the preflight: the copy a sidecar installed, `.linkml/scripts/linkml-preflight.sh`, or linkml-sidecar's `templates/scripts/linkml-preflight.sh` when that skill is installed beside this one. Its `sidecar`, `project`, `schema` and `tools` lines name the layout, the schema file and the way to run the tools; its `authors` line says whose history the schema folder carries. Without either copy, apply the preflight's rule by hand, as the table below gives it ([layouts.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/layouts.md) is the full statement):
+A LinkML schema can live in any repository, and need not come from a template, so the schema is found by its files, never by its folder. Run the preflight: the copy linkml-sidecar installed, `.linkml/scripts/linkml-preflight.sh` in a sidecar or a root project it made, or linkml-sidecar's `templates/scripts/linkml-preflight.sh` when that skill is installed beside this one. Its `sidecar`, `project`, `schema` and `tools` lines name the layout, the schema file and the way to run the tools; its `authors` line says whose history the schema folder carries. Without either copy, apply the preflight's rule by hand, as the table below gives it ([layouts.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/layouts.md) is the full statement):
 
 | Layout | How to tell | Where the schema is |
 | --- | --- | --- |
 | the sidecar | `.linkml/.copier-answers.yml` | `config.public.mk` in `.linkml/` names it; an adopted schema sits where `LINKML_SCHEMA_SOURCE_DIR` points, outside `.linkml/` |
 | a schema project elsewhere: the root, `linkml/`, any directory one level down, or the one you were started in | a `.copier-answers.yml` whose `_src_path` names `linkml-project-copier`, or a `config.public.mk` (the older cookiecutter renders it too; upstream may retire it, and then the answers' `project_slug` names the schema) | `<dir>/<slug>.yaml` from `config.public.mk`, else `src/<slug>/schema/<slug>.yaml` |
-| a schema file on its own | a `*.yaml` that imports `linkml:types` or names the `linkml:` prefix and has a top-level `classes:`, `slots:`, `enums:`, `types:` or `imports:` key, outside the folders the preflight skips (`docs/`, `tests/`, `project/`, `tmp/` and the rest of its `prune` pattern) | where it is |
-| `.linkml/` holding only configuration files | no answers file and no project files in it | not a layout: leave it alone and look on |
+| a schema file on its own | a `*.yaml` that imports `linkml:types` or names the `linkml:` prefix and has a top-level `classes:`, `slots:`, `enums:`, `types:` or `imports:` key, outside the folders the preflight skips (`docs/`, `tests/`, `project/`, `tmp/`, `.lokf/` and the rest of its `prune` pattern) | where it is |
+| `.linkml/` holding only configuration files | no answers file and no project files in it | not a layout: look on. A root project's `generators.yaml` there is the project's to edit |
 
-One schema: work on it. Several, in a project that names none or in a repository with no project: ask the person which one when the session is attended, and list them and stop when it is not. Read the project's `README.md` before editing: in a sidecar it says which files are the template's, which are the host's, and which recipes never to run.
+A `warn lokf` line means an older linkml-sidecar tied the schema to a KTL bundle: before any edit, show the person linkml-sidecar's [layouts.md](../linkml-sidecar/references/layouts.md#an-older-sidecar-beside-a-ktl-bundle), whose move they approve. One schema: work on it. Several, in a project that names none or in a repository with no project: ask the person which one when the session is attended, and list them and stop when it is not. Read the project's `README.md` before editing: in a sidecar it says which files are the template's, which are the host's, and which recipes never to run.
 
 **The tools.** Run everything through the host's own environment, in the first form that applies:
 
@@ -62,7 +64,7 @@ Example data sits beside the schema's tests: `tests/data/valid/<ClassName>-<anyt
 
 ## Replacing the dummy
 
-A fresh sidecar holds the `Person` example, beside a KTL bundle too; an adopted or found schema is already the model, so this section is skipped and the next applies. Read the host first, then write the model in one pass and run the gate:
+A fresh sidecar holds the `Person` example; an adopted or found schema is already the model, so this section is skipped and the next applies. Read the host first, then write the model in one pass and run the gate:
 
 1. **Collect the sources.** Gather the code's types and records (`src/`, `models/`, migrations, OpenAPI or GraphQL documents, JSON samples, database DDL) and the documents that define the domain (a specification, a standard, a glossary). Look for a vocabulary the domain already publishes as LinkML or OWL, and import it rather than describe it again.
 2. **Map, do not transcribe.** [references/source-mapping.md](references/source-mapping.md) is the table: a persistent noun becomes a class, a controlled list an enum, a property a slot, a relationship a slot with an object range and an inverse, a containment root a `tree_root` class. Paraphrase descriptions; never paste a standard's text into the schema.
@@ -105,22 +107,12 @@ These settle the questions an author meets most, each stated once:
 - **Rename** by adding the new element, marking the old one deprecated with its replacement, and removing the old one in a later release.
 - **Split** a growing schema into modules under the same folder, imported by the main file (`imports: [./module]`), without redeclaring an imported element; a core and topic modules under an umbrella is the shape importers can take a slice of ([references/schema-design.md](references/schema-design.md)).
 - **Refactor** only on offer and on a yes: fold a single-class slot into its attribute, split or merge modules, pin the IRIs; a rename goes the deprecation route above.
-- **Publish** a release: the tag, the merged file beside the modules, their addresses and the asset ([references/publishing.md](references/publishing.md)); the hand-off names the address importers use.
+- **Publish** a release: the tag, the merged file beside the modules (`just merged` in a project linkml-sidecar made), their addresses and the asset ([references/publishing.md](references/publishing.md)); the hand-off names the address importers use.
 - **Update the template** with `just update` on a clean tree, then the gate, then commit `uv.lock` and `.copier-answers.yml` with the diff.
 
 ## Beside a KTL bundle
 
-A LinkML project and a `.lokf/` bundle are separate things, and each has a file of its own. The project's schema is the *domain schema*. It models the domain, stays where the project keeps it (`.linkml/src/<slug>/schema/`, or `src/<slug>/schema/` at the root) and imports nothing from `.lokf/`. The bundle's file is its *domain vocabulary*: the classes its concepts may name, in the file `.lokf/justfile` names (`schema :=`), in `.lokf/schema/` beside LOKF core's copy, `lokf.yaml`. A file that imports `lokf` belongs in `.lokf/schema/`, so never add that import to the project's schema. When the bundle's concepts use the project's classes, the domain vocabulary is a copy `lokf adapt` writes from the domain schema, and the preflight's `lokf` line says `a copy lokf adapt wrote`. A `.lokf/` with no copy is a bundle *about* the repository, as in a schema repository that documents itself. Giving it a copy is its maintainers' decision, never assumed from the bundle's presence. ktl-librarian's [domain-vocabulary.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-vocabulary.md) is the authority, and linkml-sidecar's [references/ktl.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/skills/linkml-sidecar/references/ktl.md) says how a sidecar makes the copy. With a copy:
-
-- edit the project's schema, never the copy; after the gate, `just lokf-adapt` writes the copy again, and `just lokf-adapt-check` fails while it is stale;
-- a class the bundle's concepts may name is one the copy re-roots on `Concept`, or a subclass of one. By default `lokf adapt` re-roots each class with no parent that carries the identifier; `lokf_adapt_flags` in `project.justfile` takes `--root <Class>` for any other;
-- a name the schema shares with LOKF (`id`, `name`, `description`, `Person`, ...) is dropped, folded or renamed in the copy, and the copy's `notes` say which; concepts write the copy's names, so name each rename in the hand-off;
-- every class is closed, so a concept carries only the slots its class declares;
-- after `lokf-adapt`, `cd .lokf && just lokf-validate && just lokf-check-refs`: the bundle against LOKF core and the copy;
-- never loosen the validator to admit a concept; add the class, or fit the concept to a built-in;
-- a new class is one more name for the KTL plugins' "Known LOKF types" setting; say so in the hand-off.
-
-A domain vocabulary written for the bundle alone, a file in `.lokf/schema/` that imports `lokf`, is KTL's file, not a LinkML project's; edit it as a schema file on its own. [references/ktl-domain-vocabulary.md](references/ktl-domain-vocabulary.md) carries the rest.
+A LinkML project and a `.lokf/` bundle are separate things. The project's schema is a *domain schema*: it models the domain, stays where the project keeps it (`.linkml/src/<slug>/schema/`, or `src/<slug>/schema/` at the root) and imports nothing from `.lokf/`. A bundle's *domain vocabulary* sits in `.lokf/schema/` and may draw on several published schemas, from this repository or any other, or on none, and ktl-librarian builds it with `lokf adapt` ([domain-vocabulary.md](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-vocabulary.md)). So this skill's part ends at a published release: a tag, and the merged file that `just merged` writes in a project linkml-sidecar made ([references/publishing.md](references/publishing.md)). A `project.justfile` that carries `lokf-adapt` recipes, from an older linkml-sidecar, is the host's own: run them only when the person asks.
 
 ## Hand-off
 
@@ -130,6 +122,7 @@ After a change, tell the person:
 - which elements were added, changed or deprecated;
 - what the `authors` line said, and which refactoring moves were offered or made;
 - what was guessed, and from which source;
-- whether the gate passed and, beside a bundle with a copy, whether `lokf-adapt-check` and `lokf validate` did;
+- whether the gate passed;
 - which docs pages were updated;
-- what is left for linkml-sidecar (a broken sidecar file, or a schema that could be adopted) or for the KTL plugins (a new type).
+- what is left for linkml-sidecar: a broken sidecar file, or a schema that could be adopted;
+- beside a `.lokf/` bundle, which file there the person named, if any, and that ktl-librarian adapts a published release into the bundle's vocabulary.

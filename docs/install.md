@@ -4,7 +4,7 @@ This page gives every way to install the two skills, what each needs on the mach
 
 ## Quick start
 
-Install both skills for your user, then ask your agent to set up a LinkML sidecar. **linkml-sidecar** runs once and hands off to **linkml-author**, which you keep using.
+Install both skills for your user, then ask your agent to set up a LinkML project: at the root of an empty repository, or as a sidecar beside the code of any other. **linkml-sidecar** runs once and hands off to **linkml-author**, which you keep using.
 
 ### GitHub CLI
 

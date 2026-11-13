@@ -1,13 +1,13 @@
 ---
 name: linkml-sidecar
-description: 'Install a `.linkml/` LinkML schema sidecar (a pinned linkml-project-copier project with its generators, docs and tests, a dummy schema, and a `linkml_schema` doorway link beside it) in the repository this skill sits in, without touching the host''s build, or give a schema the repository already holds that toolchain in place (`--adopt`). Use when: a repo has no LinkML schema project yet and someone asks to add, scaffold, bootstrap or set up a LinkML sidecar, schema project, data model or domain schema, with or without a KTL `.lokf/` bundle; or to repair a missing or broken sidecar file. Not for authoring classes, slots or enums; that is the linkml-author skill, which this one hands off to when done. Keywords: LinkML, schema, data model, copier, linkml-project-copier, sidecar, JSON Schema, Pydantic, OWL, SHACL, LOKF, KTL, domain schema.'
+description: 'Install a LinkML schema project (a pinned linkml-project-copier project with its generators, docs and tests, and a dummy schema) in the repository this skill sits in: at the root of an empty repository, or as a `.linkml/` sidecar with a `linkml_schema` doorway link beside the code of any other, without touching the host''s build; or give a schema the repository already holds that toolchain in place (`--adopt`). Use when: a repo has no LinkML schema project yet and someone asks to add, scaffold, bootstrap or set up a LinkML project, sidecar, data model or domain schema, in a new repository or an existing one, with or without a KTL `.lokf/` bundle, which it never writes; or to repair a missing or broken sidecar file. Not for authoring classes, slots or enums; that is the linkml-author skill, which this one hands off to when done. Keywords: LinkML, schema, data model, copier, linkml-project-copier, sidecar, JSON Schema, Pydantic, OWL, SHACL, LOKF, KTL, domain schema.'
 license: Apache-2.0
-compatibility: 'Requires bash (Git for Windows on Windows) and uv, which runs copier, just and the project''s own Python; one network run to github.com and pypi.org for the scaffold; Python 3.10+ for the project. Any forge or none; Step 5''s workflow is GitHub Actions or Forgejo Actions. Works with or without a `.lokf/` KTL bundle.'
+compatibility: 'Requires bash (Git for Windows on Windows) and uv, which runs copier, just and the project''s own Python; one network run to github.com and pypi.org for the scaffold; Python 3.10+ for the project. Any forge or none; Step 5''s workflow is GitHub Actions or Forgejo Actions. Works with or without a `.lokf/` KTL bundle, and never writes in one.'
 ---
 
 # linkml-sidecar
 
-Create a **`.linkml/` sidecar** inside the repository this skill is invoked from. It is a complete [LinkML](https://linkml.io) schema project made by [linkml-project-copier](https://github.com/linkml/linkml-project-copier): the schema in one file, every generator (JSON Schema, Pydantic, OWL, SHACL, TypeScript, a docs site) one recipe away, a small **dummy** schema, and nothing changed in the host's build. A schema the repository already holds gets the same toolchain around it, where it is (`--adopt`). Then hand off to **linkml-author** to replace the dummy with the real model. One script, `scripts/linkml-scaffold.sh`, does Steps 1 to 3 (paths below are relative to this skill's directory). The files this skill owns come from `templates/`, never retyped, and everything else comes from the template at its pin.
+Create a [LinkML](https://linkml.io) schema project in the repository this skill is invoked from: at the **root** of an empty repository, or as a **`.linkml/` sidecar** beside the code of any other. Either is a complete project made by [linkml-project-copier](https://github.com/linkml/linkml-project-copier): the schema in one file, every generator (JSON Schema, Pydantic, OWL, SHACL, TypeScript, a docs site) one recipe away, and a small **dummy** schema. A sidecar changes nothing in the host's build. A schema the repository already holds gets the same toolchain around it, where it is (`--adopt`). Then hand off to **linkml-author** to replace the dummy with the real model. One script, `scripts/linkml-scaffold.sh`, does Steps 1 to 3 (paths below are relative to this skill's directory). The files this skill owns come from `templates/`, never retyped, and everything else comes from the template at its pin.
 
 > Sources: linkml.io is the canonical site for what LinkML *means*. The project shape comes from `gh:linkml/linkml-project-copier` at tag **v0.5.0** (MIT), the one pin, held in `scripts/linkml-scaffold.sh` and verified against the commit it names before the template is trusted. What the template assumes of a repository root, and what this skill does about each assumption, is [references/template-assumptions.md](references/template-assumptions.md). Where a schema may live and how the skills find it is [references/layouts.md](references/layouts.md).
 
@@ -15,12 +15,17 @@ Create a **`.linkml/` sidecar** inside the repository this skill is invoked from
 
 ## Scope
 
-- **This skill** runs **once**, to create `.linkml/` (around the dummy or a schema the host already holds), to **repair** one file it owns (`--repair`), or to re-add the root pointers (`--pointers-only`). It never authors classes.
+- **This skill** runs **once**, to create the project (at the root, or `.linkml/` around the dummy or a schema the host already holds), to **repair** one file it owns (`--repair`), or to re-add the root pointers (`--pointers-only`). It never authors classes.
 - **linkml-author** runs **often**, to turn the dummy into the host's model and keep it generated, documented and tested.
 
-> Guardrails: `.linkml/.copier-answers.yml` means a sidecar exists; use linkml-author instead. A `.linkml/` holding only configuration files is installed around, never emptied; a name both hold is refused. A schema project anywhere else (copier answers naming the template, or `config.public.mk`; [references/layouts.md](references/layouts.md)) is reported and never migrated unasked; linkml-author works there. Never lay the dummy beside a schema the host already holds unless asked (`--dummy`). Never run `just setup` (it runs `git init` and commits, nesting a repository inside the host) or `just deploy` (it pushes the host's `gh-pages` branch root). Never edit a template-owned file by hand; `just update` is how those change. Non-git, non-GitHub or non-POSIX host: see [references/portability.md](references/portability.md).
+> Guardrails: `.linkml/.copier-answers.yml` means a sidecar exists; use linkml-author instead. A `.linkml/` holding only configuration files is installed around, never emptied; a name both hold is refused. A schema project anywhere else (copier answers naming the template, or `config.public.mk`; [references/layouts.md](references/layouts.md)) is reported and never migrated unasked; linkml-author works there. Never lay the dummy beside a schema the host already holds unless asked (`--dummy`). In a sidecar, never run `just setup` (it runs `git init` and commits, nesting a repository inside the host) or `just deploy` (it pushes the host's `gh-pages` branch root); at the root, `just setup` runs only in a folder with no git yet (Step 4). Never edit a template-owned file by hand; `just update` is how those change. Non-git, non-GitHub or non-POSIX host: see [references/portability.md](references/portability.md).
 
-**Three cases, one skill.** A repository that *is* a schema project (lmodel/gist, say) runs copier at its root itself and needs nothing here. A domain codebase whose maintainers would resist a schema project in their root folder gets the sidecar: one hidden folder, one visible doorway, one workflow, and a README that says so. A repository that holds a schema but no project gets the sidecar around that schema, unmoved and unchanged.
+**Four cases, one skill.**
+
+- An empty repository, or an empty folder with no git yet, gets the project at its root, the schema in `src/<slug>/schema/`.
+- A codebase gets the sidecar: one hidden folder, one visible doorway, one workflow, and a README that says so.
+- A repository that holds a schema but no project gets the sidecar around that schema, unmoved and unchanged (`--adopt`).
+- A repository that already is a schema project (lmodel/gist, say) needs nothing here; linkml-author works there.
 
 ## Step 0 - Gather the host project's facts
 
@@ -30,11 +35,14 @@ Create a **`.linkml/` sidecar** inside the repository this skill is invoked from
 - whether the tree is under git, and on which forge;
 - whether `uv`, `copier` and `just` run here, and whether github.com and pypi.org answer;
 - what the host already holds: a project, configuration files in `.linkml/`, or schema files outside any project;
-- whether a `.lokf/` bundle is present, which switches on **KTL mode**;
+- whether the folder is empty, which puts the project at the root rather than in `.linkml/` (the `layout` line);
+- whether a `.lokf/` Knowledge Trust Ladder (KTL) bundle is present, which the skill leaves alone;
 - whether the host already publishes Pages (a docs collision);
 - whether the root declares a uv workspace.
 
 Its last line names what is missing and which steps that disables; repeat that line in the Step 6 hand-off. When the person cannot act on a `missing` or `warn` line, write them a request note from [references/prerequisites.md](references/prerequisites.md), which gives each line's meaning, who fixes it, and what to send.
+
+**Root or sidecar: decide now.** The preflight's `layout` line says which the scaffold picks; `--layout` overrides it, and a person decides before a project goes at the root of a folder that holds anything else. At the root, `--adopt` and `--gitignored` do not apply, and two facts join: `GH_ACTION_PYPI` and `GH_ACTION_DOCS_PREVIEW`, `true` or `false`, for the template's PyPI-publishing and docs-preview workflows. Ask; unattended, leave them `false`.
 
 **Dummy or adoption: decide now.** A `schema` line means the host already holds one. One file: run Step 1 with `--adopt <file>`. Several: ask the person which, or, unattended, list them and stop. The file must be `<slug>.yaml` (the template names the schema after the slug); one that is not, or that a new schema should import instead, takes the dummy and linkml-author's import.
 
@@ -47,13 +55,13 @@ Resolve every fact from real project sources before running anything; the scaffo
 | `PROJ_DESC` | One-sentence description | manifest `description`, README intro |
 | `GITHUB_ORG`, `REPO_URL` | Owner and the repository's URL | `git remote get-url origin`; any forge |
 | `FULL_NAME`, `EMAIL` | The schema's author | `git config user.name` / `user.email`, manifest authors, `CODEOWNERS` |
-| `LICENSE_ID` | SPDX id of the host's license | the root `LICENSE` text or the manifest's `license`; one of `Apache-2.0`, `MIT`, `BSD-3-Clause`, `MPL-2.0`, `LGPL-3.0-only`, `GPL-3.0-only`, else `LicenseRef-Custom`. No license file: `LicenseRef-Custom`, which the scaffold insists on, and it writes a stub that says so; flag it |
-| `SCHEMA_ID` | The schema's `id` IRI, with no trailing `/`; the scaffold adds the `/` for its prefix's namespace | With `--adopt`, the schema's own `id`, which stands whatever it is. Otherwise, in order: (1) In KTL mode, the bundle's `base_iri` authority plus `/schema/<slug>`. (2) A persistent-identifier namespace the project already publishes under (w3id.org, purl.org, an owned domain). (3) The docs `site_url`, unless it is on a code host's pages (`github.io`), which the scaffold refuses like the repo URL. (4) Else `https://<slug>.example/schema/<slug>`, flagged for review. **Never** the code-host repo URL: that path space is not the project's, so the IRIs could never resolve |
-| `DOCS_URL` | Where the sidecar's docs site will live | the host's Pages URL plus `/linkml/`, else `https://<org>.github.io/<repo>/linkml/`, flagged |
+| `LICENSE_ID` | SPDX id of the host's license | the root `LICENSE` text or the manifest's `license`; one of `Apache-2.0`, `MIT`, `BSD-3-Clause`, `MPL-2.0`, `LGPL-3.0-only`, `GPL-3.0-only`, else `LicenseRef-Custom`. No license file: in a sidecar, `LicenseRef-Custom`, which the scaffold insists on, and it writes a stub that says so; at the root, one of the six, for which the template writes `LICENSE`. Flag it |
+| `SCHEMA_ID` | The schema's `id` IRI, with no trailing `/`; the scaffold adds the `/` for its prefix's namespace | With `--adopt`, the schema's own `id`, which stands whatever it is. Otherwise, in order: (1) A persistent-identifier namespace the project already publishes under (w3id.org, purl.org, an owned domain), a KTL bundle's `base_iri` authority among them, plus `/schema/<slug>`. (2) The docs `site_url`, unless it is on a code host's pages (`github.io`), which the scaffold refuses like the repo URL. (3) Else `https://<slug>.example/schema/<slug>`, flagged for review. **Never** the code-host repo URL: that path space is not the project's, so the IRIs could never resolve |
+| `DOCS_URL` | Where the project's docs site will live | the host's Pages URL plus `/linkml/` (at the root, the Pages URL itself), else `https://<org>.github.io/<repo>/linkml/`, flagged |
 
 `SCHEMA_ID` matters most: every class and slot IRI starts with it. It need not resolve today, but must be stable and in a namespace the project controls, and a w3id redirect to `DOCS_URL` later makes every generated page's IRI a link that works.
 
-**Tracked or gitignored: decide now.** Check whether the root `.gitignore` already excludes `.linkml/` (ask if unclear). Committing `.linkml/` is the default both skills assume. Gitignoring it is equally valid, for a personal sidecar or under a policy against committing agent-authored content. It changes four things:
+**Tracked or gitignored: decide now (a sidecar).** Check whether the root `.gitignore` already excludes `.linkml/` (ask if unclear). Committing `.linkml/` is the default both skills assume. Gitignoring it is equally valid, for a personal sidecar or under a policy against committing agent-authored content. It changes four things:
 
 - still create every file;
 - skip the Step 4 commit and Step 5 entirely;
@@ -62,7 +70,7 @@ Resolve every fact from real project sources before running anything; the scaffo
 
 The scaffold refuses `--gitignored` when `.linkml/` already holds tracked files: the line would hide them.
 
-**KTL mode.** When `.lokf/` exists, the project stays the same, and separate from the bundle. Its schema, the repository's *domain schema*, stays in `.linkml/` and never imports `lokf`. The bundle gets a copy, its *domain vocabulary*. The scaffold pins `.lokf/schema/lokf.yaml` out of the installed toolkit when it is absent, adds `lokf-adapt` and `lokf-adapt-check` recipes, lets `lokf adapt` (lokf 0.9.0 or later) write `.lokf/schema/<slug>.yaml`, and names that copy in `.lokf/justfile`. The copy's top classes descend from LOKF's `Concept`, so a concept may name them as its `type`. [references/ktl.md](references/ktl.md) says what each piece does and how the copy stays current. An adopted schema gets no copy: the scaffold runs in plain mode and says so in the hand-off.
+**Beside a KTL bundle.** `.lokf/` is KTL's, and KTL maintains it. The skill writes nothing there, and the project is the same with or without a bundle: its schema imports nothing from `.lokf/`. A bundle takes the schema once it is published, and ktl-librarian adapts it into the bundle's domain vocabulary.
 
 ## Step 1 - Scaffold
 
@@ -74,37 +82,39 @@ bash scripts/linkml-scaffold.sh --dry-run    # every action it would take, and t
 bash scripts/linkml-scaffold.sh              # add --gitignored when Step 0 decided so; --adopt <file> to build around the host's schema
 ```
 
+`--layout root` or `--layout sidecar` overrides the preflight's `layout` line, and at the root `GH_ACTION_PYPI` and `GH_ACTION_DOCS_PREVIEW` join the exported facts.
+
 Run it from the host's root (`--host DIR` otherwise). Every line it prints starts with `scaffold:`, `handoff:` or `next:`; keep the `handoff:` lines for Step 6. It exits 0 when done, 2 on a bad fact or a missing tool, 3 when refused (a project, a schema or a file already there stands in the way), 4 when copier failed, 5 when an overlay failed. It never removes anything but its own staging directory. In order, it:
 
 1. **Refuses** a sidecar in `.linkml/`, a schema project at the root or one directory down, a `.linkml/` holding project files without answers, and, without `--adopt` or `--dummy`, a schema the host already holds. It installs around configuration files alone in `.linkml/`.
 2. **Checks the facts** against the template's own rules (the name and slug patterns, the license list, an IRI that names no code host; an adopted schema's `id` is exempt, since it was chosen before).
-3. **Pins `.lokf/schema/lokf.yaml`** in KTL mode, out of the installed toolkit (`uv sync` in `.lokf/` first), and stops before writing anything if that cannot be done. After step 5 it also stops, with nothing yet in `.linkml/`, when `lokf adapt` cannot copy the dummy.
-4. **Verifies the pin**: `git ls-remote` on the template, and the tag must name the commit the script records. Only then is the template run with `--trust`.
-5. **Pre-seeds the files this skill owns** into a staging directory beside `.linkml/`, substituting the facts as literal text through Python's `str.replace`, never sed:
+3. **Verifies the pin**: `git ls-remote` on the template, and the tag must name the commit the script records. Only then is the template run with `--trust`.
+4. **Pre-seeds the files this skill owns** into a staging directory beside `.linkml/`, substituting the facts as literal text through Python's `str.replace`, never sed:
 
    | Template | Destination in `.linkml/` |
    | --- | --- |
    | the host's `LICENSE` (or `templates/linkml/LICENSE.missing`) | `LICENSE` |
    | `templates/linkml/README.md` | `README.md`: the sidecar's own README, with the ownership map and the never-run list; with `--adopt`, a section that says where the schema is |
    | `templates/linkml/docs/index.md`, `docs/about.md` | `docs/index.md`, `docs/about.md` |
-   | `templates/linkml/schema/plain/` | `src/<slug>/schema/<slug>.yaml` (DUMMY; linkml-author replaces), `tests/test_data.py`, `tests/data/**`, in KTL mode too. With `--adopt`: `tests/test_data.py` alone, and `src/<slug>/schema/README.md` saying where the schema is |
+   | `templates/linkml/schema/plain/` | `src/<slug>/schema/<slug>.yaml` (DUMMY; linkml-author replaces), `tests/test_data.py`, `tests/data/**`. With `--adopt`: `tests/test_data.py` alone, and `src/<slug>/schema/README.md` saying where the schema is |
    | `templates/scripts/linkml-preflight.sh` | `scripts/linkml-preflight.sh` (`chmod +x`): linkml-author runs it to find the project |
 
    Each is in the template's `_skip_if_exists` list or outside the template, so copier leaves it alone now and on every `just update`.
-6. **Runs copier** for everything else, into the same staging directory: `uvx --from 'copier>=9.4.0,<10' --with jinja2-time copier copy --trust --defaults --vcs-ref v0.5.0 --data-file <answers> gh:linkml/linkml-project-copier <staging>`, the answers rendered from `templates/answers.yml`. Four answers are fixed and make the project a sidecar: `add_example: false`, `gh_action_pypi: false`, `gh_action_docs_preview: false` and `existing_license_file: LICENSE`; [references/template-assumptions.md](references/template-assumptions.md) gives each reason.
-7. **Neutralises the root assumptions** that remain: the `site_url` and `repo_url` lines of `mkdocs.yml` become `DOCS_URL` and `REPO_URL`; the `linkml-link` recipe is appended to `project.justfile` (the file copier merges), and in KTL mode the `lokf-adapt` recipes after it. With `--adopt`, `config.public.mk`'s `LINKML_SCHEMA_SOURCE_DIR` is pointed at the schema's folder instead, relative to `.linkml/`, and no doorway recipe is added. `config.yaml` becomes `generators.yaml`, named in `config.public.mk`, so the generators' settings sit at `.linkml/generators.yaml`; a host's own `.linkml/generators.yaml` keeps the template's name. It checks that no `.linkml/.git` appeared and that `.copier-answers.yml` records the pin.
-8. **Moves the staged files into `.linkml/`**, around whatever is already there. A name both hold is a clash: nothing moves, the names are printed, and the run ends with exit 3. A failure at any earlier step removes the staging directory and nothing else.
-9. **Writes the copy and names it** in KTL mode. `lokf adapt` writes `.lokf/schema/<slug>.yaml` from the project's schema. `.lokf/justfile` gets `schema :=` (on an older justfile, the two validate recipes too, matching ktl-sidecar's template lines exactly), and `.lokf/pyproject.toml` gets `[tool.lokf] schema`; a justfile that differs gets the edit printed instead.
-10. **Adds the Step 2 pointers**, then prints the hand-off facts and the Step 4 commands.
+5. **Runs copier** for everything else, into the same staging directory: `uvx --from 'copier>=9.4.0,<10' --with jinja2-time copier copy --trust --defaults --vcs-ref v0.5.0 --data-file <answers> gh:linkml/linkml-project-copier <staging>`, the answers rendered from `templates/answers.yml`, whose comment says why each fixed one is what it is.
+6. **Neutralises the root assumptions** that remain: the `site_url` and `repo_url` lines of `mkdocs.yml` become `DOCS_URL` and `REPO_URL`; the `linkml-link` and `merged` recipes are appended to `project.justfile` (the file copier merges). With `--adopt`, `config.public.mk`'s `LINKML_SCHEMA_SOURCE_DIR` is pointed at the schema's folder instead, relative to `.linkml/`, and only the `merged` recipe is added. `config.yaml` becomes `generators.yaml`, named in `config.public.mk`, so the generators' settings sit at `.linkml/generators.yaml`; a host's own `.linkml/generators.yaml` keeps the template's name. It checks that no `.linkml/.git` appeared and that `.copier-answers.yml` records the pin.
+7. **Moves the staged files into `.linkml/`**, around whatever is already there. A name both hold is a clash: nothing moves, the names are printed, and the run ends with exit 3. A failure at any earlier step removes the staging directory and nothing else.
+8. **Adds the Step 2 pointers**, then prints the hand-off facts and the Step 4 commands.
 
-`--repair PATH` rewrites one owned file of a finished sidecar (the preflight, the README, the docs pages, `LICENSE`, a dummy file, `project.justfile`'s doorway recipe and, beside a bundle, its `lokf-adapt` recipes, or an adopted sidecar's `src/<slug>/schema/README.md`). It reads the facts back from the sidecar's answers and config. `just update` restores a template-owned file. `--repair generators.yaml` moves a finished project's `config.yaml` to `.linkml/generators.yaml`, the sidecar's or a root project's (`--host` names one elsewhere). When the preflight's `generators` line offers it, ask the person first; a new sidecar needs no asking. What `just update` then does not overwrite is row 20 of [references/template-assumptions.md](references/template-assumptions.md).
+**At the root**, items 4 to 7 differ, as [references/layouts.md](references/layouts.md#the-root-run) says, and there are no Step 2 pointers.
 
-## Step 2 - Point people and agents at the schema (root-level, add-only)
+`--repair PATH` rewrites one owned file of a finished sidecar (the preflight, the README, the docs pages, `LICENSE`, a dummy file, `project.justfile`'s doorway and `merged` recipes, or an adopted sidecar's `src/<slug>/schema/README.md`). It reads the facts back from the sidecar's answers and config. `just update` restores a template-owned file. `--repair generators.yaml` moves a finished project's `config.yaml` to `.linkml/generators.yaml`, the sidecar's or a root project's (`--host` names one elsewhere). When the preflight's `generators` line offers it, ask the person first; a new sidecar needs no asking. What `just update` then does not overwrite is row 20 of [references/template-assumptions.md](references/template-assumptions.md).
+
+## Step 2 - Point people and agents at the schema (a sidecar; root-level, add-only)
 
 The scaffold makes three additions at the **repo root**, outside `.linkml/`; `--pointers-only` makes them again on a finished sidecar. Add only, never overwrite, and check for an existing item first. All three stay true **whether or not `.linkml/` exists later**, so nothing needs cleaning up if the sidecar is removed. An adopted schema gets none of the three: it is already visible in place, and the hand-off says to mention `.linkml/`'s recipes where the host documents it.
 
 - **README aside**: if `README.md` exists and does not already name `.linkml/`, `templates/readme-for-schema.md` goes in after the intro, before the first `##`. It is one blockquote that says the model is a sidecar, where the schema is, which skill edits it, and that an agent reads the schema before the code. Do not invent a README on a host that has none.
-- **`llms.txt`**: created from `templates/llms.txt` if absent; otherwise the `## Schema` section (`templates/llms-section.md`, or the KTL variant) is appended, only if the file does not already name `.linkml/`.
+- **`llms.txt`**: created from `templates/llms.txt` if absent; otherwise the `## Schema` section (`templates/llms-section.md`) is appended, only if the file does not already name `.linkml/`.
 - **`linkml_schema` doorway**: `ln -s .linkml/src/<slug>/schema linkml_schema`, the schema folder under an ordinary, visible name beside the hidden `.linkml/`. Finder and other folder pickers hide dot-directories, so the doorway is the one name a person needs to know. The target is relative, which keeps the link valid after a clone or move; `just --justfile .linkml/justfile linkml-link` recreates it on a machine where a sync service dropped it. POSIX only: on Windows a junction works (`mklink /J linkml_schema .linkml\src\<slug>\schema`); on a filesystem without links, skip it. Mirror the Step 0 decision: commit it beside a tracked `.linkml/`, or it joins the root `.gitignore` with `--gitignored`.
 
 If the host lints, spell-checks or link-checks `**/*.md` repo-wide, exclude `.linkml/` and `linkml_schema/` from that config: the generated docs are not the host's prose, and the same schema folder would otherwise be processed twice.
@@ -118,7 +128,7 @@ grep -rn -e '<PROJ_' -e '<SCHEMA_' -e '<DOCS_URL>' -e '<LICENSE_ID>' -e '<TODAY>
 test ! -e .linkml/.git && grep -q '^_commit: v0.5.0$' .linkml/.copier-answers.yml && grep -c 'linkml-sidecar: the linkml_schema doorway' .linkml/project.justfile
 ```
 
-Zero hits from the grep, no nested repository, the pin recorded, the recipe block once. With `--adopt` there is no recipe block; check that `LINKML_SCHEMA_SOURCE_DIR` in `.linkml/config.public.mk` names the schema's folder and that the schema file is as it was. Leave the dummy as a dummy; do not start the real model here.
+Zero hits from the grep, no nested repository, the pin recorded, the recipe block once. At the root, grep `src/ README.md docs/` instead, and check `.copier-answers.yml` and `project.justfile` there, the merged recipe once. With `--adopt` there is no recipe block; check that `LINKML_SCHEMA_SOURCE_DIR` in `.linkml/config.public.mk` names the schema's folder and that the schema file is as it was. Leave the dummy as a dummy; do not start the real model here.
 
 ## Step 4 - Validate the skeleton
 
@@ -128,38 +138,36 @@ just --justfile .linkml/justfile lint      # linkml-lint, the recommended rules
 just --justfile .linkml/justfile test      # generate into tmp/, pytest, run the examples (it does not lint)
 ```
 
-`just` runs each recipe inside `.linkml/`, so these work from the host's root; `uvx --from rust-just just` stands in for an uninstalled `just`. Fix findings, then commit `.linkml/` **including `uv.lock`** (Step 5's workflow installs from it), unless `.linkml/` is gitignored (Step 0). In KTL mode also run `just --justfile .linkml/justfile lokf-adapt-check`, then `cd .lokf && just lokf-install && just lokf-validate && just lokf-check-refs`: the bundle against LOKF's schema plus the copy. A lint finding in an adopted schema is the host's to decide: report it. With no `git`, no `uv`, no copier or no network there is no sidecar to make and no fallback; say so and stop after Step 0.
+**At the root** drop `--justfile .linkml/justfile`. With no git yet, `just setup` replaces `install`: it runs `git init`, the install, a first commit of everything in the folder, `gen-project` and `gen-doc`, so first put any agent folder (`.claude/`, `.agents/`) in `.gitignore`. With git already there, never `just setup`.
+
+In a sidecar, `just` runs each recipe inside `.linkml/`, so these work from the host's root; `uvx --from rust-just just` stands in for an uninstalled `just`. Fix findings, then commit `.linkml/` **including `uv.lock`** (Step 5's workflow installs from it), unless `.linkml/` is gitignored (Step 0). A lint finding in an adopted schema is the host's to decide: report it. With no `git`, no `uv`, no copier or no network there is no sidecar to make and no fallback; say so and stop after Step 0.
 
 ## Step 5 - Install the automation (optional)
 
-**Skip this step if `.linkml/` is gitignored.** The workflow templates have no placeholders.
+**Skip this step if `.linkml/` is gitignored, or at the root**, where the template's own workflows in `.github/workflows/` run the gate and deploy the docs; they pin actions by tag, not by commit. The workflow templates have no placeholders.
 
 | Template | Destination |
 | --- | --- |
-| `templates/github/linkml-sidecar.yaml` | `.github/workflows/linkml-sidecar.yaml`: on a pull request or push that touches `.linkml/**` or `.lokf/schema/**`, every step runs in `.linkml/` (`working-directory`), installs from `uv.lock` with `--locked`, then `just lint`, `just test` and, when the sidecar has the recipe, `just lokf-adapt-check`, on one Python version. On the repository's default branch, whatever its name, a second job builds the docs site and keeps it as an artifact. A third publishes it under the `linkml/` subpath of the host's `gh-pages` branch, replacing that subpath alone, only once the repository variable `LINKML_DOCS_ENABLED` is `true` |
+| `templates/github/linkml-sidecar.yaml` | `.github/workflows/linkml-sidecar.yaml`: on a pull request or push that touches `.linkml/**`, every step runs in `.linkml/` (`working-directory`), installs from `uv.lock` with `--locked`, then `just lint` and `just test`, on one Python version. On the repository's default branch, whatever its name, a second job builds the docs site and keeps it as an artifact. A third publishes it under the `linkml/` subpath of the host's `gh-pages` branch, replacing that subpath alone, only once the repository variable `LINKML_DOCS_ENABLED` is `true` |
 | `templates/forgejo/linkml-sidecar.yaml` | On Forgejo or Codeberg instead: the same gate, in the folder the preflight's `workflows` line names, publishing to Codeberg Pages |
 
-With `--adopt`, add the schema's folder (`"<dir>/**"`) to both `paths:` lists, so an edit to the schema runs the gate too. The template's own workflows under `.linkml/.github/` are inert there and stay as the template's copies. The host's root `dependabot.yml`, if any, can gain a `uv` entry for `/.linkml`; suggest it in one line, do not scaffold it. Check whether the host already runs ShellCheck and `actionlint` over its tree; if not, suggest coverage for `.linkml/scripts/linkml-preflight.sh` and the workflow, in one line. [references/automation.md](references/automation.md) says what each job does, the variable to set, and what the Forgejo version changes.
+With `--adopt`, add the schema's folder (`"<dir>/**"`) to both `paths:` lists, so an edit to the schema runs the gate too. The template's own workflows under `.linkml/.github/` are inert there and stay as the template's copies. [references/automation.md](references/automation.md) says what each job does, the variable to set, what the Forgejo version changes, and the two one-line suggestions to make to the host.
 
 ## Step 6 - Hand off to linkml-author
 
-linkml-author's first run replaces the dummy with the host's model, from the code, data and documents the repository holds, keeping the gate green after each change; for an adopted schema it adds the example data and carries the model on. In KTL mode, ktl-librarian reads the copy the `.lokf/justfile` names and may type concepts with its classes, and ktl-curator's report counts vocabulary fit against it. In the hand-off, tell the user:
+linkml-author's first run replaces the dummy with the host's model, from the code, data and documents the repository holds, keeping the gate green after each change; for an adopted schema it adds the example data and carries the model on. In the hand-off, tell the user:
 
 - which Step 0 values were **guessed** rather than found (`SCHEMA_ID` above all, then `LICENSE_ID` and `DOCS_URL`; every generated IRI starts with the first, so it needs sign-off);
-- whether Step 4's gate ran and passed, and in KTL mode whether `lokf validate` did;
+- whether Step 4's gate ran and passed;
 - which optional pieces (README aside, `llms.txt`, Step 5 workflow) were added, appended to, or left alone because they already existed;
 - whether `.linkml/` is **git-tracked or gitignored**, and which files it already held that the sidecar was installed around;
 - whether the **`linkml_schema` doorway** was created and, if not, the one command that makes it;
-- the pin (`_commit: v0.5.0`) and how the template moves: `cd .linkml && just update` on a clean tree, then commit `uv.lock` and `.copier-answers.yml` with the diff;
+- the pin (`_commit: v0.5.0`) and how the template moves: `cd .linkml && just update` (at the root, `just update`) on a clean tree, then commit `uv.lock` and `.copier-answers.yml` with the diff;
+- at the root: which license file stands or the template wrote, the two switches, that the template's workflows pin actions by tag, and whether `just setup` made the repository;
 - what the sidecar still carries from the template and ignores: the inert `.github/` and `.pre-commit-config.yaml`, and `CODE_OF_CONDUCT.md` and `CONTRIBUTING.md`, which the host's own govern;
 - on a host that already publishes Pages, that `just deploy` must never run from `.linkml/` and the Step 5 docs job is scoped to `linkml/`;
 - with `--adopt`:
   - that the schema was not moved, linked or changed, and `config.public.mk` names its folder;
   - that no example data exists yet;
   - that the workflow's `paths:` need the schema's folder;
-  - beside a `.lokf/` bundle, that no copy was made for it;
-- in KTL mode:
-  - on a `.lokf/` from before ktl-sidecar's `schema` variable, that the validate step of `knowledge-registrar.yaml`, `knowledge-librarian.yaml` and `knowledge-release.yaml` should run `uvx --from rust-just==1.47.0 just lokf-check-refs`, so CI checks the bundle against the schema too;
-  - that `just lokf-adapt` writes the copy again after each schema change, and the copy is never edited;
-  - that the KTL plugins' "Known LOKF types" setting needs each class the copy re-roots on `Concept`;
-  - that `.lokf/schema/lokf.yaml` moves when the `lokf` floor does, followed by `lokf-adapt`.
+- beside a `.lokf/` bundle, that nothing was written there, and that ktl-librarian adapts the schema into the bundle's vocabulary once it is published.
