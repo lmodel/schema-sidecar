@@ -1,5 +1,15 @@
 # Change Log
 
+## 2026-11-13
+
+* **Added**: Beside a KTL bundle, from `docs/architecture.md`, the README and both skills, in place of KTL mode, which 0.6.0 removed.
+* **Removal**: KTL mode; `skills/linkml-sidecar/references/ktl.md` and `skills/linkml-author/references/ktl-domain-vocabulary.md` were deleted when 0.6.0 removed the mode.
+* **Changed**: Domain schema now cites linkml-author and the architecture page, since `references/ktl.md` is gone; the copy the scaffold wrote into `.lokf/schema/` went with KTL mode.
+* **Changed**: Domain vocabulary now says ktl-librarian builds it from published schemas and neither skill writes it; its two cited skill pages were deleted with KTL mode.
+* **Changed**: Knowledge Trust Ladder follows the README and the architecture page: the scaffold no longer writes a copy into `.lokf/`.
+* **Changed**: linkml-sidecar skill points at Beside a KTL bundle, and Step 4 no longer runs `lokf validate`.
+* **Changed**: linkml-author skill points at Beside a KTL bundle in place of KTL mode.
+
 ## 2026-11-12
 
 * **Changed**: The gate and linkml-scaffold say the KTL bundle's justfile names the schema's copy, its domain vocabulary, as ktl.md and linkml-author say since 0.5.0.

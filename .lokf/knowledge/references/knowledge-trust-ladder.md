@@ -2,7 +2,7 @@
 type: Reference
 id: https://w3id.org/lmodel/schema-sidecar/knowledge/references/knowledge-trust-ladder
 title: Knowledge Trust Ladder
-description: The Knowledge Trust Ladder (KTL), whose bundle is a .lokf/ folder in the host; beside one, the scaffold writes a copy of the sidecar's schema to .lokf/schema/<slug>.yaml as the bundle's domain vocabulary, and ktl-librarian's domain-vocabulary page is the authority on what lokf validate expects.
+description: The Knowledge Trust Ladder (KTL), whose bundle is a .lokf/ folder in the host; it belongs to KTL, neither skill writes there, and a bundle takes a published release of the schema, which ktl-librarian adapts into the bundle's vocabulary.
 genre: reference
 resource: https://w3id.org/ktl
 tags:
@@ -12,10 +12,9 @@ tags:
 sources:
   - resource: README.md
   - resource: docs/architecture.md
-  - resource: skills/linkml-sidecar/references/ktl.md
 generated:
   by: process:ktl-librarian
-  at: "2026-11-12T14:47:34Z"
+  at: "2026-11-13T22:30:17Z"
 status: draft
 verified:
   - by: process:ktl-librarian
@@ -24,6 +23,6 @@ verified:
 
 # Overview
 
-A [Knowledge Trust Ladder](https://w3id.org/ktl) (KTL) bundle is a `.lokf/` folder in the host. The sidecar stands alone, and beside a KTL bundle the scaffold writes a copy of its schema to `.lokf/schema/<slug>.yaml` with `lokf adapt`. That copy, which `.lokf/justfile` names, is the bundle's domain vocabulary. A schema the host already held (`--adopt`) gets no copy.
+A [Knowledge Trust Ladder](https://w3id.org/ktl/) (KTL) bundle is a `.lokf/` folder in the host. It belongs to KTL, which maintains it, and neither skill writes there. A bundle takes a published release of the schema, which ktl-librarian adapts into the bundle's vocabulary.
 
-ktl-librarian's [domain-vocabulary page](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-vocabulary.md) is the recipe and the authority on what the validator expects. linkml-sidecar's `references/ktl.md` says how the scaffold sets it up.
+ktl-librarian's [domain-vocabulary page](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-vocabulary.md) says how it builds that vocabulary with `lokf adapt`.

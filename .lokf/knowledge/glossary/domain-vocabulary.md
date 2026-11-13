@@ -2,29 +2,27 @@
 type: GlossaryTerm
 id: https://w3id.org/lmodel/schema-sidecar/knowledge/glossary/domain-vocabulary
 title: Domain vocabulary
-description: The bundle's file in .lokf/schema/ that .lokf/justfile names on its schema := line, with every file it imports; it always imports lokf, lists the classes a concept may name beyond LOKF's own, and lokf validate --schema checks the bundle against it; in KTL mode it is the copy lokf adapt writes from the sidecar's schema.
-definition: The file in .lokf/schema/ that .lokf/justfile names on its schema := line, with every file it imports; it always imports lokf, and lists the classes a bundle's concepts may name beyond LOKF's own.
-resource: skills/linkml-author/references/ktl-domain-vocabulary.md
+description: "The schema files a KTL bundle keeps in .lokf/schema/: published, curated vocabulary that ktl-librarian builds with lokf adapt from published schemas of this repository or any other, or from none; the bundle's own, which neither skill writes."
+definition: The schema files a KTL bundle keeps in .lokf/schema/, which ktl-librarian builds with lokf adapt from published schemas, or from none.
+resource: skills/linkml-author/SKILL.md
 tags:
   - domain vocabulary
   - lokf
 relatedTo:
   - https://w3id.org/lmodel/schema-sidecar/knowledge/glossary/domain-schema
-  - https://w3id.org/lmodel/schema-sidecar/knowledge/explanation/ktl-mode
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/explanation/beside-a-ktl-bundle
 sources:
-  - resource: skills/linkml-author/references/ktl-domain-vocabulary.md
-  - resource: skills/linkml-sidecar/references/ktl.md
   - resource: skills/linkml-author/SKILL.md
+  - resource: docs/architecture.md
+  - resource: skills/linkml-sidecar/references/layouts.md
 generated:
   by: process:ktl-librarian
-  at: "2026-11-12T14:47:34Z"
+  at: "2026-11-13T22:30:17Z"
 status: draft
 ---
 
 # Overview
 
-A **domain vocabulary** is the bundle's file: the one `.lokf/justfile` names on its `schema :=` line, with every file it imports, all in `.lokf/schema/` beside LOKF core's copy `lokf.yaml`. It lists the classes a concept may name beyond LOKF's own, and it always imports `lokf`. `lokf validate --schema` checks the bundle against it. Every class is closed, so a concept carries only the slots its class declares, and a concept writes its class name in `type` exactly.
+A **domain vocabulary** is a KTL bundle's own schema, in `.lokf/schema/`. linkml-author calls the schema files there published, curated vocabulary. It may draw on several published schemas, from this repository or any other, or on none, and ktl-librarian builds it with `lokf adapt`.
 
-When the bundle's concepts use a LinkML project's classes, the domain vocabulary is a copy `lokf adapt` writes from the project's domain schema, or a composite of a few lines that imports `lokf` and the copy. In KTL mode the scaffold has `lokf adapt` write `.lokf/schema/<slug>.yaml` from the sidecar's schema, and names that copy on the justfile's line and as `[tool.lokf] schema`. `lokf adapt` prints that the copy is a *LOKF domain schema*, the toolkit's name for a domain vocabulary. An adopted schema gets no copy, and the bundle's maintainers decide whether to give it one. A domain vocabulary written for the bundle alone is KTL's file, not a LinkML project's.
-
-ktl-librarian's domain-vocabulary page is the authority on what the validator expects.
+It belongs to KTL. Neither skill writes it, and a domain schema imports nothing from it. ktl-librarian's [domain-vocabulary page](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/main/skills/ktl-librarian/references/domain-vocabulary.md) is the authority on what it holds and what `.lokf/justfile` names.

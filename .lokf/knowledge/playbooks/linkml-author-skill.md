@@ -15,7 +15,7 @@ dependsOn:
 references:
   - https://w3id.org/lmodel/schema-sidecar/knowledge/playbooks/linkml-sidecar-skill
   - https://w3id.org/lmodel/schema-sidecar/knowledge/glossary/the-gate
-  - https://w3id.org/lmodel/schema-sidecar/knowledge/explanation/ktl-mode
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/explanation/beside-a-ktl-bundle
   - https://w3id.org/lmodel/schema-sidecar/knowledge/references/schema-layouts
   - https://w3id.org/lmodel/schema-sidecar/knowledge/references/schema-design
   - https://w3id.org/lmodel/schema-sidecar/knowledge/references/publishing
@@ -25,7 +25,7 @@ sources:
   - resource: skills/linkml-author/SKILL.md
 generated:
   by: process:ktl-librarian
-  at: "2026-10-22T12:03:24Z"
+  at: "2026-11-13T22:30:17Z"
 status: draft
 verified:
   - by: process:ktl-librarian
