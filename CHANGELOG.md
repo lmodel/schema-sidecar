@@ -4,10 +4,6 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Changed
-
-- **The persistent identifier is `https://w3id.org/lmodel/schema-sidecar/`, beside the other lmodel repositories'.** The bundle's namespace, and so every concept's id, moves to `https://w3id.org/lmodel/schema-sidecar/knowledge/`, and `w3id.org/ktl/linkml-sidecar/` is retired. lychee no longer remaps the old address.
-
 ## [0.6.0] - 2026-11-13
 
 ### Added
@@ -21,6 +17,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - **Neither skill writes in a KTL bundle's `.lokf/` any more.** KTL maintains it, and ktl-librarian builds its domain vocabulary from published schemas. linkml-author edits a file there only when a person names it, and never adds LOKF to a schema outside it. `layouts.md` says how an older sidecar beside a bundle moves.
 - **The repository, the Claude Code plugin and the site's path are `schema-sidecar`.** A package name that starts with `linkml-` reads as the LinkML organisation's own. The skills keep their names, and `w3id.org/ktl/linkml-sidecar/` stays the documentation's address.
 - **The repository is `lmodel/schema-sidecar`, and its site is at `lmodel.github.io/schema-sidecar/`.** The install commands, the host templates and the links checked against this repository name the new owner. GitHub redirects the old repository names, but not the old site.
+- **The persistent identifier is `https://w3id.org/lmodel/schema-sidecar/`, beside the other lmodel repositories'.** The bundle's namespace, and so every concept's id, moves to `https://w3id.org/lmodel/schema-sidecar/knowledge/`, and `w3id.org/ktl/linkml-sidecar/` is retired. lychee no longer remaps the old address.
 
 ### Removed
 
