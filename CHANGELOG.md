@@ -4,10 +4,6 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Changed
-
-- **The repository, the Claude Code plugin and the site's path are `schema-sidecar`.** A package name that starts with `linkml-` reads as the LinkML organisation's own. The skills keep their names, and `w3id.org/ktl/linkml-sidecar/` stays the documentation's address.
-
 ## [0.6.0] - 2026-11-13
 
 ### Added
@@ -19,6 +15,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **The project's schema is the *domain schema*, and the bundle's copy is its *domain vocabulary*.** Both skills, their KTL pages and the host templates use the two names, and say that only a file in `.lokf/schema/` imports `lokf`. linkml-author's page for a bundle is now `ktl-domain-vocabulary.md`.
 - **Neither skill writes in a KTL bundle's `.lokf/` any more.** KTL maintains it, and ktl-librarian builds its domain vocabulary from published schemas. linkml-author edits a file there only when a person names it, and never adds LOKF to a schema outside it. `layouts.md` says how an older sidecar beside a bundle moves.
+- **The repository, the Claude Code plugin and the site's path are `schema-sidecar`.** A package name that starts with `linkml-` reads as the LinkML organisation's own. The skills keep their names, and `w3id.org/ktl/linkml-sidecar/` stays the documentation's address.
 
 ### Removed
 
