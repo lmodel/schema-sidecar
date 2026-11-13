@@ -7,7 +7,7 @@
 There is no build step: the skills are Markdown, YAML, shell and Python.
 
 ```bash
-git clone https://github.com/noelmcloughlin/schema-sidecar.git
+git clone https://github.com/lmodel/schema-sidecar.git
 cd schema-sidecar
 bash scripts/validate-repository.sh
 uv run --no-project --with-requirements tests/requirements.txt pytest

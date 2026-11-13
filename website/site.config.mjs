@@ -11,8 +11,8 @@
 // The repository, as owner/name, and the site's address: the owner's GitHub
 // Pages domain and the path under it. A user site (the <owner>.github.io
 // repository) or a custom domain sets BASE to "".
-export const REPO = "noelmcloughlin/schema-sidecar";
-export const SITE = "https://noelmcloughlin.github.io";
+export const REPO = "lmodel/schema-sidecar";
+export const SITE = "https://lmodel.github.io";
 export const BASE = "/schema-sidecar";
 
 // The site's title, in the header and on every social card, and its

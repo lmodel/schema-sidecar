@@ -8,5 +8,5 @@ vocabularies. The JSON Schema, OWL and the rest under `.linkml/project/`
 and the Pydantic models under `.linkml/src/<PROJ_SLUG>/datamodel/` are
 generated from it, never edited. Change the schema
 through the `linkml-author` skill (`npx skills add
-noelmcloughlin/schema-sidecar --skill linkml-author --yes`), and run
+lmodel/schema-sidecar --skill linkml-author --yes`), and run
 `just --justfile .linkml/justfile lint` and `test` before committing.

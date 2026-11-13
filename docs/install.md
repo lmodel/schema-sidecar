@@ -11,7 +11,7 @@ Install both skills for your user, then ask your agent to set up a LinkML projec
 This route needs [`gh skill`](https://cli.github.com/manual/gh_skill_install) version 2.90.0 or later. It defaults to GitHub Copilot, so pass `--agent` to name yours (`claude-code`, `github-copilot`, `cursor`, `codex`, `gemini-cli`, or another from `gh skill install --help`):
 
 ```bash
-gh skill install noelmcloughlin/schema-sidecar --all --scope user
+gh skill install lmodel/schema-sidecar --all --scope user
 ```
 
 This is the route for a work machine: it needs github.com but no npm registry.
@@ -21,7 +21,7 @@ This is the route for a work machine: it needs github.com but no npm registry.
 Install both skills with the Open Skills CLI, [`npx skills`](https://github.com/vercel-labs/skills). This route could fail behind a company proxy or an internal npm registry. Take the GitHub CLI route there instead.
 
 ```bash
-npx skills add noelmcloughlin/schema-sidecar --global --yes \
+npx skills add lmodel/schema-sidecar --global --yes \
   --skill linkml-sidecar --skill linkml-author
 ```
 
@@ -30,7 +30,7 @@ In PowerShell or cmd, type the command on one line without the `\` continuation.
 ### Claude Code plugin
 
 ```text
-/plugin marketplace add noelmcloughlin/schema-sidecar
+/plugin marketplace add lmodel/schema-sidecar
 /plugin install schema-sidecar@schema-sidecar
 ```
 

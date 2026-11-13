@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+
+- **The repository is `lmodel/schema-sidecar`, and its site is at `lmodel.github.io/schema-sidecar/`.** The install commands, the host templates and the links checked against this repository name the new owner. GitHub redirects the old repository names, but not the old site.
+
 ## [0.6.0] - 2026-11-13
 
 ### Added

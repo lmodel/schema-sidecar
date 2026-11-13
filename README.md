@@ -9,7 +9,7 @@ Documentation is at [w3id.org/ktl/linkml-sidecar](https://w3id.org/ktl/linkml-si
 Install the skills:
 
 ```bash
-gh skill install noelmcloughlin/schema-sidecar --all --scope user
+gh skill install lmodel/schema-sidecar --all --scope user
 ```
 
 Then open your agent in a repository and say, in turn:
