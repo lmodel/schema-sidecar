@@ -1,0 +1,12 @@
+# ---- linkml-sidecar: the merged schema (kept across `just update`) ----
+# One YAML file with every import folded in and the schema's own shape kept:
+# the file a release attaches and an importer vendors, a KTL bundle among
+# them (linkml-author's references/publishing.md). gen-linkml writes JSON
+# unless told otherwise, and copies each class's slots into it as attributes
+# unless --no-materialize-attributes is given.
+
+# Write project/linkml/<PROJ_SLUG>.yaml, the schema with its imports merged in
+[group('model development')]
+merged:
+    mkdir -p {{dest}}/linkml
+    uv run gen-linkml --mergeimports --no-materialize-attributes --format yaml -o {{dest}}/linkml/{{schema_name}}.yaml {{source_schema_path}}

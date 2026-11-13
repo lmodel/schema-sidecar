@@ -54,6 +54,7 @@ just --justfile .linkml/justfile test         # generate into tmp/, pytest, run 
 just --justfile .linkml/justfile gen-doc      # docs/elements/ from the schema
 just --justfile .linkml/justfile testdoc      # the docs site on a local server
 just --justfile .linkml/justfile site         # gen-project and gen-doc
+just --justfile .linkml/justfile merged       # the schema with its imports merged in, for a release
 just --justfile .linkml/justfile              # every recipe
 ```
 
@@ -87,7 +88,7 @@ Run it on a clean tree, read the diff, and commit `uv.lock` and `.copier-answers
 
 ## Beside a knowledge bundle (`.lokf/`)
 
-A [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle in `.lokf/` belongs to KTL, which maintains it. Nothing here writes there, and the schema imports nothing from it. A bundle takes the schema once it is published, and ktl-librarian adapts it into the bundle's vocabulary.
+A [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle in `.lokf/` belongs to KTL, which maintains it. Nothing here writes there, and the schema imports nothing from it. A bundle takes the schema once it is published, as a tag and the file `just merged` writes, and ktl-librarian adapts it into the bundle's vocabulary.
 
 ## Remove it
 

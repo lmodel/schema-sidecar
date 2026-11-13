@@ -68,6 +68,7 @@ TEMPLATES = SKILL_DIR / "templates"
 SIDECAR = ".linkml"
 DOORWAY = "linkml_schema"
 MARKER = "# ---- linkml-sidecar: the linkml_schema doorway"
+MERGED_MARKER = "# ---- linkml-sidecar: the merged schema"
 STAGING_PREFIX = ".linkml-staging-"
 # What tells a LinkML schema project apart from any other folder, by its
 # files and never by its name: linkml-project-copier's answers naming that
@@ -590,6 +591,7 @@ def after_copy(host, stage, facts, ref, dry, adopt):
     if dry:
         plan = f"would check .linkml/.copier-answers.yml, remove nothing, patch mkdocs.yml, rename {TEMPLATE_GENERATORS} to {GENERATORS}"
         plan += ", point config.public.mk at the adopted schema's folder" if adopt else ", append the doorway recipe"
+        plan += ", append the merged recipe"
         say("scaffold", plan)
         say_inert_handoffs(None)
         return
@@ -620,6 +622,7 @@ def after_copy(host, stage, facts, ref, dry, adopt):
         say("handoff", f"adopted {facts['SCHEMA_DIR']}/{facts['PROJ_SLUG']}.yaml: {PROJECT_CONFIG} names its folder (LINKML_SCHEMA_SOURCE_DIR={source_dir}); the file was not moved, linked or changed")
     else:
         append_doorway_recipe(stage, facts, dry)
+    append_merged_recipe(stage, facts, dry)
     if (host / SIDECAR / GENERATORS).exists():
         say("handoff", f"{SIDECAR}/{GENERATORS} was already there and is the host's, so the generators' settings stay in {SIDECAR}/{TEMPLATE_GENERATORS}")
     else:
@@ -755,15 +758,23 @@ def say_inert_handoffs(sidecar):
     say("handoff", "CODE_OF_CONDUCT.md and CONTRIBUTING.md under .linkml/ are the template's copies; the host's own govern")
 
 
-def append_doorway_recipe(sidecar, facts, dry):
-    """The linkml-link recipe at the end of project.justfile, the file copier merges, once."""
-    project_justfile = sidecar / "project.justfile"
-    block = render(read(TEMPLATES / "project.justfile.append"), facts)
+def append_block(project, template, marker, what, facts, dry):
+    """A block of recipes at the end of project.justfile, the file copier merges, once."""
+    project_justfile = project / "project.justfile"
     existing = read(project_justfile) if project_justfile.is_file() else ""
-    if MARKER in existing:
-        say("scaffold", "project.justfile already carries the doorway recipe")
+    if marker in existing:
+        say("scaffold", f"project.justfile already carries the {what}")
         return
-    write(project_justfile, existing.rstrip("\n") + "\n\n" + block, dry)
+    write(project_justfile, existing.rstrip("\n") + "\n\n" + render(read(TEMPLATES / template), facts), dry)
+
+
+def append_doorway_recipe(sidecar, facts, dry):
+    append_block(sidecar, "project.justfile.append", MARKER, "doorway recipe", facts, dry)
+
+
+def append_merged_recipe(project, facts, dry):
+    """The merged recipe, which writes the import-free file a release attaches."""
+    append_block(project, "project.justfile.merged", MERGED_MARKER, "merged recipe", facts, dry)
 
 
 # ---- root pointers ---------------------------------------------------------
@@ -888,7 +899,9 @@ def repair(host, facts, target, dry):
     slug = facts["PROJ_SLUG"]
     adopted = is_adopted(facts)
     if rel == "project.justfile":
-        append_doorway_recipe(host / SIDECAR, facts, dry)
+        if not adopted:
+            append_doorway_recipe(host / SIDECAR, facts, dry)
+        append_merged_recipe(host / SIDECAR, facts, dry)
         return
     for template, dest in OWNED:
         if dest == rel:
@@ -909,7 +922,7 @@ def repair(host, facts, target, dry):
     if rel == "LICENSE":
         preseed_license_only(host, facts, dry)
         return
-    raise Refused(2, f"{target} is not a file this skill owns (the preflight, README.md, docs/index.md, docs/about.md, LICENSE, the dummy schema and its tests, project.justfile's doorway recipe, or {GENERATORS}, which moves {TEMPLATE_GENERATORS}); a template-owned file comes back with `just --justfile .linkml/justfile update`")
+    raise Refused(2, f"{target} is not a file this skill owns (the preflight, README.md, docs/index.md, docs/about.md, LICENSE, the dummy schema and its tests, project.justfile's doorway and merged recipes, or {GENERATORS}, which moves {TEMPLATE_GENERATORS}); a template-owned file comes back with `just --justfile .linkml/justfile update`")
 
 
 def preseed_license_only(host, facts, dry):

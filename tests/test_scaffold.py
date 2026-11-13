@@ -399,6 +399,39 @@ def test_the_doorway_recipe_creates_refuses_and_is_a_no_op(tmp_path):
     assert result.rc == 1 and "not a link" in result.out, result.out
 
 
+MERGED = "linkml-sidecar: the merged schema"
+
+
+@pytest.mark.parametrize("adopt", [False, True], ids=["dummy", "adopted"])
+def test_every_sidecar_gets_the_merged_recipe_once(tmp_path, adopt):
+    """The merged file is what a release attaches, so an adopted schema's sidecar gets the recipe too, and no doorway."""
+    host = make_host(tmp_path)
+    args = ()
+    facts = FACTS
+    if adopt:
+        write(host / "schema" / "demo.yaml", SCHEMA)
+        args, facts = ("--adopt", "schema/demo.yaml"), {k: v for k, v in FACTS.items() if k != "PROJ_SLUG"}
+    assert scaffold(host, *args, facts=facts)
+    justfile = host / ".linkml" / "project.justfile"
+    block = read(justfile)
+    assert block.count(MERGED) == 1 and "\nmerged:\n" in block and "gen-linkml --mergeimports" in block
+    assert (MARKER in block) is not adopt
+    write(justfile, block[: block.index("# ---- linkml-sidecar")])
+    env = dict(FACTS, LINKML_TEMPLATE_SKIP_PIN_CHECK="1") if not adopt else {"LINKML_TEMPLATE_SKIP_PIN_CHECK": "1"}
+    result = bash(SCAFFOLD, "--host", str(host), "--repair", "project.justfile", env=env)
+    assert result and read(justfile).count(MERGED) == 1 and (MARKER in read(justfile)) is not adopt, result.out
+
+
+@pytest.mark.skipif(not have("just"), reason="just not installed locally")
+def test_the_merged_recipe_is_listed(tmp_path):
+    host = make_host(tmp_path)
+    assert scaffold(host)
+    result = run(["just", "--justfile", host / ".linkml" / "justfile", "--summary"], cwd=host)
+    assert result and "merged" in result.out.split(), result.out
+    dry = run(["just", "--justfile", host / ".linkml" / "justfile", "--dry-run", "merged"], cwd=host)
+    assert dry and "-o project/linkml/demo.yaml src/demo/schema/demo.yaml" in dry.out, dry.out
+
+
 def test_every_template_token_is_one_the_scaffold_knows():
     """A template may carry only tokens the scaffold substitutes, so none can survive a run."""
     script = (TEMPLATES.parent / "scripts" / "linkml-scaffold.py").read_text(encoding="utf-8")
@@ -565,10 +598,14 @@ def test_the_real_template_passes_the_gate_on_a_plain_host(tmp_path):
     # The generators' settings are renamed; gen-project reads them through config.public.mk.
     assert (host / ".linkml" / "generators.yaml").is_file() and not (host / ".linkml" / "config.yaml").exists()
     assert "LINKML_GENERATORS_CONFIG_YAML=generators.yaml\n" in read(host / ".linkml" / "config.public.mk")
-    for recipe in ("install", "lint", "test", "site"):
+    for recipe in ("install", "lint", "test", "site", "merged"):
         result = gate(host, recipe)
         assert result, f"just {recipe} failed:\n{result.out[-3000:]}"
     assert (host / ".linkml" / "uv.lock").is_file()
+    merged = read(host / ".linkml" / "project" / "linkml" / "demo.yaml")
+    assert merged.startswith("name: demo\n") and "\n  Person:\n" in merged and "\nimports:" not in merged, merged[:2000]
+    source = read(host / ".linkml" / "src" / "demo" / "schema" / "demo.yaml")
+    assert merged.count("attributes:") == source.count("attributes:"), "gen-linkml copied the slots into the classes"
     # copier refuses a dirty destination, so the sidecar is committed first, as Step 4 says.
     git = Git(host)
     git("add", "-A")

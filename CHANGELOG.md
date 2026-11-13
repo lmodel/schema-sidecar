@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- **A `merged` recipe in every sidecar's `project.justfile`.** It writes the schema with its imports merged in and its own shape kept, as `project/linkml/<slug>.yaml`: the file a release attaches and a KTL bundle adapts. `--repair project.justfile` no longer gives an adopted schema's sidecar the doorway recipe.
+
 ### Changed
 
 - **Neither skill writes in a KTL bundle's `.lokf/` any more.** KTL maintains it, and ktl-librarian builds its domain vocabulary from published schemas. linkml-author edits a file there only when a person names it, and never adds LOKF to a schema outside it. `layouts.md` says how an older sidecar beside a bundle moves.
