@@ -1,10 +1,10 @@
-# linkml-sidecar
+# schema-sidecar
 
-> Two Agent Skills that give a code repository a LinkML data model as a sidecar: linkml-sidecar installs a hidden `.linkml/` project from linkml-project-copier without touching the host's build, and linkml-author turns its dummy schema into the real model and keeps it generated, documented and tested.
+> Two Agent Skills that give a repository a LinkML data model: linkml-sidecar installs a linkml-project-copier project, at the root of an empty repository or as a hidden `.linkml/` sidecar beside the code of any other, and linkml-author turns its dummy schema into the real model and keeps it generated, documented and tested.
 
 ## Agent context
 
-The skills are under `skills/`. `skills/linkml-sidecar/SKILL.md` is the installer's procedure and `skills/linkml-sidecar/references/template-assumptions.md` is the catalogue of what the upstream template assumes of a repository root and what the scaffold does about each. `skills/linkml-author/SKILL.md` is the authoring procedure, with the metamodel in its `references/`. Install either with the GitHub CLI (`gh skill install noelmcloughlin/linkml-sidecar <name> --scope user --agent <yours>`) or the Open Skills CLI (`npx skills add noelmcloughlin/linkml-sidecar --skill <name> --yes`), which a company proxy or internal npm registry can block. `docs/install.md` has every route, and `docs/architecture.md` says what each skill does and who owns which file.
+The skills are under `skills/`. `skills/linkml-sidecar/SKILL.md` is the installer's procedure and `skills/linkml-sidecar/references/template-assumptions.md` is the catalogue of what the upstream template assumes of a repository root and what the scaffold does about each. `skills/linkml-author/SKILL.md` is the authoring procedure, with the metamodel in its `references/`. Install either with the GitHub CLI (`gh skill install noelmcloughlin/schema-sidecar <name> --scope user --agent <yours>`) or the Open Skills CLI (`npx skills add noelmcloughlin/schema-sidecar --skill <name> --yes`), which a company proxy or internal npm registry can block. `docs/install.md` has every route, and `docs/architecture.md` says what each skill does and who owns which file.
 
 If `.lokf/knowledge/index.md` exists in this repository, read it first. It is a queryable [LOKF](https://lokf.nolan-nichols.com) knowledge bundle with repository-specific context, conventions, and typed relationships that plain prose cannot express. A concept marked `status: draft` has not yet been confirmed by a person; one with a `human:` entry under `verified` has. Weigh them accordingly.
 

@@ -76,4 +76,4 @@ Step 5 has a workflow for GitHub and one for Forgejo, which Codeberg runs. [auto
 
 ## What is tested
 
-CI runs the tests on Ubuntu. The scripts are written for bash 3.2 and POSIX tools, so macOS, RHEL and Git for Windows are covered by design rather than by a run there. Run the preflight once on such a host, and report a difference as an issue. CI checks the Forgejo workflow's shape, not a run of it; [CONTRIBUTING.md](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/CONTRIBUTING.md) says how a change to it is run with Forgejo's own runner.
+CI runs the tests on Ubuntu. The scripts are written for bash 3.2 and POSIX tools, so macOS, RHEL and Git for Windows are covered by design rather than by a run there. Run the preflight once on such a host, and report a difference as an issue. CI checks the Forgejo workflow's shape, not a run of it; [CONTRIBUTING.md](https://github.com/noelmcloughlin/schema-sidecar/blob/main/CONTRIBUTING.md) says how a change to it is run with Forgejo's own runner.

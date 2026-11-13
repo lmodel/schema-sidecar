@@ -16,4 +16,4 @@
 
 ## AI Assistance
 
-If you used AI tools while preparing this PR, you are still the author and responsible for understanding, verifying, and defending your submission. Please engage with reviewers personally rather than through your agent during feedback and revisions. See the [AI Covenant](https://github.com/noelmcloughlin/linkml-sidecar/blob/main/AI_COVENANT.md).
+If you used AI tools while preparing this PR, you are still the author and responsible for understanding, verifying, and defending your submission. Please engage with reviewers personally rather than through your agent during feedback and revisions. See the [AI Covenant](https://github.com/noelmcloughlin/schema-sidecar/blob/main/AI_COVENANT.md).

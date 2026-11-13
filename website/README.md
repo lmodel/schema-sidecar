@@ -15,7 +15,7 @@ You need Node.js 22.12 or later and [uv](https://docs.astral.sh/uv/).
 ```bash
 cd website
 npm ci --ignore-scripts
-npm run dev        # http://localhost:4321/linkml-sidecar/
+npm run dev        # http://localhost:4321/schema-sidecar/
 npm run build      # dist/, then checks every link between its pages
 ```
 

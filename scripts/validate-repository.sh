@@ -130,13 +130,13 @@ done < <(find skills docs README.md CONTRIBUTING.md CHANGELOG.md AI_COVENANT.md 
 # against the files of the change itself.
 own=0
 while IFS=: read -r file line url; do
-  path="${url#https://github.com/noelmcloughlin/linkml-sidecar/blob/main/}"
+  path="${url#https://github.com/noelmcloughlin/schema-sidecar/blob/main/}"
   path="${path%%#*}"
   if [[ ! -e "$path" ]]; then
     err "$file:$line: link to this repository's main names '$path', which does not exist here"
     own=1
   fi
-done < <(git ls-files -z '*.md' | xargs -0 grep -noE 'https://github\.com/noelmcloughlin/linkml-sidecar/blob/main/[^) >"]+' || true)
+done < <(git ls-files -z '*.md' | xargs -0 grep -noE 'https://github\.com/noelmcloughlin/schema-sidecar/blob/main/[^) >"]+' || true)
 [[ "$own" -eq 0 ]] && ok "every link to this repository's main names a file this change holds"
 
 # 6. Shell scripts pass ShellCheck, and Python scripts compile.
