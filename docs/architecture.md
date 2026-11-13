@@ -31,7 +31,7 @@ Both skills find a schema by its files, never by its folder's name, as [layouts.
 
 ## Who owns which file
 
-The template owns most of `.linkml/`: the justfile, `pyproject.toml`, `mkdocs.yml` and the rest that copier renders, and only `just update` changes them. The host owns the schema, its tests and example data, the sidecar's README, license and docs pages, and `generators.yaml`. The skill owns the preflight it installed and the doorway recipe it appended to `project.justfile`. Its repair rewrites them. [The README every sidecar carries](../skills/linkml-sidecar/templates/linkml/README.md) maps every file to its owner.
+The template owns most of `.linkml/`: the justfile, `pyproject.toml`, `mkdocs.yml` and the rest that copier renders, and only `just update` changes them. The host owns the schema, its tests and example data, the sidecar's README, license and docs pages, and `generators.yaml`. The skill owns the preflight it installed and the doorway and `merged` recipes it appended to `project.justfile`. Its repair rewrites them. [The README every sidecar carries](../skills/linkml-sidecar/templates/linkml/README.md) maps every file to its owner.
 
 The template assumes it owns a repository root, so it renders workflows, governance files, a `setup` recipe and a `deploy` recipe that are inert or harmful in a subfolder. The scaffold switches each of them off, and [template-assumptions.md](../skills/linkml-sidecar/references/template-assumptions.md) says how, row by row. Its last column marks the rows that a `layout: sidecar` answer would remove. [linkml-project-copier#187](https://github.com/linkml/linkml-project-copier/issues/187) proposes that answer upstream.
 
@@ -41,7 +41,7 @@ Copier runs template code while it renders (`--trust`), so the scaffold first ch
 
 ## What never runs
 
-`just setup` runs `git init` and commits, which would nest a repository inside the host, and `just deploy` pushes the root of the host's `gh-pages` branch. Neither ever runs. The workflow builds the site and publishes it under the `linkml/` subpath only, once a repository variable says so: to GitHub Pages, or to Codeberg Pages with the Forgejo workflow.
+In a sidecar, `just setup` runs `git init` and commits, which would nest a repository inside the host, and `just deploy` pushes the root of the host's `gh-pages` branch. Neither ever runs there. At the root of a new repository with no git yet, `just setup` is the template's own first run. The workflow builds the site and publishes it under the `linkml/` subpath only, once a repository variable says so: to GitHub Pages, or to Codeberg Pages with the Forgejo workflow.
 
 ## With Knowledge Trust Ladder
 

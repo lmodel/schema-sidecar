@@ -105,7 +105,7 @@ Run it from the host's root (`--host DIR` otherwise). Every line it prints start
 7. **Moves the staged files into `.linkml/`**, around whatever is already there. A name both hold is a clash: nothing moves, the names are printed, and the run ends with exit 3. A failure at any earlier step removes the staging directory and nothing else.
 8. **Adds the Step 2 pointers**, then prints the hand-off facts and the Step 4 commands.
 
-**At the root**, steps 4, 6 and 7 differ, as [references/layouts.md](references/layouts.md#the-root-run) says, and there are no Step 2 pointers.
+**At the root**, items 4 to 7 differ, as [references/layouts.md](references/layouts.md#the-root-run) says, and there are no Step 2 pointers.
 
 `--repair PATH` rewrites one owned file of a finished sidecar (the preflight, the README, the docs pages, `LICENSE`, a dummy file, `project.justfile`'s doorway and `merged` recipes, or an adopted sidecar's `src/<slug>/schema/README.md`). It reads the facts back from the sidecar's answers and config. `just update` restores a template-owned file. `--repair generators.yaml` moves a finished project's `config.yaml` to `.linkml/generators.yaml`, the sidecar's or a root project's (`--host` names one elsewhere). When the preflight's `generators` line offers it, ask the person first; a new sidecar needs no asking. What `just update` then does not overwrite is row 20 of [references/template-assumptions.md](references/template-assumptions.md).
 

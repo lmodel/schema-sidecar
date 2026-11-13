@@ -40,16 +40,16 @@ With no project or schema yet, the scaffold picks the layout by what the folder 
 | anything else | `sidecar`: the project in `.linkml/`, a `linkml_schema` doorway, the hoisted workflow | `.linkml/src/<slug>/schema/<slug>.yaml` |
 | a schema outside any project | `sidecar` with `--adopt` | where it is |
 
-`--layout` overrides the choice. A folder with no git yet counts as empty, and the root project's `just setup` makes the repository. Both layouts keep the generators' settings in `.linkml/generators.yaml`, so at the root `.linkml/` holds that one file.
+`--layout` overrides the choice. A folder with no git yet counts as empty, and the root project's `just setup` makes the repository. An empty folder below a repository's root is refused until `--layout` says which, since `just setup` there would nest a repository. Both layouts keep the generators' settings in `.linkml/generators.yaml`, so at the root `.linkml/` holds that file and the preflight's copy, `scripts/linkml-preflight.sh`.
 
 ### The root run
 
-The scaffold runs the same steps at the root, with these differences:
+The scaffold does the same work at the root, with these differences, by the items of SKILL.md's Step 1 list:
 
-- **Step 4** pre-seeds only the dummy schema, its test and its data. The template's README, docs, license and workflows stand, since the project is the repository.
-- **Step 5's answers** name the folder's own license file, or none, and the two switches, `GH_ACTION_PYPI` and `GH_ACTION_DOCS_PREVIEW`.
-- **Step 6** patches `mkdocs.yml`, appends the `merged` recipe and moves the generators' settings to `.linkml/generators.yaml`.
-- **Step 7** moves the project into the root. A README or license the folder holds is kept, as copier keeps it, and a `.gitignore` gains the template's lines. Any other name both hold stops the run with exit 3 before anything moves.
+- **Pre-seeding (item 4)** lays only the dummy schema, its test and its data, and the preflight in `.linkml/scripts/`. The template's README, docs, license and workflows stand, since the project is the repository.
+- **The answers (item 5)** name the folder's own license file, or none, and the two switches, `GH_ACTION_PYPI` and `GH_ACTION_DOCS_PREVIEW`.
+- **After copier (item 6)** the scaffold patches `mkdocs.yml`, appends the `merged` recipe and moves the generators' settings to `.linkml/generators.yaml`.
+- **The move (item 7)** keeps a README or license the folder holds, as copier keeps it, and a `.gitignore` gains the template's lines. Any other name both hold stops the run with exit 3 before anything moves.
 
 ## How the tools run
 

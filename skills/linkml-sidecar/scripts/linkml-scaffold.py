@@ -847,6 +847,16 @@ def append_merged_recipe(project, facts, dry):
 # ---- the root layout -------------------------------------------------------
 
 
+def git_top(host):
+    """The top level of the git work tree the host is in, or None outside one."""
+    try:
+        done = subprocess.run(["git", "-C", str(host), "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+    except OSError:
+        return None
+    top = done.stdout.strip()
+    return Path(top).resolve() if done.returncode == 0 and top else None
+
+
 def not_empty(host):
     """What keeps the folder from counting as empty (EMPTY_OK), as names; none means the root layout."""
     found = []
@@ -858,6 +868,12 @@ def not_empty(host):
             continue
         found.append(name + ("/" if path.is_dir() else ""))
     return found
+
+
+def preseed_root(stage, facts, dry):
+    """At the root the skill pre-seeds the dummy and its preflight, in .linkml/ beside the generators' settings; the template's README, docs and license stand."""
+    preseed_dummy(stage, facts, dry)
+    write(stage / SIDECAR / "scripts" / "linkml-preflight.sh", read(TEMPLATES / "scripts" / "linkml-preflight.sh"), dry, 0o755)
 
 
 def after_copy_root(host, stage, facts, ref, dry):
@@ -919,6 +935,10 @@ def land_root(host, stage, facts, dry):
     for rel in keep:
         (stage / rel).unlink()
         say("handoff", f"kept the folder's own {rel}; copier keeps it too, so the template's was not written")
+    other = next((n for n in ("README", "README.rst", "README.txt", "README.adoc") if (host / n).is_file()), None)
+    if other and not (host / "README.md").exists() and (stage / "README.md").is_file():
+        (stage / "README.md").unlink()
+        say("handoff", f"kept the folder's own {other}; the template's README.md was not written beside it")
     if (host / ".gitignore").is_file() and (stage / ".gitignore").is_file():
         (stage / ".gitignore").unlink()
         if gitignore is not None:
@@ -934,7 +954,7 @@ def land_root(host, stage, facts, dry):
     say("scaffold", "moved the project into the root")
 
 
-def root_handoff(host, facts, had_git, dry):
+def root_handoff(host, facts, had_git, below, dry):
     """What a person needs to know about a project laid at the root, and the next step, which depends on whether git is there yet."""
     slug = facts["PROJ_SLUG"]
     say("handoff", f"root project {'would be ' if dry else ''}laid down: the schema is src/{slug}/schema/{slug}.yaml, a dummy that linkml-author replaces")
@@ -944,13 +964,17 @@ def root_handoff(host, facts, had_git, dry):
         say("handoff", f"the template wrote LICENSE for {facts['LICENSE_ID']}")
     on = [name for name in ROOT_SWITCHES if facts[name] == "true"]
     say("handoff", f"PyPI publishing {'on' if 'GH_ACTION_PYPI' in on else 'off'}, the docs preview {'on' if 'GH_ACTION_DOCS_PREVIEW' in on else 'off'} (GH_ACTION_PYPI, GH_ACTION_DOCS_PREVIEW)")
-    say("handoff", "the template's workflows in .github/workflows/ run the gate on every push and deploy the docs from main; they pin actions by tag, not by commit")
+    if below:
+        say("handoff", "this folder is below its repository's root, so the template's workflows in .github/workflows/ are inert here")
+    else:
+        say("handoff", "the template's workflows in .github/workflows/ run the gate on pushes to main and on pull requests, and deploy the docs from main; they pin actions by tag, not by commit")
     if (host / ".lokf").is_dir():
         say("handoff", ".lokf/ is a KTL knowledge bundle, which KTL maintains; nothing was written there. ktl-librarian builds its domain vocabulary from published schemas")
     if had_git:
         say("next", "just install && just lint && just test, then commit the project")
     else:
         say("next", "no git yet: add any agent folder here (.claude/, .agents/) to .gitignore, since just setup commits everything with git add .")
+        say("handoff", "the template's workflows run on main: if git names the first branch otherwise, git branch -m main after just setup")
         say("next", "just setup   # git init, install, the first commit, gen-project and gen-doc; then just lint && just test")
 
 
@@ -1171,12 +1195,20 @@ def main(argv=None):
             return 0
         refuse_existing(host)
         blockers = not_empty(host)
+        top = git_top(host)
+        below = top is not None and top != host.resolve()
         layout = args.layout
         if layout == "auto":
+            if below and not (blockers or args.adopt or args.gitignored):
+                raise Refused(
+                    3,
+                    f"{host} is an empty folder inside the repository at {top}: run at the repository's root, or pass --layout root for a project in this folder, "
+                    "or --layout sidecar for .linkml/ here",
+                )
             layout = "sidecar" if blockers or args.adopt or args.gitignored else "root"
         if layout == "root" and (args.adopt or args.gitignored):
             raise Refused(2, "--adopt and --gitignored are for a sidecar: a project at the root is the repository itself")
-        had_git = (host / ".git").exists()
+        had_git = top is not None
         adopt = adoption(host, args.adopt) if args.adopt else None
         if not adopt and not args.dummy:
             schemas = schema_files(host)
@@ -1209,12 +1241,12 @@ def main(argv=None):
             os.chmod(stage, 0o755)
             _stage = stage
         if layout == "root":
-            preseed_dummy(stage, facts, dry)
+            preseed_root(stage, facts, dry)
             run_copier(host, stage, facts, src, ref, dry)
             after_copy_root(host, stage, facts, ref, dry)
             land_root(host, stage, facts, dry)
             stage = None
-            root_handoff(host, facts, had_git, dry)
+            root_handoff(host, facts, had_git, below, dry)
             return 0
         preseed(host, stage, facts, dry, adopt)
         if not dry:

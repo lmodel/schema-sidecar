@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-from conftest import FACTS, SCAFFOLD, Git, add_lokf, bash, have, make_host, matches, pin, read, run, scaffold, template_src, tree, write
+from conftest import FACTS, PREFLIGHT, SCAFFOLD, Git, add_lokf, bash, have, make_host, matches, pin, read, run, scaffold, template_src, tree, write
 
 MERGED = "linkml-sidecar: the merged schema"
 DOORWAY = "linkml-sidecar: the linkml_schema doorway"
@@ -42,7 +42,8 @@ def test_an_empty_repository_gets_the_project_at_its_root(tmp_path):
     # The generators' settings sit where a sidecar's do.
     assert (host / ".linkml" / "generators.yaml").is_file() and not (host / "config.yaml").exists()
     assert "LINKML_GENERATORS_CONFIG_YAML=.linkml/generators.yaml\n" in read(host / "config.public.mk")
-    assert sorted(p.name for p in (host / ".linkml").iterdir()) == ["generators.yaml"]
+    assert sorted(p.name for p in (host / ".linkml").iterdir()) == ["generators.yaml", "scripts"]
+    assert (host / ".linkml" / "scripts" / "linkml-preflight.sh").stat().st_mode & 0o111
     project_justfile = read(host / "project.justfile")
     assert project_justfile.count(MERGED) == 1 and DOORWAY not in project_justfile
     assert "site_url: https://acme.github.io/demo/linkml/" in read(host / "mkdocs.yml")
@@ -87,6 +88,30 @@ def test_a_name_both_hold_stops_the_run_and_nothing_moves(tmp_path):
     result = scaffold(host, "--layout", "root")
     assert result.rc == 3 and "mkdocs.yml" in result.out and "nothing was written" in result.out, result.out
     assert outside_git(host) == before
+
+
+def test_another_readme_keeps_the_template_s_readme_out(tmp_path):
+    host = empty_host(tmp_path, readme=False)
+    write(host / "README.rst", "Demo\n====\n")
+    result = scaffold(host)
+    assert result and not (host / "README.md").exists() and read(host / "README.rst") == "Demo\n====\n", result.out
+    assert matches(result.out, r"^handoff: kept the folder's own README\.rst"), result.out
+
+
+def test_an_empty_folder_inside_a_repository_is_not_laid_by_itself(tmp_path):
+    """A root project there would advise just setup, whose git init nests a repository; the person chooses."""
+    make_host(tmp_path / "repo")
+    host = tmp_path / "repo" / "schema-project"
+    host.mkdir()
+    result = scaffold(host)
+    assert result.rc == 3 and "inside the repository at" in result.out and not list(host.iterdir()), result.out
+    result = scaffold(host, "--layout", "root")
+    assert result and (host / ".copier-answers.yml").is_file(), result.out
+    assert not matches(result.out, r"^next: just setup") and matches(result.out, r"^handoff: this folder is below its repository's root"), result.out
+    other = tmp_path / "repo" / "other"
+    other.mkdir()
+    pre = bash(PREFLIGHT, str(other))
+    assert pre and matches(pre.out, r"^info    layout +the folder is empty but inside a repository"), pre.out
 
 
 def test_anything_else_in_the_folder_picks_the_sidecar(tmp_path):

@@ -309,7 +309,9 @@ if [ "$kind" = none ]; then
 $(find "$root" -mindepth 1 -maxdepth 1 2>/dev/null | LC_ALL=C sort)
 EOF
   [ "$nextra" -gt 5 ] && extra="$extra, ..."
-  if [ "$nextra" -eq 0 ]; then
+  if [ "$nextra" -eq 0 ] && [ -n "${prefix:-}" ]; then
+    info layout "the folder is empty but inside a repository: linkml-sidecar refuses to choose here, so run it at the repository's root, or pass --layout root for a project in this folder"
+  elif [ "$nextra" -eq 0 ]; then
     info layout "the folder is empty apart from git's files, a README, a license or an agent's folders: linkml-sidecar lays the project at the root, its schema in src/<slug>/schema/, and with no git yet its just setup makes the repository (--layout sidecar for .linkml/)"
   else
     info layout "the folder holds $extra: linkml-sidecar lays a .linkml/ sidecar beside them (--layout root for the root)"
