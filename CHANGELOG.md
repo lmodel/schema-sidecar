@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+
+- **The workflows and the workflow template pin harden-runner v2.22.4 together.**
+
 ## [0.6.0] - 2026-11-13
 
 ### Added
