@@ -22,7 +22,7 @@ exclude = [
   # until the change merges, so validate-repository.sh checks these links
   # against the change's own files instead. The remap below turns a file link
   # into its raw address before this list applies.
-  '^https://raw\.githubusercontent\.com/noelmcloughlin/linkml-sidecar/main/',
+  '^https://raw\.githubusercontent\.com/noelmcloughlin/schema-sidecar/main/',
 ]
 
 # Regular expressions over the file path. The pages rendered into a host

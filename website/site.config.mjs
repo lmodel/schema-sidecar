@@ -11,15 +11,15 @@
 // The repository, as owner/name, and the site's address: the owner's GitHub
 // Pages domain and the path under it. A user site (the <owner>.github.io
 // repository) or a custom domain sets BASE to "".
-export const REPO = "noelmcloughlin/linkml-sidecar";
+export const REPO = "noelmcloughlin/schema-sidecar";
 export const SITE = "https://noelmcloughlin.github.io";
-export const BASE = "/linkml-sidecar";
+export const BASE = "/schema-sidecar";
 
 // The site's title, in the header and on every social card, and its
 // description, for search engines and as the home page's tagline when
 // HOME.tagline is not set.
-export const TITLE = "linkml-sidecar";
-export const DESCRIPTION = "Two Agent Skills that give a code repository a LinkML data model as a sidecar: linkml-sidecar installs a hidden .linkml/ project from linkml-project-copier without touching the host's build, and linkml-author turns its dummy schema into the real model and keeps it generated, documented and tested.";
+export const TITLE = "schema-sidecar";
+export const DESCRIPTION = "Two Agent Skills that give a repository a LinkML data model: linkml-sidecar installs a linkml-project-copier project, at the root of an empty repository or as a hidden .linkml/ sidecar beside the code of any other, and linkml-author turns its dummy schema into the real model and keeps it generated, documented and tested.";
 
 // The branch an "Edit page" link opens.
 export const BRANCH = "main";

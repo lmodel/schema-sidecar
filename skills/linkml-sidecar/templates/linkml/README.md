@@ -71,7 +71,7 @@ Use these, not a `linkml-lint` or `gen-project` installed elsewhere: the version
 
 ## Edit the schema
 
-The gate after every change: `lint`, then `gen-project`, then `test`. Example data lives under `tests/data/valid/` and `tests/data/invalid/` as `<ClassName>-<anything>.yaml`; the class is read from the name. The `linkml-author` skill ([noelmcloughlin/linkml-sidecar](https://github.com/noelmcloughlin/linkml-sidecar)) edits the schema this way and knows the metamodel; install it with `npx skills add noelmcloughlin/linkml-sidecar --skill linkml-author --yes`.
+The gate after every change: `lint`, then `gen-project`, then `test`. Example data lives under `tests/data/valid/` and `tests/data/invalid/` as `<ClassName>-<anything>.yaml`; the class is read from the name. The `linkml-author` skill ([noelmcloughlin/schema-sidecar](https://github.com/noelmcloughlin/schema-sidecar)) edits the schema this way and knows the metamodel; install it with `npx skills add noelmcloughlin/schema-sidecar --skill linkml-author --yes`.
 
 ## Never run here
 

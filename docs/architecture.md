@@ -1,6 +1,6 @@
 # Architecture
 
-This page explains how linkml-sidecar gives a repository a LinkML data model, at the root of a new repository or beside the code of an existing one without touching its build, what each of its two skills does, and why. [Install](install.md) says how to get them.
+This page explains how schema-sidecar gives a repository a LinkML data model, at the root of a new repository or beside the code of an existing one without touching its build, what each of its two skills does, and why. [Install](install.md) says how to get them.
 
 ## A sidecar beside the code
 

@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+
+- **The repository, the Claude Code plugin and the site's path are `schema-sidecar`.** A package name that starts with `linkml-` reads as the LinkML organisation's own. The skills keep their names, and `w3id.org/ktl/linkml-sidecar/` stays the documentation's address.
+
 ## [0.6.0] - 2026-11-13
 
 ### Added

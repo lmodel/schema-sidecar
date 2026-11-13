@@ -1,10 +1,10 @@
 {
-  "name": "linkml-sidecar",
-  "displayName": "LinkML Sidecar",
-  "description": "Two agent skills that give a code repository a LinkML data model as a sidecar: linkml-sidecar installs a hidden .linkml/ project from linkml-project-copier without touching the host's build, and linkml-author turns its dummy schema into the real model and keeps it generated, documented and tested. Works with or without a KTL knowledge bundle.",
+  "name": "schema-sidecar",
+  "displayName": "Schema Sidecar",
+  "description": "Two agent skills that give a repository a LinkML data model: linkml-sidecar installs a linkml-project-copier project, at the root of an empty repository or as a hidden .linkml/ sidecar beside the code of any other, and linkml-author turns its dummy schema into the real model and keeps it generated, documented and tested. A KTL knowledge bundle beside it is left to KTL.",
   "author": { "name": "Noel McLoughlin", "url": "https://github.com/noelmcloughlin" },
   "homepage": "https://w3id.org/ktl/linkml-sidecar/",
-  "repository": "https://github.com/noelmcloughlin/linkml-sidecar",
+  "repository": "https://github.com/noelmcloughlin/schema-sidecar",
   "license": "Apache-2.0",
   "keywords": ["linkml", "schema", "data-model", "copier", "linkml-project-copier", "sidecar", "json-schema", "pydantic", "owl", "shacl", "lokf", "ktl", "domain-schema", "agent-skills"]
 }

@@ -1,4 +1,4 @@
-# Contributing to linkml-sidecar
+# Contributing to schema-sidecar
 
 *This file is a checklist, not a design log. Each rule is a line or two that links to where its reasoning lives: a script header, a reference page, a workflow comment. `bash scripts/validate-repository.sh` fails when the file outgrows its word budget, so it stays that way.*
 
@@ -7,8 +7,8 @@
 There is no build step: the skills are Markdown, YAML, shell and Python.
 
 ```bash
-git clone https://github.com/noelmcloughlin/linkml-sidecar.git
-cd linkml-sidecar
+git clone https://github.com/noelmcloughlin/schema-sidecar.git
+cd schema-sidecar
 bash scripts/validate-repository.sh
 uv run --no-project --with-requirements tests/requirements.txt pytest
 ```

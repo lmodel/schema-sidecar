@@ -11,7 +11,7 @@ Install both skills for your user, then ask your agent to set up a LinkML projec
 This route needs [`gh skill`](https://cli.github.com/manual/gh_skill_install) version 2.90.0 or later. It defaults to GitHub Copilot, so pass `--agent` to name yours (`claude-code`, `github-copilot`, `cursor`, `codex`, `gemini-cli`, or another from `gh skill install --help`):
 
 ```bash
-gh skill install noelmcloughlin/linkml-sidecar --all --scope user
+gh skill install noelmcloughlin/schema-sidecar --all --scope user
 ```
 
 This is the route for a work machine: it needs github.com but no npm registry.
@@ -21,7 +21,7 @@ This is the route for a work machine: it needs github.com but no npm registry.
 Install both skills with the Open Skills CLI, [`npx skills`](https://github.com/vercel-labs/skills). This route could fail behind a company proxy or an internal npm registry. Take the GitHub CLI route there instead.
 
 ```bash
-npx skills add noelmcloughlin/linkml-sidecar --global --yes \
+npx skills add noelmcloughlin/schema-sidecar --global --yes \
   --skill linkml-sidecar --skill linkml-author
 ```
 
@@ -30,8 +30,8 @@ In PowerShell or cmd, type the command on one line without the `\` continuation.
 ### Claude Code plugin
 
 ```text
-/plugin marketplace add noelmcloughlin/linkml-sidecar
-/plugin install linkml-sidecar@linkml-sidecar
+/plugin marketplace add noelmcloughlin/schema-sidecar
+/plugin install schema-sidecar@schema-sidecar
 ```
 
 ### From a copy of the repository
@@ -39,8 +39,8 @@ In PowerShell or cmd, type the command on one line without the `\` continuation.
 Where github.com is out of reach, install from a company copy of this repository, or from a release archive. `npx skills add` and `/plugin marketplace add` take a git URL on any host, or a local path. The GitHub CLI takes a local folder, and needs no network for it:
 
 ```bash
-git clone https://git.example.com/mirrors/linkml-sidecar.git
-gh skill install ./linkml-sidecar/skills --from-local --all --scope user --agent claude-code
+git clone https://git.example.com/mirrors/schema-sidecar.git
+gh skill install ./schema-sidecar/skills --from-local --all --scope user --agent claude-code
 ```
 
 Point it at the copy's `skills/` folder, not its root: a working copy's `website/node_modules/` can hold other skills.
@@ -62,12 +62,12 @@ The workflow the sidecar installs checks the schema on every pull request that t
 The two scripts of **linkml-sidecar** work without an agent. From the host's root, with this repository cloned beside it:
 
 ```bash
-bash ../linkml-sidecar/skills/linkml-sidecar/templates/scripts/linkml-preflight.sh .
+bash ../schema-sidecar/skills/linkml-sidecar/templates/scripts/linkml-preflight.sh .
 export PROJ_NAME="Acme Platform" PROJ_DESC="One sentence." GITHUB_ORG=acme \
   REPO_URL=https://github.com/acme/platform FULL_NAME="A Person" EMAIL=a.person@acme.example \
   LICENSE_ID=Apache-2.0 SCHEMA_ID=https://w3id.org/acme/platform DOCS_URL=https://acme.github.io/platform/linkml/
-bash ../linkml-sidecar/skills/linkml-sidecar/scripts/linkml-scaffold.sh --dry-run
-bash ../linkml-sidecar/skills/linkml-sidecar/scripts/linkml-scaffold.sh
+bash ../schema-sidecar/skills/linkml-sidecar/scripts/linkml-scaffold.sh --dry-run
+bash ../schema-sidecar/skills/linkml-sidecar/scripts/linkml-scaffold.sh
 ```
 
 Step 0 of [linkml-sidecar's SKILL.md](../skills/linkml-sidecar/SKILL.md) says where each fact comes from, and Step 1 lists the exit codes, `--repair` and `--pointers-only`.
