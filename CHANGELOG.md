@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-13
+
 ### Added
 
 - **An empty repository gets the project at its root.** The scaffold picks the root, with the schema in `src/<slug>/schema/`, when the folder holds nothing but git's files, a README, a license and an agent's folders, and `.linkml/` otherwise; `--layout` overrides. An empty folder below a repository's root is refused until `--layout` says which, since `just setup` there would nest a repository. The preflight's `layout` line says which, and `GH_ACTION_PYPI` and `GH_ACTION_DOCS_PREVIEW` turn on the template's two optional workflows there.
@@ -11,17 +13,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- **The project's schema is the *domain schema*, and the bundle's copy is its *domain vocabulary*.** Both skills, their KTL pages and the host templates use the two names, and say that only a file in `.lokf/schema/` imports `lokf`. linkml-author's page for a bundle is now `ktl-domain-vocabulary.md`.
 - **Neither skill writes in a KTL bundle's `.lokf/` any more.** KTL maintains it, and ktl-librarian builds its domain vocabulary from published schemas. linkml-author edits a file there only when a person names it, and never adds LOKF to a schema outside it. `layouts.md` says how an older sidecar beside a bundle moves.
 
 ### Removed
 
 - **KTL mode: the scaffold's `--mode` flag, the `lokf.yaml` pin, the `lokf-adapt` recipes, the `.lokf/justfile` and `[tool.lokf]` edits, the workflow's copy check, `references/ktl.md` and `ktl-domain-vocabulary.md`.** A sidecar's existing `lokf-adapt` recipes stay as the host's own.
-
-## [0.5.2] - 2026-11-12
-
-### Changed
-
-- **The project's schema is the *domain schema*, and the bundle's copy is its *domain vocabulary*.** Both skills, their KTL pages and the host templates use the two names, and say that only a file in `.lokf/schema/` imports `lokf`. linkml-author's page for a bundle is now `ktl-domain-vocabulary.md`.
 
 ### Security
 
