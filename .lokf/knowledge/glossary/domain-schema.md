@@ -1,6 +1,6 @@
 ---
 type: GlossaryTerm
-id: https://w3id.org/ktl/linkml-sidecar/knowledge/glossary/domain-schema
+id: https://w3id.org/lmodel/schema-sidecar/knowledge/glossary/domain-schema
 title: Domain schema
 description: A LinkML schema that models a domain, owned by a LinkML project in .linkml/src/<slug>/schema/ or src/<slug>/schema/; it never imports lokf, and a bundle uses its classes through the copy lokf adapt writes into .lokf/schema/, the bundle's domain vocabulary.
 definition: A LinkML schema that models a domain and that a LinkML project owns; it never imports lokf.

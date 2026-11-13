@@ -2,7 +2,7 @@
 
 schema-sidecar gives any repository a [LinkML](https://linkml.io) data model: one schema file from which JSON Schema, Pydantic models, OWL, SHACL, TypeScript and a documentation site are generated. Two [Agent Skills](https://agentskills.io) do the work, on the project shape that [linkml-project-copier](https://github.com/linkml/linkml-project-copier) defines.
 
-Documentation is at [w3id.org/ktl/linkml-sidecar](https://w3id.org/ktl/linkml-sidecar/).
+Documentation is at [w3id.org/lmodel/schema-sidecar](https://w3id.org/lmodel/schema-sidecar/).
 
 ## Get started
 
@@ -18,7 +18,7 @@ Then open your agent in a repository and say, in turn:
 2. "Model this repository's data in the schema."
 3. "Lint, generate and test the schema."
 
-[The install page](https://w3id.org/ktl/linkml-sidecar/docs/install/#quick-start) gives the other ways to install, and [running the scripts without an agent](https://w3id.org/ktl/linkml-sidecar/docs/install/#run-the-scripts-without-an-agent) gives the commands for a person at a shell.
+[The install page](https://w3id.org/lmodel/schema-sidecar/docs/install/#quick-start) gives the other ways to install, and [running the scripts without an agent](https://w3id.org/lmodel/schema-sidecar/docs/install/#run-the-scripts-without-an-agent) gives the commands for a person at a shell.
 
 > **Only want to ask?** Install `ktl-docent` into any agent you use, by a route from [the install page](https://w3id.org/ktl/docs/install/), and ask it about this project. It answers from the bundle and says how far each answer has been checked.
 >
@@ -39,7 +39,7 @@ Then open your agent in a repository and say, in turn:
 | a codebase | a hidden `.linkml/` sidecar beside the code, outside its build, with a `linkml_schema` link to the schema | `.linkml/src/<slug>/schema/` |
 | a schema but no project | a sidecar around that schema, which stays where it is | where it is |
 
-[The architecture](https://w3id.org/ktl/linkml-sidecar/docs/architecture/) says who owns which file, and why the template is trusted only at its pin.
+[The architecture](https://w3id.org/lmodel/schema-sidecar/docs/architecture/) says who owns which file, and why the template is trusted only at its pin.
 
 ## Beside a knowledge bundle
 

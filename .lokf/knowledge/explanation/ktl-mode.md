@@ -1,6 +1,6 @@
 ---
 type: Explanation
-id: https://w3id.org/ktl/linkml-sidecar/knowledge/explanation/ktl-mode
+id: https://w3id.org/lmodel/schema-sidecar/knowledge/explanation/ktl-mode
 title: KTL mode
 description: "What changes when the host carries a .lokf/ Knowledge Trust Ladder bundle: the project's schema stays in .linkml/ and imports nothing from .lokf/, the scaffold pins .lokf/schema/lokf.yaml, adds lokf-adapt recipes, writes the bundle a copy at .lokf/schema/<slug>.yaml and names it in .lokf/justfile and as [tool.lokf] schema; an adopted schema gets no copy."
 genre: explanation
@@ -12,11 +12,11 @@ tags:
   - lokf validate
   - lokf adapt
 about:
-  - https://w3id.org/ktl/linkml-sidecar/knowledge/glossary/domain-schema
-  - https://w3id.org/ktl/linkml-sidecar/knowledge/glossary/domain-vocabulary
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/glossary/domain-schema
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/glossary/domain-vocabulary
 references:
-  - https://w3id.org/ktl/linkml-sidecar/knowledge/references/knowledge-trust-ladder
-  - https://w3id.org/ktl/linkml-sidecar/knowledge/playbooks/linkml-author-skill
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/references/knowledge-trust-ladder
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/playbooks/linkml-author-skill
 sources:
   - resource: skills/linkml-sidecar/references/ktl.md
   - resource: skills/linkml-author/references/ktl-domain-vocabulary.md

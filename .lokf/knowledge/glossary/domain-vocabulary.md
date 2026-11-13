@@ -1,6 +1,6 @@
 ---
 type: GlossaryTerm
-id: https://w3id.org/ktl/linkml-sidecar/knowledge/glossary/domain-vocabulary
+id: https://w3id.org/lmodel/schema-sidecar/knowledge/glossary/domain-vocabulary
 title: Domain vocabulary
 description: The bundle's file in .lokf/schema/ that .lokf/justfile names on its schema := line, with every file it imports; it always imports lokf, lists the classes a concept may name beyond LOKF's own, and lokf validate --schema checks the bundle against it; in KTL mode it is the copy lokf adapt writes from the sidecar's schema.
 definition: The file in .lokf/schema/ that .lokf/justfile names on its schema := line, with every file it imports; it always imports lokf, and lists the classes a bundle's concepts may name beyond LOKF's own.
@@ -9,8 +9,8 @@ tags:
   - domain vocabulary
   - lokf
 relatedTo:
-  - https://w3id.org/ktl/linkml-sidecar/knowledge/glossary/domain-schema
-  - https://w3id.org/ktl/linkml-sidecar/knowledge/explanation/ktl-mode
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/glossary/domain-schema
+  - https://w3id.org/lmodel/schema-sidecar/knowledge/explanation/ktl-mode
 sources:
   - resource: skills/linkml-author/references/ktl-domain-vocabulary.md
   - resource: skills/linkml-sidecar/references/ktl.md

@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+
+- **The persistent identifier is `https://w3id.org/lmodel/schema-sidecar/`, beside the other lmodel repositories'.** The bundle's namespace, and so every concept's id, moves to `https://w3id.org/lmodel/schema-sidecar/knowledge/`, and `w3id.org/ktl/linkml-sidecar/` is retired. lychee no longer remaps the old address.
+
 ## [0.6.0] - 2026-11-13
 
 ### Added

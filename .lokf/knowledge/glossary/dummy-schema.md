@@ -1,6 +1,6 @@
 ---
 type: GlossaryTerm
-id: https://w3id.org/ktl/linkml-sidecar/knowledge/glossary/dummy-schema
+id: https://w3id.org/lmodel/schema-sidecar/knowledge/glossary/dummy-schema
 title: Dummy schema
 description: The small placeholder schema a fresh sidecar holds, a Person example in both plain and KTL mode, which lints clean and which linkml-author replaces with the host's real model.
 definition: The skill-owned placeholder schema the scaffold writes in a fresh sidecar, the Person example in both modes, which linkml-author replaces with the host's real model.
