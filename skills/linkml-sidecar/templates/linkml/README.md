@@ -85,15 +85,13 @@ cd .linkml && just update       # copier update --trust --skip-answered, then uv
 
 Run it on a clean tree, read the diff, and commit `uv.lock` and `.copier-answers.yml` with it. The template's own files change; yours do not. There is no dry run: `copier update --pretend` fails inside a subfolder of a repository, so the diff is the preview.
 
-## With a knowledge bundle (`.lokf/`)
+## Beside a knowledge bundle (`.lokf/`)
 
-A [KTL](https://github.com/noelmcloughlin/knowledge-trust-ladder) bundle beside this project is a separate thing. The schema stays here, as the repository's domain schema, and imports nothing from `.lokf/`. The bundle validates its concepts against a copy in `.lokf/schema/`, beside LOKF's core schema (`lokf.yaml`), and `.lokf/justfile` names the copy (`schema :=`). The copy is the bundle's domain vocabulary: the classes its concepts may name.
-
-`just lokf-adapt` writes the copy with `lokf adapt`. It re-roots the schema's top classes on LOKF's `Concept`, so a concept may name them as its `type`, and renames each name LOKF also defines, keeping its IRI. The copy's notes list every move. Run it after every schema change and commit the copy with the change. `just lokf-adapt-check`, which the workflow runs, fails while the copy is stale. Tell the KTL plugins' "Known LOKF types" setting about each class the copy re-roots. The two recipes are in `project.justfile` when the sidecar was installed beside a bundle.
+A [Knowledge Trust Ladder (KTL)](https://w3id.org/ktl/) bundle in `.lokf/` belongs to KTL, which maintains it. Nothing here writes there, and the schema imports nothing from it. A bundle takes the schema once it is published, and ktl-librarian adapts it into the bundle's vocabulary.
 
 ## Remove it
 
-Three deletions and two edits, nothing else references it: `rm -rf .linkml linkml_schema` and the workflow `linkml-sidecar.yaml`, then drop the sidecar aside from `README.md` and the `## Schema` section from `llms.txt`. Beside a knowledge bundle, the copy stays in `.lokf/schema/`, and `.lokf/justfile` still names it, but nothing writes it again. To remove it as well, `git rm` it, reset the justfile's line to `schema := ""` (or, on an older justfile, both validate recipes to `uv run lokf validate {{ bundle }}`), and remove `[tool.lokf] schema` from `.lokf/pyproject.toml`.
+Three deletions and two edits, nothing else references it: `rm -rf .linkml linkml_schema` and the workflow `linkml-sidecar.yaml`, then drop the sidecar aside from `README.md` and the `## Schema` section from `llms.txt`.
 
 ## Learn more
 

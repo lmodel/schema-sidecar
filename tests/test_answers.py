@@ -4,10 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-import re
-import shlex
 
-from conftest import FACTS, TEMPLATES, load_scaffold_module
+from conftest import FACTS, load_scaffold_module
 
 mod = load_scaffold_module()
 
@@ -65,19 +63,6 @@ def test_render_substitutes_every_token_and_refuses_a_leftover():
     with pytest.raises(mod.Refused, match="SCHEMA_SRC"):
         mod.render("<SCHEMA_SRC>/x.yaml", facts())
     assert mod.render("<slug> and <PROJ_SLUG>", facts()) == "<slug> and demo"
-
-
-def test_the_scaffold_runs_lokf_adapt_as_the_recipe_does():
-    """The copy the scaffold writes is the one `just lokf-adapt-check` holds it to: the same command, the same paths from .linkml/."""
-    recipes = mod.render((TEMPLATES / "project.justfile.lokf").read_text(), facts())
-    default = re.search(r'^lokf_cmd := env_var_or_default\("LOKF_CMD", "([^"]+)"\)$', recipes, re.M)
-    assert default and default.group(1) == mod.LOKF_CMD
-    assert re.search(r'^lokf_adapt_flags := ""$', recipes, re.M)
-    for name, extra in (("lokf-adapt", []), ("lokf-adapt-check", ["--check"])):
-        line = re.search(rf"^{name}:\n    (.+)$", recipes, re.M).group(1)
-        line = line.replace("{{ lokf_cmd }}", default.group(1)).replace("{{ source_schema_path }}", "src/demo/schema/demo.yaml").replace("{{ lokf_adapt_flags }}", "")
-        assert shlex.split(line) == shlex.split(mod.LOKF_CMD) + mod.adapt_args("demo") + extra, name
-    assert "../.lokf/schema/demo.yaml" in mod.adapt_args("demo")
 
 
 def test_the_template_url_forms():

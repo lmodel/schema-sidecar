@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+
+- **Neither skill writes in a KTL bundle's `.lokf/` any more.** KTL maintains it, and ktl-librarian builds its domain vocabulary from published schemas. linkml-author edits a file there only when a person names it, and never adds LOKF to a schema outside it. `layouts.md` says how an older sidecar beside a bundle moves.
+
+### Removed
+
+- **KTL mode: the scaffold's `--mode` flag, the `lokf.yaml` pin, the `lokf-adapt` recipes, the `.lokf/justfile` and `[tool.lokf]` edits, the workflow's copy check, `references/ktl.md` and `ktl-domain-vocabulary.md`.** A sidecar's existing `lokf-adapt` recipes stay as the host's own.
+
 ## [0.5.2] - 2026-11-12
 
 ### Changed

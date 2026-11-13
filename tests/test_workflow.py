@@ -6,9 +6,8 @@ import re
 
 import yaml
 
-import pytest
 
-from conftest import FORGEJO_WORKFLOW, WORKFLOW, have, read, run, write
+from conftest import FORGEJO_WORKFLOW, WORKFLOW, read
 
 TEXT = read(WORKFLOW)
 DOC = yaml.safe_load(TEXT)
@@ -33,10 +32,10 @@ def test_every_step_runs_in_the_sidecar_and_installs_from_the_lock():
     assert not any("gh-deploy" in r or "just deploy" in r or "just setup" in r for r in runs)
 
 
-def test_it_triggers_on_the_sidecar_and_the_bundle_s_schema_folder():
+def test_it_triggers_on_the_sidecar_and_nothing_in_the_bundle():
     triggers = DOC[True] if True in DOC else DOC["on"]
     for event in ("pull_request", "push"):
-        assert ".linkml/**" in triggers[event]["paths"] and ".lokf/schema/**" in triggers[event]["paths"]
+        assert ".linkml/**" in triggers[event]["paths"] and not any(".lokf" in path for path in triggers[event]["paths"])
     assert "workflow_dispatch" in triggers
 
 
@@ -67,28 +66,7 @@ def test_it_names_no_branch_and_publishes_from_the_default_branch_only():
     assert JOBS["publish-docs"]["needs"] == "docs"
 
 
-CHECK_STEP = "Check the knowledge bundle's copy of the schema"
-
-
-def check_step(doc):
-    steps = [s for s in doc["jobs"]["lint-and-test"]["steps"] if s.get("name") == CHECK_STEP]
-    assert len(steps) == 1, f"no single {CHECK_STEP!r} step"
-    return steps[0]["run"]
-
-
-def test_both_templates_check_the_copy_after_the_tests_with_one_script():
-    names = [s.get("name") for s in JOBS["lint-and-test"]["steps"]]
-    assert names.index(CHECK_STEP) == names.index("Generate, test and run the examples") + 1
-    assert check_step(DOC) == check_step(yaml.safe_load(read(FORGEJO_WORKFLOW)))
-
-
-@pytest.mark.skipif(not have("just"), reason="just not installed locally")
-def test_the_check_runs_the_recipe_only_where_the_sidecar_has_it(tmp_path):
-    """Only a sidecar installed beside a KTL bundle has lokf-adapt-check, so the step must pass on every other."""
-    script = check_step(DOC)
-    write(tmp_path / "justfile", "lint:\n    @echo lint\n")
-    result = run(["bash", "-c", script], cwd=tmp_path)
-    assert result and "no lokf-adapt-check recipe" in result.out, result.out
-    write(tmp_path / "justfile", "lint:\n    @echo lint\nlokf-adapt-check:\n    @echo checked; exit 3\n")
-    result = run(["bash", "-c", script], cwd=tmp_path)
-    assert result.rc != 0 and "checked" in result.out, result.out
+def test_neither_template_runs_anything_in_the_bundle():
+    """.lokf/ is KTL's: the sidecar's gate checks the project alone."""
+    for text in (TEXT, read(FORGEJO_WORKFLOW)):
+        assert "lokf" not in text

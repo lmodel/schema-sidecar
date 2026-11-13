@@ -309,19 +309,6 @@ else
 fi
 rm -rf "${unseen_dir:?}"
 
-# 13. The lokf fixture's justfile is ktl-sidecar's template, rendered, so the
-#     scaffold's exact-line edits are tested against the lines a real host
-#     has. Compared only when a knowledge-trust-ladder clone is named.
-if [[ -n "${KTL_REPO:-}" && -f "$KTL_REPO/skills/ktl-sidecar/templates/justfile" ]]; then
-  if cmp -s <(sed 's/<PROJ_NAME>/Fixture/g' "$KTL_REPO/skills/ktl-sidecar/templates/justfile") tests/fixtures/lokf/justfile; then
-    ok "tests/fixtures/lokf/justfile matches ktl-sidecar's justfile template"
-  else
-    err "tests/fixtures/lokf/justfile differs from ktl-sidecar's justfile template at $KTL_REPO - re-render the fixture, and check the scaffold's exact-line edits still match"
-  fi
-else
-  say "KTL_REPO not set - the lokf fixture is not compared with ktl-sidecar's template"
-fi
-
 say ""
 if [[ "$fail" -eq 0 ]]; then
   say "Repository contract: PASS"

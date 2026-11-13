@@ -25,7 +25,7 @@ lmodel, an experiment area for these patterns and not a standard, gives a worked
 
 ## A release asset
 
-A tagged release that attaches the schema is the address a vendoring importer copies from and checks. KTL's knowledge-release workflow attaches `schema-<tag>-<name>.yaml` and its `.sha256` when `.lokf/justfile` names a domain vocabulary, after rewriting the relative `lokf` import to the package's name, and it stops on any other local import. gist attaches `schema-<tag>-gist.yaml` from its own workflow. The tag is the version (linkml-project-copier issue 121 says so for its projects too). The sidecar's own workflow attaches nothing yet.
+A tagged release that attaches the schema is the address a vendoring importer copies from and checks. gist attaches `schema-<tag>-gist.yaml` from its own workflow. The tag is the version (linkml-project-copier issue 121 says so for its projects too). The sidecar's own workflow attaches nothing yet.
 
 ## How an importer takes it
 
@@ -61,7 +61,7 @@ When the vocabulary you need shares names with the schema it must sit beside, a 
 5. re-root the top classes on the host's base class;
 6. give every element one canonical form of name.
 
-The command is `lokf adapt VOCAB -o OUT --root Class --lokf PATH --prefix P`. `--dry-run` shows the moves, and `--check` in CI says when the published vocabulary has moved. gist does the same without the toolkit, with a rename list in its justfile and a script that checks the names. Either way the moves are the rules of [schema-design.md](schema-design.md) applied after the fact, which is why a schema written to those rules asks none of this of its importers. Beside a KTL bundle, such a copy of the project's own schema, in `.lokf/schema/`, is how the bundle's concepts use its classes ([ktl-domain-vocabulary.md](ktl-domain-vocabulary.md)).
+The command is `lokf adapt VOCAB -o OUT --root Class --lokf PATH --prefix P`. `--dry-run` shows the moves, and `--check` in CI says when the published vocabulary has moved. gist does the same without the toolkit, with a rename list in its justfile and a script that checks the names. Either way the moves are the rules of [schema-design.md](schema-design.md) applied after the fact, which is why a schema written to those rules asks none of this of its importers. A KTL bundle takes a schema the same way: ktl-librarian adapts a published release, beside any others the bundle uses.
 
 ## Before a release
 

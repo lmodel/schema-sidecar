@@ -3,8 +3,7 @@
 These tests exercise skills/linkml-sidecar/scripts/ and templates/ on
 throwaway hosts. The fast ones run the scaffold against tests/fake_copier.py,
 which renders the few template files the scaffold touches without the
-network, a stub `.lokf/` under tests/fixtures/, and tests/fake_lokf.py in
-place of the toolkit's `lokf adapt`; the preflight runs with
+network; the preflight runs with
 LINKML_PREFLIGHT_OFFLINE=1, so they make no network call. The slow ones, switched
 on by LINKML_SIDECAR_SLOW=1, run the real copier against a local clone of the
 pinned template (LINKML_TEMPLATE_SRC, or .template-cache/linkml-project-copier
@@ -43,8 +42,6 @@ PREFLIGHT = TEMPLATES / "scripts" / "linkml-preflight.sh"
 WORKFLOW = TEMPLATES / "github" / "linkml-sidecar.yaml"
 FORGEJO_WORKFLOW = TEMPLATES / "forgejo" / "linkml-sidecar.yaml"
 FAKE_COPIER = TESTS / "fake_copier.py"
-FAKE_LOKF = TESTS / "fake_lokf.py"
-FIXTURES = TESTS / "fixtures"
 FACTS = {
     "PROJ_NAME": "demo",
     "PROJ_SLUG": "demo",
@@ -177,28 +174,27 @@ def make_host(root: Path, readme=True, license_file=True, git=True) -> Path:
     return root
 
 
-def add_lokf(root: Path, stub_schema=True, before_schema=False) -> Path:
-    """A `.lokf/` from the fixture: ktl-sidecar's justfile and pyproject, a bundle header, and the stub core schema unless the slow tests want the real one pinned.
-
-    before_schema takes the justfile of a ktl-sidecar release from before the
-    `schema` variable, whose lines the scaffold patches by exact match.
-    """
+def add_lokf(root: Path) -> Path:
+    """A small stand-in for a KTL bundle's `.lokf/`: enough files to tell whether a run changed anything there."""
     target = root / ".lokf"
-    shutil.copytree(FIXTURES / "lokf", target, dirs_exist_ok=True)
-    if before_schema:
-        shutil.copy(FIXTURES / "lokf-before-schema" / "justfile", target / "justfile")
-    if not stub_schema:
-        (target / "schema" / "lokf.yaml").unlink()
+    write(target / "justfile", 'bundle := "knowledge"\nschema := ""\n')
+    write(target / "pyproject.toml", '[project]\nname = "fixture-lokf"\nversion = "0.0.0"\ndependencies = ["lokf[build]>=0.9.0"]\n')
+    write(target / "knowledge" / "index.md", "---\nbase_iri: https://fixture.example/knowledge/\n---\n\n# Fixture\n")
+    write(target / "schema" / "lokf.yaml", "id: https://w3id.org/lokf\nname: lokf\n")
     return target
 
 
+def tree(root: Path) -> dict:
+    """Every path under root with its bytes, so a test can tell that nothing there changed."""
+    return {p.relative_to(root).as_posix(): (p.read_bytes() if p.is_file() else None) for p in sorted(Path(root).rglob("*"))}
+
+
 def scaffold(host: Path, *args, facts=None, env=None, fake=True) -> Result:
-    """Run the scaffold on host with the standard facts; the fake copier and the fake lokf unless fake=False."""
+    """Run the scaffold on host with the standard facts; the fake copier unless fake=False."""
     full = dict(FACTS if facts is None else facts)
     if fake:
         full["LINKML_COPIER"] = f"{sys.executable} {FAKE_COPIER}"
         full["LINKML_TEMPLATE_SRC"] = "gh:linkml/linkml-project-copier"
-        full["LOKF_CMD"] = f"{sys.executable} {FAKE_LOKF}"
     full["LINKML_TEMPLATE_SKIP_PIN_CHECK"] = "1"
     if env:
         full.update(env)
@@ -233,7 +229,6 @@ def _isolated_environment(tmp_path_factory):
     for name in (
         "LINKML_COPIER", "LINKML_TEMPLATE_REF", "LINKML_TEMPLATE_SHA", "LINKML_TEMPLATE_SKIP_PIN_CHECK",
         "LINKML_MODE", "BASE_IRI", "COPYRIGHT_YEAR", "TODAY", "FAKE_COPIER_FAIL", "FAKE_COPIER_GIT", "GIT_DIR", "GIT_WORK_TREE",
-        "LOKF_CMD", "FAKE_LOKF_OLD", "FAKE_LOKF_FAIL",
     ):
         patch.delenv(name, raising=False)
     yield

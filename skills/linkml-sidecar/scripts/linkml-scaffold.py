@@ -16,7 +16,7 @@ the work, in this order:
    holds outside any project is refused too, until `--adopt` names it or
    `--dummy` asks for the example schema beside it;
 2. check the facts the environment carries against the template's own
-   rules, and read the ones a KTL bundle already records;
+   rules;
 3. verify that the pinned tag still names the pinned commit, so `--trust`
    is given to a template that was read, not to whatever the tag points
    at today;
@@ -32,19 +32,16 @@ the work, in this order:
    directory and nothing else, so `.linkml/` is never deleted here;
 7. neutralise what the template assumes of a repository root (the
    catalogue is references/template-assumptions.md), and rename the
-   generators' settings from config.yaml to generators.yaml. Then, in KTL
-   mode, let `lokf adapt` write a copy of the schema into .lokf/schema/ and
-   name the copy in the bundle's justfile. Add the root pointers, and print
-   the hand-off.
+   generators' settings from config.yaml to generators.yaml. Add the root
+   pointers, and print the hand-off.
 
 With `--adopt <schema>`, no dummy is written. `config.public.mk` points
 `LINKML_SCHEMA_SOURCE_DIR` at the folder that already holds the host's
 schema, which is never moved, linked or edited, and the folder the
 template expects gets a README that says where the schema is.
 
-The project is the same in both modes: its schema stays in the sidecar and
-imports nothing from .lokf/. A KTL bundle is a separate thing, which
-validates its concepts against the copy in .lokf/schema/.
+A KTL knowledge bundle in .lokf/ belongs to KTL, which maintains it. Nothing
+here writes there, and a schema inside it is never adopted.
 
 Every line it prints starts with `scaffold:`, `handoff:` or `next:`, so a
 skill can read it back. `--dry-run` prints the same lines and writes
@@ -111,10 +108,6 @@ LICENSE_FILES = ("LICENSE", "LICENSE.md", "LICENSE.txt", "LICENCE", "LICENCE.md"
 NAME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9 _\-]*[A-Za-z0-9]$")
 SLUG_RE = re.compile(r"^[a-z][a-z0-9_]+$")
 CODE_HOSTS = ("github.com", "gitlab.com", "bitbucket.org", "codeberg.org", "sourceforge.net", "github.io/")
-# The KTL workflows whose validate step runs `lokf validate --check-refs`
-# inline until ktl-sidecar's template carries the `schema` variable, and the
-# line that template runs instead. The runners have no `just`, so the step
-# runs it through uvx.
 # The generators' settings. The template renders them as config.yaml at the
 # project's root and names that file in config.public.mk, which every recipe
 # reads; nothing else names it. The sidecar keeps them as generators.yaml, so
@@ -127,22 +120,6 @@ CODE_HOSTS = ("github.com", "gitlab.com", "bitbucket.org", "codeberg.org", "sour
 TEMPLATE_GENERATORS = "config.yaml"
 GENERATORS = "generators.yaml"
 GENERATORS_VAR = "LINKML_GENERATORS_CONFIG_YAML"
-KTL_WORKFLOWS = ("knowledge-registrar.yaml", "knowledge-librarian.yaml", "knowledge-release.yaml")
-KTL_VALIDATE_STEP = "uvx --from rust-just==1.47.0 just lokf-check-refs"
-# KTL keeps the bundle's files in .lokf/schema/: LOKF core's copy, and the
-# domain vocabulary the justfile names with each file it imports
-# (ktl-librarian's domain-vocabulary.md). A LinkML project's own schema, the
-# domain schema, is never one of them. In KTL mode, `lokf adapt` writes a copy of the sidecar's
-# schema there, and the justfile names the copy. Before KTL 0.62.0, the copy
-# of LOKF core sat at the root of .lokf/.
-KTL_SCHEMA_DIR = ".lokf/schema"
-LOKF_CORE = KTL_SCHEMA_DIR + "/lokf.yaml"
-OLD_LOKF_CORE = ".lokf/lokf.yaml"
-# How the lokf toolkit is run, from .linkml/ or a folder beside it: the
-# environment .lokf/ pins, unless LOKF_CMD names another, as it does for the
-# lokf-adapt recipes. The recipes and the scaffold run the same command.
-LOKF_CMD = "uv run --project ../.lokf lokf"
-LOKF_MARKER = "# ---- linkml-sidecar: the knowledge bundle's copy"
 # place_schema works these out from SCHEMA_DIR and never reads them from the
 # environment. SCHEMA_FOLDER is the schema's folder from the host root,
 # SCHEMA_FOLDER_WIN the same path for mklink, and SCHEMA_SRC the folder from
@@ -150,8 +127,7 @@ LOKF_MARKER = "# ---- linkml-sidecar: the knowledge bundle's copy"
 PLACES = ("SCHEMA_FOLDER", "SCHEMA_FOLDER_WIN", "SCHEMA_SRC")
 # The files the skill owns, as (template path, destination inside .linkml/).
 # Each is in the template's `_skip_if_exists`, or outside the template. The
-# dummy schema, its test and its data come from templates/linkml/schema/plain/,
-# in KTL mode too.
+# dummy schema, its test and its data come from templates/linkml/schema/plain/.
 OWNED = (
     ("linkml/README.md", "README.md"),
     ("linkml/docs/index.md", "docs/index.md"),
@@ -235,7 +211,7 @@ def answers_value(path, key):
 # ---- facts -----------------------------------------------------------------
 
 
-def facts_from_env(host, mode, template_ref):
+def facts_from_env(template_ref):
     env = os.environ
     facts = {token: env.get(token, "").strip() for token in TOKENS}
     facts["TEMPLATE_REF"] = template_ref
@@ -454,8 +430,8 @@ def adoption(host, given):
     if rel.parts[0] == ".lokf":
         raise Refused(
             2,
-            f"--adopt {given} is inside .lokf/, the KTL bundle's folder, which holds LOKF core and copies of schemas; "
-            "a LinkML project keeps its own schema outside it, and lokf adapt writes the bundle's copy (references/ktl.md)",
+            f"--adopt {given} is inside .lokf/, a KTL knowledge bundle's folder, which KTL maintains; "
+            "a LinkML project keeps its own schema outside it",
         )
     if file.suffix != ".yaml":
         raise Refused(2, f"--adopt {given}: the template names the schema <slug>.yaml, so a {file.suffix or 'bare'} file must be renamed first")
@@ -568,17 +544,6 @@ def preseed(host, stage, facts, dry, adopt):
         write(dest, render(read(path), facts), dry)
 
 
-def refuse_copy_clash(host, facts):
-    """KTL mode has lokf adapt write the bundle's copy as .lokf/schema/<slug>.yaml, and never over a file already there."""
-    target = f"{KTL_SCHEMA_DIR}/{facts['PROJ_SLUG']}.yaml"
-    if (host / target).exists() or (host / target).is_symlink():
-        raise Refused(
-            3,
-            f"{target} already exists, and KTL mode has lokf adapt write the bundle's copy of the schema there; "
-            "choose another PROJ_SLUG, or give --mode plain (the scaffold never overwrites)",
-        )
-
-
 def answers_text(facts):
     template = read(TEMPLATES / "answers.yml")
     lines = []
@@ -621,11 +586,10 @@ def run_copier(host, stage, facts, src, ref, dry):
             say("scaffold", f"copier: {line.rstrip()}")
 
 
-def after_copy(host, stage, facts, mode, ref, dry, adopt):
+def after_copy(host, stage, facts, ref, dry, adopt):
     if dry:
         plan = f"would check .linkml/.copier-answers.yml, remove nothing, patch mkdocs.yml, rename {TEMPLATE_GENERATORS} to {GENERATORS}"
         plan += ", point config.public.mk at the adopted schema's folder" if adopt else ", append the doorway recipe"
-        plan += ", append the lokf-adapt recipes" if mode == "lokf" else ""
         say("scaffold", plan)
         say_inert_handoffs(None)
         return
@@ -664,8 +628,6 @@ def after_copy(host, stage, facts, mode, ref, dry, adopt):
             say("handoff", f"the generators' settings stay in {SIDECAR}/{TEMPLATE_GENERATORS}: {reason}")
         else:
             say_generators_update()
-    if mode == "lokf":
-        append_lokf_recipes(stage, facts, dry)
     say_inert_handoffs(stage)
 
 
@@ -804,258 +766,6 @@ def append_doorway_recipe(sidecar, facts, dry):
     write(project_justfile, existing.rstrip("\n") + "\n\n" + block, dry)
 
 
-# ---- KTL -------------------------------------------------------------------
-
-
-def lokf_command():
-    """The command that runs lokf from .linkml/, or from a folder beside it: LOKF_CMD when set, as the lokf-adapt recipes read it."""
-    custom = os.environ.get("LOKF_CMD", "").strip()
-    return shlex.split(custom or LOKF_CMD, posix=os.name != "nt")
-
-
-def adapt_args(slug):
-    """lokf adapt's arguments, as the lokf-adapt recipe passes them from .linkml/ (its lokf_adapt_flags empty)."""
-    return ["adapt", f"src/{slug}/schema/{slug}.yaml", "--lokf", f"../{LOKF_CORE}", "-o", f"../{KTL_SCHEMA_DIR}/{slug}.yaml"]
-
-
-def run_adapt(cwd, slug, extra=()):
-    cmd = lokf_command() + adapt_args(slug) + list(extra)
-    try:
-        return subprocess.run(cmd, cwd=str(cwd), stdin=subprocess.DEVNULL, capture_output=True, text=True)
-    except OSError as exc:
-        return subprocess.CompletedProcess(cmd, 127, "", str(exc))
-
-
-def probe_adapt(stage, facts, dry):
-    """Before anything lands: lokf adapt reads the staged dummy, and its copy verifies beside LOKF core's (--dry-run writes nothing).
-
-    The staging directory sits beside .linkml/, so the recipe's paths read
-    the same from both.
-    """
-    if dry:
-        say("scaffold", f"would check that lokf adapt, from lokf 0.9.0, can copy the schema beside {LOKF_CORE}")
-        return
-    done = run_adapt(stage, facts["PROJ_SLUG"], ["--dry-run"])
-    if done.returncode != 0:
-        raise Refused(
-            2,
-            "lokf adapt could not copy the dummy schema; it needs lokf 0.9.0 or later in .lokf/, which ktl-sidecar's repair installs: "
-            + (done.stderr or done.stdout).strip()[-800:],
-        )
-
-
-def write_copy(host, facts, dry):
-    """The bundle's copy of the schema, which lokf adapt writes from .linkml/ as `just lokf-adapt` does; True once it is there."""
-    slug = facts["PROJ_SLUG"]
-    target = f"{KTL_SCHEMA_DIR}/{slug}.yaml"
-    if dry:
-        command = " ".join(shlex.quote(c) for c in lokf_command() + adapt_args(slug))
-        say("scaffold", f"would run in {SIDECAR}/: {command}")
-        return True
-    done = run_adapt(host / SIDECAR, slug)
-    if done.returncode != 0 or not (host / target).is_file():
-        say(
-            "handoff",
-            f"lokf adapt did not write {target} ({(done.stderr or done.stdout).strip()[-400:]}); "
-            f"run `just --justfile {SIDECAR}/justfile lokf-adapt`, then name the copy in .lokf/justfile",
-        )
-        return False
-    say("scaffold", f"lokf adapt wrote {target}, the bundle's copy of {SIDECAR}/src/{slug}/schema/{slug}.yaml")
-    return True
-
-
-def append_lokf_recipes(sidecar, facts, dry):
-    """The lokf-adapt and lokf-adapt-check recipes at the end of project.justfile, once."""
-    project_justfile = sidecar / "project.justfile"
-    existing = read(project_justfile) if project_justfile.is_file() else ""
-    if LOKF_MARKER in existing:
-        say("scaffold", "project.justfile already carries the lokf-adapt recipes")
-        return
-    block = render(read(TEMPLATES / "project.justfile.lokf"), facts)
-    write(project_justfile, existing.rstrip("\n") + "\n\n" + block, dry)
-
-
-def say_known_types():
-    say(
-        "handoff",
-        "list the classes the copy re-roots on Concept, and their subclasses, under the KTL plugins' Known LOKF types; "
-        "the copy's notes name them (for the dummy, NamedThing)",
-    )
-
-
-def pin_lokf_schema(host, dry):
-    """The pinned core schema in .lokf/schema/, which lokf adapt reads and the copy beside it imports (ktl-librarian's domain-vocabulary.md, step 1).
-
-    A copy at the root of .lokf/ stays in place, since a schema there may
-    still import it.
-    """
-    lokf = host / ".lokf"
-    target = host / LOKF_CORE
-    if (host / OLD_LOKF_CORE).is_file():
-        say("handoff", f"{OLD_LOKF_CORE} is the layout before KTL 0.62.0, and lokf adapt reads {LOKF_CORE}; git rm the old copy once no schema imports it")
-    if target.is_file():
-        say("scaffold", f"{LOKF_CORE} is pinned already")
-        return
-    if not (lokf / "pyproject.toml").is_file():
-        raise Refused(2, ".lokf/ has no pyproject.toml, so the lokf toolkit cannot be installed to copy lokf.yaml out of; run ktl-sidecar first")
-    if not shutil.which("uv"):
-        raise Refused(2, f"uv is needed to install the lokf toolkit and copy lokf.yaml to {LOKF_CORE}")
-    if dry:
-        say("scaffold", f"would copy the toolkit's lokf.yaml to {LOKF_CORE} (uv sync, then importlib.resources)")
-        return
-    sync = subprocess.run(["uv", "sync"], cwd=str(lokf), capture_output=True, text=True)
-    if sync.returncode != 0:
-        raise Refused(2, f"uv sync in .lokf/ failed: {sync.stderr.strip()[-800:]}")
-    code = "from importlib.resources import files; print(files('lokf') / 'data' / 'lokf.yaml')"
-    found = subprocess.run(["uv", "run", "--quiet", "python", "-c", code], cwd=str(lokf), capture_output=True, text=True)
-    path = found.stdout.strip().splitlines()[-1] if found.returncode == 0 and found.stdout.strip() else ""
-    if not path or not Path(path).is_file():
-        raise Refused(2, f"could not find lokf.yaml in the installed toolkit: {found.stderr.strip()[-400:]}")
-    target.parent.mkdir(exist_ok=True)
-    shutil.copyfile(path, target)
-    say("scaffold", f"copied {path} to {LOKF_CORE}")
-
-
-def say_ktl_workflows():
-    """The hand-off for KTL workflows that still validate inline, which never see the schema."""
-    say(
-        "handoff",
-        f"make the validate step of {', '.join(KTL_WORKFLOWS[:-1])} and {KTL_WORKFLOWS[-1]} run `{KTL_VALIDATE_STEP}`, "
-        "so CI checks the bundle against the copy too (the host then owns those copies)",
-    )
-
-
-TOOL_LOKF_RE = re.compile(r"^\[tool\.lokf\][ \t]*(#.*)?$", re.M)
-
-
-def tool_lokf_edit_holds(text, new, schema):
-    """Whether new, the edited pyproject.toml, still parses and reads `[tool.lokf] schema` as schema.
-
-    A second [tool.lokf] beside one spelled another way is invalid TOML, which
-    stops uv and every lokf command. Without tomllib (before Python 3.11) a
-    pattern looks in text for the other spellings instead: a spaced or quoted
-    header, a dotted `tool.lokf.` key, or a `lokf` key in a `[tool]` table.
-    """
-    try:
-        import tomllib
-    except ModuleNotFoundError:
-        if TOOL_LOKF_RE.search(text):
-            return True
-        if re.search(r"""^[ \t]*(\[[ \t]*tool[ \t]*\.[ \t]*["']?lokf["']?[ \t]*\]|tool[ \t]*\.[ \t]*["']?lokf["']?[ \t]*\.)""", text, re.M):
-            return False
-        tool = re.search(r"^\[tool\][ \t]*(#.*)?$", text, re.M)
-        if tool is None:
-            return True
-        following = re.search(r"^[ \t]*\[", text[tool.end():], re.M)
-        body = text[tool.end():][: following.start()] if following else text[tool.end():]
-        return re.search(r"""^[ \t]*["']?lokf["']?[ \t]*[.=]""", body, re.M) is None
-    try:
-        table = tomllib.loads(new).get("tool", {}).get("lokf")
-    except tomllib.TOMLDecodeError:
-        return False
-    return isinstance(table, dict) and table.get("schema") == schema
-
-
-def wire_tool_lokf(host, schema, dry):
-    """`[tool.lokf] schema`, which a lokf command given no --schema reads (0.9.0 or later), set to the justfile's path; another path is told, not patched."""
-    pyproject = host / ".lokf" / "pyproject.toml"
-    if not pyproject.is_file():
-        say("handoff", f'no .lokf/pyproject.toml; when one exists, add [tool.lokf] schema = "{schema}"')
-        return
-    text = read(pyproject)
-
-    def write_checked(new):
-        if tool_lokf_edit_holds(text, new, schema):
-            write(pyproject, new, dry)
-        else:
-            say("handoff", f'.lokf/pyproject.toml is not valid TOML or spells [tool.lokf] in a form the scaffold does not edit; set its schema to "{schema}" by hand')
-
-    table = TOOL_LOKF_RE.search(text)
-    if table is None:
-        new = (
-            text.rstrip("\n") + "\n\n[tool.lokf]\n"
-            "# The domain vocabulary a lokf command reads when it is given no --schema, the\n"
-            "# path the justfile's schema line names. Keep the two the same.\n"
-            f'schema = "{schema}"\n'
-        )
-        write_checked(new)
-        return
-    rest = text[table.end():]
-    following = re.search(r"^[ \t]*\[", rest, re.M)
-    body = rest[: following.start()] if following else rest
-    named = re.search(r"""^[ \t]*schema[ \t]*=[ \t]*["']([^"']*)["']""", body, re.M)
-    if named is None:
-        write_checked(text[: table.end()] + f'\nschema = "{schema}"' + (rest or "\n"))
-        return
-    if named.group(1) == "":
-        # lokf refuses an empty path rather than falling back to core, so the line is filled in.
-        at = table.end() + named.start(1)
-        write_checked(text[:at] + schema + text[at:])
-        return
-    value = named.group(1)[2:] if named.group(1).startswith("./") else named.group(1)
-    if value == schema:
-        say("scaffold", ".lokf/pyproject.toml's [tool.lokf] schema names the schema already; left alone")
-    else:
-        say("handoff", f'.lokf/pyproject.toml\'s [tool.lokf] schema is "{named.group(1)}"; set it to "{schema}", the justfile\'s line, or remove it')
-
-
-def wire_lokf(host, facts, dry):
-    """`schema :=` and `--schema` in .lokf/justfile (domain-vocabulary.md, step 4), naming the copy, and `[tool.lokf] schema`; an unexpected line is printed, not patched."""
-    justfile = host / ".lokf" / "justfile"
-    schema = posixpath.relpath(f"{KTL_SCHEMA_DIR}/{facts['PROJ_SLUG']}.yaml", ".lokf")
-    if not justfile.is_file():
-        say("handoff", f"no .lokf/justfile to wire; when one exists, add schema := \"{schema}\" and --schema {{{{ schema }}}} to lokf-validate and lokf-check-refs, and the same path as [tool.lokf] schema in .lokf/pyproject.toml")
-        return
-    text = read(justfile)
-    if re.search(r'^schema := ""$', text, re.M):
-        # The ktl-sidecar template that carries the variable itself: its recipes
-        # already pass --schema when it is set (from the schema's directory before KTL 0.60.0).
-        write(justfile, re.sub(r'^schema := ""$', lambda _m: f'schema := "{schema}"', text, count=1, flags=re.M), dry)
-        wire_tool_lokf(host, schema, dry)
-        say("handoff", f'.lokf/justfile wired: schema := "{schema}" (the template\'s own recipes take it from there)')
-        say_known_types()
-        return
-    named = re.search(r'^schema := "(.*)"', text, re.M)
-    if named:
-        say(
-            "handoff",
-            f'.lokf/justfile already names {named.group(1) or "a schema"}, left alone; for the bundle to use this schema\'s classes too, '
-            f"list {facts['PROJ_SLUG']} under the imports of the domain vocabulary it names, beside lokf (ktl-librarian's domain-vocabulary.md)",
-        )
-        return
-    run_there = "cd {{ parent_directory(schema) }} && uv run --project {{ justfile_directory() }} lokf validate"
-    edits = [
-        (
-            'bundle := "knowledge"\n',
-            'bundle := "knowledge"\n'
-            "# The copy of the sidecar's schema that lokf adapt writes; the validate\n"
-            "# recipes run from its folder, so its import of lokf.yaml beside it\n"
-            "# resolves on any lokf (linkml-sidecar references/ktl.md).\n"
-            f'schema := "{schema}"\n',
-        ),
-        ("    uv run lokf validate {{ bundle }}\n", f"    {run_there} --schema {{{{ file_name(schema) }}}} {{{{ justfile_directory() }}}}/{{{{ bundle }}}}\n"),
-        ("    uv run lokf validate --check-refs {{ bundle }}\n", f"    {run_there} --check-refs --schema {{{{ file_name(schema) }}}} {{{{ justfile_directory() }}}}/{{{{ bundle }}}}\n"),
-    ]
-    missing = [old for old, _ in edits if old not in text]
-    if missing:
-        say(
-            "handoff",
-            f".lokf/justfile does not hold the ktl-sidecar template's lines {missing!r}; "
-            f"add schema := \"{schema}\" and --schema {{{{ schema }}}} to lokf-validate and lokf-check-refs by hand, "
-            "and the same path as [tool.lokf] schema in .lokf/pyproject.toml",
-        )
-        say_ktl_workflows()
-        say_known_types()
-        return
-    for old, new in edits:
-        text = text.replace(old, new, 1)
-    write(justfile, text, dry)
-    wire_tool_lokf(host, schema, dry)
-    say("handoff", f".lokf/justfile wired: schema := \"{schema}\"; lokf-validate and lokf-check-refs run from the copy's folder")
-    say_ktl_workflows()
-    say_known_types()
-
-
 # ---- root pointers ---------------------------------------------------------
 
 
@@ -1097,9 +807,9 @@ def first_section(lines):
     return None
 
 
-def llms_pointer(host, facts, mode, dry):
+def llms_pointer(host, facts, dry):
     llms = host / "llms.txt"
-    section = "llms-section-lokf.md" if mode == "lokf" else "llms-section.md"
+    section = "llms-section.md"
     if not llms.is_file():
         text = render(read(TEMPLATES / "llms.txt"), facts).rstrip("\n") + "\n\n" + render(read(TEMPLATES / section), facts)
         write(llms, text, dry)
@@ -1146,13 +856,13 @@ def gitignore_lines(host, dry, with_doorway=True):
     write(path, (text.rstrip("\n") + "\n" if text else "") + block.lstrip("\n"), dry)
 
 
-def pointers(host, facts, mode, gitignored, dry, adopted=False):
+def pointers(host, facts, gitignored, dry, adopted=False):
     """The root pointers; an adopted schema is already visible where it is, so it gets none of the three."""
     if adopted:
         say("handoff", f"no README aside, llms.txt section or {DOORWAY} doorway: the schema is already visible at {facts['SCHEMA_DIR']}/; mention {SIDECAR}/'s recipes where the host documents the schema")
     else:
         readme_aside(host, facts, dry)
-        llms_pointer(host, facts, mode, dry)
+        llms_pointer(host, facts, dry)
         doorway(host, facts, dry)
     if gitignored:
         gitignore_lines(host, dry, with_doorway=not adopted)
@@ -1163,18 +873,12 @@ def adoption_handoff(host, facts):
     """What an adopted schema's sidecar still needs from a person."""
     say("handoff", f"no example data was laid down: add one valid example per class under {SIDECAR}/tests/data/valid/ (and counter-examples under invalid/)")
     say("handoff", f"Step 5's workflow runs on {SIDECAR}/** only; add \"{facts['SCHEMA_DIR']}/**\" to both paths lists of .github/workflows/linkml-sidecar.yaml so a schema edit runs the gate")
-    if (host / ".lokf").is_dir():
-        say(
-            "handoff",
-            ".lokf/ is present, and no copy of the adopted schema was made for it; for the bundle's concepts to use its classes, "
-            "`--repair project.justfile` adds the lokf-adapt recipes, and `just lokf-adapt` writes the copy that .lokf/justfile then names (references/ktl.md)",
-        )
 
 
 # ---- repair ----------------------------------------------------------------
 
 
-def repair(host, facts, mode, target, dry):
+def repair(host, facts, target, dry):
     rel = target.replace("\\", "/")
     if os.path.isabs(rel):
         rel = os.path.relpath(rel, host).replace("\\", "/")
@@ -1183,17 +887,8 @@ def repair(host, facts, mode, target, dry):
         rel = rel[len(SIDECAR) + 1 :]
     slug = facts["PROJ_SLUG"]
     adopted = is_adopted(facts)
-    if rel == ".linkmllint.yaml":
-        raise Refused(
-            2,
-            ".linkmllint.yaml is no longer written: the schema imports nothing from .lokf/, so LOKF's names are never linted; "
-            "an older KTL-mode sidecar's file goes once its schema no longer imports lokf (references/ktl.md)",
-        )
     if rel == "project.justfile":
         append_doorway_recipe(host / SIDECAR, facts, dry)
-        if mode == "lokf":
-            append_lokf_recipes(host / SIDECAR, facts, dry)
-            say("handoff", f"`just --justfile {SIDECAR}/justfile lokf-adapt` writes {KTL_SCHEMA_DIR}/{slug}.yaml; name it in .lokf/justfile (schema :=) once it is there")
         return
     for template, dest in OWNED:
         if dest == rel:
@@ -1214,7 +909,7 @@ def repair(host, facts, mode, target, dry):
     if rel == "LICENSE":
         preseed_license_only(host, facts, dry)
         return
-    raise Refused(2, f"{target} is not a file this skill owns (the preflight, README.md, docs/index.md, docs/about.md, LICENSE, the dummy schema and its tests, project.justfile's doorway and lokf-adapt recipes, or {GENERATORS}, which moves {TEMPLATE_GENERATORS}); a template-owned file comes back with `just --justfile .linkml/justfile update`")
+    raise Refused(2, f"{target} is not a file this skill owns (the preflight, README.md, docs/index.md, docs/about.md, LICENSE, the dummy schema and its tests, project.justfile's doorway recipe, or {GENERATORS}, which moves {TEMPLATE_GENERATORS}); a template-owned file comes back with `just --justfile .linkml/justfile update`")
 
 
 def preseed_license_only(host, facts, dry):
@@ -1234,7 +929,6 @@ def main(argv=None):
     global _stage
     parser = argparse.ArgumentParser(description="lay down a .linkml/ LinkML sidecar")
     parser.add_argument("--host", default=".", help="the repository root (default: the current directory)")
-    parser.add_argument("--mode", choices=["plain", "lokf", "auto"], default="auto", help="lokf when .lokf/ exists (default: auto)")
     parser.add_argument("--dry-run", action="store_true", help="print every action; write nothing")
     parser.add_argument("--gitignored", action="store_true", help="the host keeps .linkml/ out of git: add it and the doorway to .gitignore")
     parser.add_argument("--pointers-only", action="store_true", help="re-add the root pointers to a finished sidecar")
@@ -1254,7 +948,6 @@ def main(argv=None):
     if not ref or not sha:
         say("scaffold", "LINKML_TEMPLATE_REF and LINKML_TEMPLATE_SHA are unset; run linkml-scaffold.sh, which holds the pin")
         return 2
-    mode = args.mode if args.mode != "auto" else ("lokf" if (host / ".lokf").is_dir() else "plain")
     dry = args.dry_run
     stage = None
     try:
@@ -1270,21 +963,16 @@ def main(argv=None):
                 raise Refused(
                     2,
                     f"the sidecar's schema is in {facts['SCHEMA_DIR']}/, as linkml-sidecar 0.5.0 laid it out; a LinkML project keeps its schema in "
-                    f"{SIDECAR}/src/{facts['PROJ_SLUG']}/schema/ and .lokf/schema/ holds a copy, so move it back first (references/ktl.md)",
+                    f"{SIDECAR}/src/{facts['PROJ_SLUG']}/schema/, outside the KTL bundle, so move it back first (references/layouts.md)",
                 )
             place_schema(facts)
             if args.repair:
-                repair(host, facts, mode, args.repair, dry)
+                repair(host, facts, args.repair, dry)
             else:
-                pointers(host, facts, mode, args.gitignored, dry, adopted=is_adopted(facts))
+                pointers(host, facts, args.gitignored, dry, adopted=is_adopted(facts))
             return 0
         refuse_existing(host)
         adopt = adoption(host, args.adopt) if args.adopt else None
-        if adopt and args.mode == "lokf":
-            raise Refused(2, "--adopt and --mode lokf do not go together: an adopted schema gets no copy in .lokf/schema/ until its maintainers want one (references/ktl.md)")
-        if adopt and mode == "lokf":
-            say("scaffold", ".lokf/ is present, but an adopted schema gets no copy in .lokf/schema/: plain mode")
-            mode = "plain"
         if not adopt and not args.dummy:
             schemas = schema_files(host)
             if schemas:
@@ -1294,19 +982,16 @@ def main(argv=None):
             tracked = tracked_under(host, SIDECAR)
             if tracked:
                 raise Refused(2, f"{SIDECAR}/ holds files git tracks ({', '.join(tracked[:5])}); ignoring the directory would hide them, so the sidecar is committed beside them or not installed")
-        facts = facts_from_env(host, mode, ref)
+        facts = facts_from_env(ref)
         if adopt:
             adopt_facts(facts, adopt)
         validate(facts, adopted=bool(adopt))
         validate_host(host, facts)
         place_schema(facts)
-        say("scaffold", f"mode {mode}; host {host}; template {src} at {ref}")
+        say("scaffold", f"host {host}; template {src} at {ref}")
         for token in ("PROJ_NAME", "PROJ_SLUG", "LICENSE_ID", "SCHEMA_ID", "SCHEMA_DIR", "DOCS_URL"):
             if facts.get(token):
                 say("handoff", f"{token}={facts[token]}")
-        if mode == "lokf":
-            refuse_copy_clash(host, facts)
-            pin_lokf_schema(host, dry)
         check_pin(src, ref, sha, os.environ.get("LINKML_TEMPLATE_SKIP_PIN_CHECK") == "1")
         if dry:
             stage = host / SIDECAR
@@ -1317,21 +1002,17 @@ def main(argv=None):
         preseed(host, stage, facts, dry, adopt)
         if not dry:
             refuse_clashes(host, stage)
-        if mode == "lokf":
-            probe_adapt(stage, facts, dry)
         run_copier(host, stage, facts, src, ref, dry)
-        after_copy(host, stage, facts, mode, ref, dry, adopt)
+        after_copy(host, stage, facts, ref, dry, adopt)
         land(host, stage, dry)
         stage = None
-        if mode == "lokf" and write_copy(host, facts, dry):
-            wire_lokf(host, facts, dry)
-        pointers(host, facts, mode, args.gitignored, dry, adopted=bool(adopt))
+        pointers(host, facts, args.gitignored, dry, adopted=bool(adopt))
         if adopt:
             adoption_handoff(host, facts)
         say("handoff", f"sidecar {'would be ' if dry else ''}laid down in {SIDECAR}/ ({'gitignored' if args.gitignored else 'to be committed'}); validation not yet run")
         say("next", f"just --justfile {SIDECAR}/justfile install && just --justfile {SIDECAR}/justfile lint && just --justfile {SIDECAR}/justfile test")
-        if mode == "lokf":
-            say("next", "cd .lokf && just lokf-validate && just lokf-check-refs")
+        if (host / ".lokf").is_dir():
+            say("handoff", ".lokf/ is a KTL knowledge bundle, which KTL maintains; nothing was written there. ktl-librarian builds its domain vocabulary from published schemas")
         return 0
     except Refused as exc:
         say("scaffold", f"{'refused' if exc.code == 3 else 'failed'} ({exc.code}): {exc}")

@@ -13,8 +13,6 @@ exclude = [
   '^https://acme\.',
   '^https://fixture\.',
   '\.example/',
-  # The fixture bundle's context IRI; the real one is served by w3id once LOKF publishes it.
-  '^https://w3id\.org/lokf/context\.jsonld$',
   # A GitHub issue or pull request page can answer a CI runner with 500 while
   # the issue is open and the page serves 200 elsewhere. validate.yml's next
   # step checks each such link through GitHub's API instead, so a deleted or
@@ -27,11 +25,10 @@ exclude = [
   '^https://raw\.githubusercontent\.com/noelmcloughlin/linkml-sidecar/main/',
 ]
 
-# Regular expressions over the file path. The fixtures and the pages rendered
-# into a host hold links that resolve only there (docs/index.md links the
+# Regular expressions over the file path. The pages rendered into a host
+# hold links that resolve only there (docs/index.md links the
 # elements gen-doc writes). Hidden folders are skipped by lychee itself.
 exclude_path = [
-  "(^|/)tests/fixtures/",
   "/templates/linkml/docs/",
   # knowledge_bundle is a link to .lokf/knowledge, so the same files would be
   # checked twice.

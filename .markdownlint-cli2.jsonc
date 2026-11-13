@@ -7,10 +7,6 @@
     "**/.agents/**",
     "**/.claude/**",
     ".template-cache/**",
-    // The lokf fixture is a LOKF bundle header in the format's own
-    // convention: a frontmatter title plus body H1s. ktl-sidecar's templates
-    // are its source.
-    "tests/fixtures/**",
     // knowledge_bundle is a link to .lokf/knowledge, so the same files would
     // be linted twice.
     "knowledge_bundle/**",
