@@ -44,8 +44,15 @@ exclude_path = [
 # once the file is gone, so lychee checks each file link there instead.
 # lychee remaps a link before it applies `exclude`, so an exclusion for a
 # file link must name its raw address.
+#
+# w3id.org/ktl/linkml-sidecar/ still sends a reader to the site's address
+# before the repository's rename, which GitHub Pages no longer serves. Until
+# w3id.org merges the rule that points it at schema-sidecar, lychee checks
+# the same page on the renamed site. Remove this line once
+# https://w3id.org/ktl/linkml-sidecar/ redirects to github.io/schema-sidecar/.
 remap = [
   '^https://github\.com/([^/]+/[^/]+)/blob/([^?#]+)([?#].*)?$ https://raw.githubusercontent.com/$1/$2',
+  '^https://w3id\.org/ktl/linkml-sidecar/(.*)$ https://noelmcloughlin.github.io/schema-sidecar/$1',
 ]
 
 # The rest of github.com also answers a burst of requests from one runner
