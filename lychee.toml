@@ -23,6 +23,9 @@ exclude = [
   # against the change's own files instead. The remap below turns a file link
   # into its raw address before this list applies.
   '^https://raw\.githubusercontent\.com/lmodel/schema-sidecar/main/',
+  # The package's page exists from its first upload to PyPI. Drop this line
+  # once it does.
+  '^https://pypi\.org/project/schema-sidecar/',
 ]
 
 # Regular expressions over the file path. The pages rendered into a host
@@ -33,6 +36,8 @@ exclude_path = [
   # knowledge_bundle is a link to .lokf/knowledge, so the same files would be
   # checked twice.
   "(^|/)knowledge_bundle/",
+  # The template a package build carries (scripts/carry-template.py).
+  "(^|/)carried-template/",
   # What the website's build writes, with links that resolve only once the
   # site is served; website/'s own link check covers them (ktl-website Step 2).
   "(^|/)website/(dist|public|src/content|src/generated|node_modules)/",

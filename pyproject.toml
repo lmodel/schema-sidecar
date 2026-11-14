@@ -1,0 +1,85 @@
+# The `schema-sidecar` package on PyPI: the two skills and the Claude Code
+# plugin manifest, carried verbatim, and inside linkml-sidecar the copier
+# template it lays down, linkml-project-copier at the scaffold's pin, with a
+# record of the tag, commit and git tree it came from. With it, laying down a
+# schema project needs a package index and no git host. A `schema-sidecar`
+# command installs the skills. The package has no dependencies and uses the
+# standard library alone, so it installs from PyPI or any mirror of it on the
+# oldest Python a supported system ships. The version is the release tag,
+# read from git at build time.
+#
+#   uvx schema-sidecar skills install --agent claude-code --scope user
+#
+# The template is not in the repository: scripts/carry-template.py writes it
+# into carried-template/ before a build, and the build fails without it.
+# pypi.yml builds from the build backend at the hashes
+# .github/pypi/requirements.txt holds. The sidecar's own Python project is
+# .lokf/pyproject.toml, and the tests install from tests/requirements.txt.
+[project]
+name = "schema-sidecar"
+dynamic = ["version"]
+description = "Agent skills that give any repository a LinkML data model, at its root or as a sidecar, with the template they lay down."
+readme = "src/schema_sidecar/README.md"
+# The skills are Apache-2.0; the carried linkml-project-copier is MIT.
+license = "Apache-2.0 AND MIT"
+license-files = ["LICENSE", "carried-template/linkml-project-copier/LICENSE"]
+authors = [{ name = "Noel McLoughlin" }]
+requires-python = ">=3.9"
+dependencies = []
+keywords = ["agent-skills", "linkml", "schema", "data-model", "copier", "linkml-project-copier", "sidecar", "json-schema", "pydantic", "owl", "shacl"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Code Generators",
+]
+
+[project.urls]
+Homepage = "https://w3id.org/lmodel/schema-sidecar/"
+Documentation = "https://w3id.org/lmodel/schema-sidecar/docs/install/"
+Repository = "https://github.com/lmodel/schema-sidecar"
+Changelog = "https://github.com/lmodel/schema-sidecar/blob/main/CHANGELOG.md"
+
+[project.scripts]
+schema-sidecar = "schema_sidecar.cli:main"
+
+[build-system]
+# Bounded so that a major release of either cannot change what a release
+# builds without a deliberate bump. hatchling 1.27 reads PEP 639's license.
+requires = ["hatchling>=1.27,<2", "uv-dynamic-versioning>=0.8,<1"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "pep440"
+fallback-version = "0.0.0"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/schema_sidecar"]
+
+# The skills and the plugin manifest go in verbatim, beside the code, so the
+# installed package folder is also a Claude Code marketplace: its
+# .claude-plugin/ names the plugin at "./", whose skills are ./skills/. The
+# carried template and its record go into linkml-sidecar's assets/, where its
+# scaffold looks for them.
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "schema_sidecar/skills"
+".claude-plugin" = "schema_sidecar/.claude-plugin"
+"carried-template/linkml-project-copier" = "schema_sidecar/skills/linkml-sidecar/assets/linkml-project-copier"
+"carried-template/linkml-project-copier.json" = "schema_sidecar/skills/linkml-sidecar/assets/linkml-project-copier.json"
+
+# `uv build` makes the wheel from the source distribution, so that must carry
+# the folders too. carried-template/ is ignored by git, which hatchling
+# honours, so it goes in by force-include. Everything else in the repository
+# stays out.
+[tool.hatch.build.targets.sdist]
+only-include = ["src/schema_sidecar", "skills", ".claude-plugin", "LICENSE", "pyproject.toml"]
+
+[tool.hatch.build.targets.sdist.force-include]
+"carried-template" = "carried-template"

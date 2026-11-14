@@ -72,7 +72,8 @@ jobs:
 
       # The slow tests run the real copier against the pinned tag of the
       # template, cloned once here, then `just install`, `lint`, `test` and
-      # `site` on a plain host and a KTL host.
+      # `site` on a plain host and a KTL host. The package tests build the
+      # schema-sidecar wheel with the template carried from this clone.
       # The tests skip the scaffold's own pin check (they run it offline too),
       # so the clone is checked here: the tag must still name the pinned
       # commit, or the slow tests would test whatever the tag points at now.
@@ -133,7 +134,7 @@ jobs:
       - name: actionlint
         uses: docker://rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 # v1.7.12
         with:
-          args: -color .github/workflows/validate.yml .github/workflows/semantic-release.yml .github/workflows/publish.yml skills/linkml-sidecar/templates/github/linkml-sidecar.yaml
+          args: -color .github/workflows/validate.yml .github/workflows/semantic-release.yml .github/workflows/publish.yml .github/workflows/pypi.yml skills/linkml-sidecar/templates/github/linkml-sidecar.yaml
 
   smoke-test:
     name: Smoke-test the install path

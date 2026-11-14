@@ -12,6 +12,8 @@ Install the skills:
 gh skill install lmodel/schema-sidecar --all --scope user
 ```
 
+Or from PyPI: `uvx schema-sidecar skills install --scope user`.
+
 Then open your agent in a repository and say, in turn:
 
 1. "Set up a LinkML schema project here."

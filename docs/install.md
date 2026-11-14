@@ -34,6 +34,16 @@ In PowerShell or cmd, type the command on one line without the `\` continuation.
 /plugin install schema-sidecar@schema-sidecar
 ```
 
+### PyPI
+
+Each release is also the [`schema-sidecar`](https://pypi.org/project/schema-sidecar/) package on PyPI, which carries both skills, the template linkml-sidecar lays down, and a command that installs them. It has no dependencies and needs Python 3.9 or later. It installs for GitHub Copilot unless you add `--agent claude-code` or `--agent codex`, or give the folder your agent reads with `--dest`:
+
+```bash
+uvx schema-sidecar skills install --scope user
+```
+
+Without uv, `pipx run schema-sidecar skills install --scope user` does the same. To update, add `@latest`: `uvx schema-sidecar@latest skills install --scope user`. `schema-sidecar skills status` says whether the skills in each folder an agent reads are the package's. `schema-sidecar skills path` prints the folder that holds the skills, which `gh skill install --from-local` and `npx skills add` take in place of `lmodel/schema-sidecar`. Skills installed this way lay down the project from the template the package carries.
+
 ### From a copy of the repository
 
 Where github.com is out of reach, install from a company copy of this repository, or from a release archive. `npx skills add` and `/plugin marketplace add` take a git URL on any host, or a local path. The GitHub CLI takes a local folder, and needs no network for it:
@@ -51,7 +61,7 @@ The commands above install for your user, which keeps the instructions an agent 
 
 ## Pin to one tag
 
-Both skills are released together under one tag, so pin them to the same one. Append it to the skill name (`linkml-author@v0.1.1`) or pass `--pin v0.1.1`. The [changelog](../CHANGELOG.md) says what each release changed.
+Both skills are released together under one tag, so pin them to the same one. Append it to the skill name (`linkml-author@v0.1.1`) or pass `--pin v0.1.1`. From PyPI, the package version is the tag without its `v`: `uvx schema-sidecar@X.Y.Z skills install ...` for `vX.Y.Z`. The [changelog](../CHANGELOG.md) says what each release changed.
 
 ## Turn on the workflow
 
