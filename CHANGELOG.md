@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- **`scorecard.yml` publishes this repository's OpenSSF Scorecard, and the README shows it beside the validation and licence badges.**
+
 ## [0.6.0] - 2026-11-15
 
 ### Added
