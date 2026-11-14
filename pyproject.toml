@@ -1,20 +1,6 @@
-# The `schema-sidecar` package on PyPI: the two skills and the Claude Code
-# plugin manifest, carried verbatim, and inside linkml-sidecar the copier
-# template it lays down, linkml-project-copier at the scaffold's pin, with a
-# record of the tag, commit and git tree it came from. With it, laying down a
-# schema project needs a package index and no git host. A `schema-sidecar`
-# command installs the skills. The package has no dependencies and uses the
-# standard library alone, so it installs from PyPI or any mirror of it on the
-# oldest Python a supported system ships. The version is the release tag,
-# read from git at build time.
-#
-#   uvx schema-sidecar skills install --agent claude-code --scope user
-#
-# The template is not in the repository: scripts/carry-template.py writes it
-# into carried-template/ before a build, and the build fails without it.
-# pypi.yml builds from the build backend at the hashes
-# .github/pypi/requirements.txt holds. The sidecar's own Python project is
-# .lokf/pyproject.toml, and the tests install from tests/requirements.txt.
+# The schema-sidecar package: both skills, the Claude Code plugin manifest,
+# and the copier template in linkml-sidecar's assets/. Run
+# scripts/carry-template.py before a build; it writes carried-template/.
 [project]
 name = "schema-sidecar"
 dynamic = ["version"]
@@ -47,8 +33,6 @@ Changelog = "https://github.com/lmodel/schema-sidecar/blob/main/CHANGELOG.md"
 schema-sidecar = "schema_sidecar.cli:main"
 
 [build-system]
-# Bounded so that a major release of either cannot change what a release
-# builds without a deliberate bump. hatchling 1.27 reads PEP 639's license.
 requires = ["hatchling>=1.27,<2", "uv-dynamic-versioning>=0.8,<1"]
 build-backend = "hatchling.build"
 
@@ -63,21 +47,16 @@ fallback-version = "0.0.0"
 [tool.hatch.build.targets.wheel]
 packages = ["src/schema_sidecar"]
 
-# The skills and the plugin manifest go in verbatim, beside the code, so the
-# installed package folder is also a Claude Code marketplace: its
-# .claude-plugin/ names the plugin at "./", whose skills are ./skills/. The
-# carried template and its record go into linkml-sidecar's assets/, where its
-# scaffold looks for them.
+# The package folder is also a Claude Code marketplace. The template goes
+# where the scaffold looks for it.
 [tool.hatch.build.targets.wheel.force-include]
 "skills" = "schema_sidecar/skills"
 ".claude-plugin" = "schema_sidecar/.claude-plugin"
 "carried-template/linkml-project-copier" = "schema_sidecar/skills/linkml-sidecar/assets/linkml-project-copier"
 "carried-template/linkml-project-copier.json" = "schema_sidecar/skills/linkml-sidecar/assets/linkml-project-copier.json"
 
-# `uv build` makes the wheel from the source distribution, so that must carry
-# the folders too. carried-template/ is ignored by git, which hatchling
-# honours, so it goes in by force-include. Everything else in the repository
-# stays out.
+# uv builds the wheel from the sdist. carried-template/ is git-ignored, so it
+# goes in by force-include.
 [tool.hatch.build.targets.sdist]
 only-include = ["src/schema_sidecar", "skills", ".claude-plugin", "LICENSE", "pyproject.toml"]
 

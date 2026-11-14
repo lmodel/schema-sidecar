@@ -1,24 +1,7 @@
-"""The template the schema-sidecar package carries inside linkml-sidecar.
+"""The scaffold with the template the schema-sidecar package carries in assets/.
 
-The package puts linkml-project-copier at the pin into the skill's assets/,
-with a record of the tag, commit and git tree it came from
-(scripts/carry-template.py). The scaffold then uses that copy with no
-network, and must earn the trust its pin check gives a clone:
-
-- the tree id it works out is git's, for every shape of folder git hashes
-  differently: nested folders, a name that sorts differently as a folder,
-  an executable file, an empty folder git does not hold;
-- a copy whose record matches the pin, and whose files match the record,
-  is used, and copier is run on it with no tag to name;
-- the answers file then names the template and the pin as a clone's would,
-  so `just update` reaches the same template;
-- a changed file, a record for another pin, or a broken record stops the
-  run before anything is written;
-- a source named in LINKML_TEMPLATE_SRC still wins, and a skill with no
-  carried copy fetches as before.
-
-The scaffold runs from a copy of the skill made in a temporary folder, with
-the fake copier, against a small template whose pin the test sets.
+The fast tests run a copy of the skill with the fake copier against a small
+template whose pin each test sets.
 """
 
 from __future__ import annotations
@@ -37,7 +20,7 @@ CARRY = REPO / "scripts" / "carry-template.py"
 
 
 def template_repo(root: Path) -> tuple[Path, str]:
-    """A small git repository in the shapes git's tree hashing cares about; returns it and its commit."""
+    """A git repository with nested folders, a name that sorts apart from a folder, and an executable file."""
     write(root / "copier.yaml", "_subdirectory: template\n")
     write(root / "template" / "README.md.jinja", "# {{ project_name }}\n")
     write(root / "a.b", "a file whose name sorts before a/ as a folder\n")
@@ -53,7 +36,7 @@ def template_repo(root: Path) -> tuple[Path, str]:
 
 
 def carry(skill: Path, repo: Path, commit: str, ref: str = "v9.9.9") -> dict:
-    """Put repo's files at commit into skill/assets/, as carry-template.py does, and return the record."""
+    """Copy repo into skill/assets/ with its record, as carry-template.py does."""
     files = skill / "assets" / "linkml-project-copier"
     shutil.copytree(repo, files, ignore=shutil.ignore_patterns(".git"))
     (files / "empty-folder").mkdir()
@@ -70,7 +53,7 @@ def carry(skill: Path, repo: Path, commit: str, ref: str = "v9.9.9") -> dict:
 
 @pytest.fixture
 def carried(tmp_path):
-    """A copy of linkml-sidecar that carries a small template, and the pin that names it."""
+    """A copy of linkml-sidecar that carries a small template, and its record."""
     repo, commit = template_repo(tmp_path / "template")
     skill = tmp_path / "skill"
     shutil.copytree(SIDECAR, skill, ignore=shutil.ignore_patterns("__pycache__"))
@@ -190,7 +173,7 @@ def test_a_source_named_by_hand_wins_over_the_carried_copy(carried, tmp_path):
 
 
 def test_the_repository_carries_no_template(tmp_path):
-    """A clone of this repository fetches the template: assets/ is put in by the build only."""
+    """A clone of this repository has no assets/, so the scaffold fetches the template."""
     assert not (SIDECAR / "assets").exists()
     host = make_host(tmp_path / "host")
     result = bash(
@@ -230,7 +213,7 @@ def test_carry_template_writes_the_pinned_template_and_its_record(tmp_path):
 
 @pytest.mark.slow
 def test_the_real_copier_lays_the_same_sidecar_from_the_carried_template(tmp_path):
-    """The carried copy, from the pinned clone, against that clone: every file the same but the source the answers name."""
+    """A sidecar from the carried copy matches one from the clone, except the answers' _src_path."""
     src = template_src()
     if src is None or not Path(src, ".git").exists():
         pytest.fail("no template clone: clone the pinned tag into .template-cache/linkml-project-copier")
