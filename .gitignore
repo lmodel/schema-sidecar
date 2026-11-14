@@ -19,3 +19,7 @@ __pycache__/
 
 # The test environment, if a contributor makes one here.
 .venv/
+
+# The template the package carries, written by scripts/carry-template.py for
+# a build; never committed.
+carried-template/

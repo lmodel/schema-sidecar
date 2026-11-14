@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- **The scaffold lays down a project from the template the skill carries, with no network.** It checks the copy's files against the git tree its record names, and the record against the pin, then writes the answers file as a clone's would, so `just update` works as before. `LINKML_TEMPLATE_SRC` still wins, and a skill with no copy fetches the template.
+
 ## [0.6.0] - 2026-11-13
 
 ### Added

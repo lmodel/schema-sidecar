@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 
 import pytest
 
@@ -418,6 +419,20 @@ def test_the_network_line_names_the_template_and_the_index_it_would_ask(tmp_path
     rule = write(tmp_path / "gitconfig", '[url "https://copy.example/linkml-project-copier.git"]\n\tinsteadOf = https://github.com/linkml/linkml-project-copier.git\n')
     result = preflight_at(host, tmp_path, env={"GIT_CONFIG_GLOBAL": rule})
     assert result and "the template from copy.example" in result.out, result.out
+
+
+def test_the_network_line_skips_the_template_the_skill_carries(tmp_path):
+    """A skill the schema-sidecar package installed holds assets/ two folders above the preflight."""
+    skill = tmp_path / "skill"
+    shutil.copytree(PREFLIGHT.parent.parent.parent, skill, ignore=shutil.ignore_patterns("__pycache__"))
+    write(skill / "assets" / "linkml-project-copier.json", "{}\n")
+    copy = skill / "templates" / "scripts" / PREFLIGHT.name
+    host = make_host(tmp_path / "host")
+    result = run(["bash", copy, host], env={"XDG_CONFIG_HOME": tmp_path / "config"}, unset=NO_INDEX)
+    assert result and matches(result.out, r"^info    network    the template is carried in the skill, so the scaffold fetches none$"), result.out
+    assert "the scaffold needs packages from pypi.org" in result.out and "the template from" not in result.out, result.out
+    named = run(["bash", copy, host], env={"XDG_CONFIG_HOME": tmp_path / "config", "LINKML_TEMPLATE_SRC": "https://git.example/x.git"}, unset=NO_INDEX[:2])
+    assert named and "carried" not in named.out and "the template from git.example" in named.out, named.out
 
 
 def stubs(tmp_path, uvx_says="", curl_rc=0):

@@ -7,6 +7,8 @@
     "**/.agents/**",
     "**/.claude/**",
     ".template-cache/**",
+    // The template a package build carries (scripts/carry-template.py).
+    "carried-template/**",
     // knowledge_bundle is a link to .lokf/knowledge, so the same files would
     // be linted twice.
     "knowledge_bundle/**",

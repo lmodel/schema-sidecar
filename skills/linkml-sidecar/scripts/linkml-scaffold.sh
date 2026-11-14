@@ -26,6 +26,8 @@
 #   Facts (environment): PROJ_NAME PROJ_SLUG PROJ_DESC GITHUB_ORG REPO_URL
 #   FULL_NAME EMAIL LICENSE_ID SCHEMA_ID DOCS_URL [COPYRIGHT_YEAR] [TODAY]
 #   With --adopt, PROJ_SLUG and SCHEMA_ID come from the schema file itself.
+#   The template comes from the copy this skill carries when the
+#   schema-sidecar package installed it, and from GitHub otherwise.
 #   Overrides: LINKML_TEMPLATE_SRC (a URL or a local clone), LINKML_COPIER
 #   (the copier command to run instead of uvx), LINKML_TEMPLATE_SKIP_PIN_CHECK=1.
 # Exit: 0 done; 2 usage or a missing tool; 3 refused (a project, a schema or
@@ -36,10 +38,9 @@
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-: "${LINKML_TEMPLATE_SRC:=gh:linkml/linkml-project-copier}"
 : "${LINKML_TEMPLATE_REF:=v0.5.0}"
 : "${LINKML_TEMPLATE_SHA:=1d52a14e42db05ae0a3bff03350309dae437c531}"
-export LINKML_TEMPLATE_SRC LINKML_TEMPLATE_REF LINKML_TEMPLATE_SHA
+export LINKML_TEMPLATE_REF LINKML_TEMPLATE_SHA
 
 usable() { command -v "$1" >/dev/null 2>&1 && "$1" -c 'import sys; assert sys.version_info >= (3, 8)' >/dev/null 2>&1; }
 if command -v uv >/dev/null 2>&1; then
