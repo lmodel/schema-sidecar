@@ -50,7 +50,13 @@ DEFAULT_URL = "https://github.com/lmodel/linkml-project-copier.git"
 def scaffold_module():
     spec = importlib.util.spec_from_file_location("linkml_scaffold", SKILL / "scripts" / "linkml-scaffold.py")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    # Loading the module would otherwise leave a __pycache__ in skills/, and
+    # pypi.yml compares skills/ with what the wheel installs.
+    sys.dont_write_bytecode, before = True, sys.dont_write_bytecode
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.dont_write_bytecode = before
     return module
 
 
