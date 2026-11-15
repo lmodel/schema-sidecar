@@ -4,10 +4,6 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Added
-
-- **`scorecard.yml` publishes this repository's OpenSSF Scorecard, and the README shows it beside the validation and licence badges.**
-
 ## [0.6.0] - 2026-11-15
 
 ### Added
@@ -16,6 +12,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - **A `merged` recipe in every sidecar's `project.justfile`.** It writes the schema with its imports merged in and its own shape kept, as `project/linkml/<slug>.yaml`: the file a release attaches and a KTL bundle adapts. `--repair project.justfile` no longer gives an adopted schema's sidecar the doorway recipe.
 - **The `schema-sidecar` package on PyPI carries both skills, the Claude Code plugin manifest and the template linkml-sidecar lays down.** `uvx schema-sidecar skills install` copies the skills into the folder an agent reads, and `skills list`, `path` and `status` name, locate and check them. `publish.yml` dispatches `pypi.yml` on each release tag.
 - **The scaffold lays down a project from the template the skill carries, with no network.** It checks the copy's files against the git tree its record names, and the record against the pin, then writes the answers file as a clone's would, so `just update` works as before. `LINKML_TEMPLATE_SRC` still wins, and a skill with no copy fetches the template.
+- **`scorecard.yml` publishes this repository's OpenSSF Scorecard, and the README shows it beside the validation and licence badges.**
 
 ### Changed
 
