@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **The README shows the KTL scorecard badge.**
 - **`codeql.yml` scans the Python, the JavaScript and the workflows with CodeQL.**
+- **`SECURITY.md` says how to report a vulnerability and what holds each surface that executes here.**
 
 ### Changed
 
