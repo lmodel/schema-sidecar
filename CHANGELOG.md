@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-15
+
 ### Fixed
 
 - **`pypi.yml`'s build check passes again.** `carry-template.py` loads the scaffold module without writing a `__pycache__` into `skills/`, which the check compares with what the wheel installs.
