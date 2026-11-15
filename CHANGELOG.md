@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Security
+
+- **The sidecar copies are at Knowledge Trust Ladder [v0.65.0](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/v0.65.0/CHANGELOG.md), and `.lokf/pyproject.toml` pins `ktl==0.65.0`**, which the librarian installs its skill from. The Python scripts carry no `exclude-newer` date.
+
 ## [0.6.1] - 2026-11-15
 
 ### Fixed
