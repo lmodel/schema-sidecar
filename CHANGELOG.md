@@ -4,17 +4,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Added
-
-- **The `schema-sidecar` package on PyPI carries both skills, the Claude Code plugin manifest and the template linkml-sidecar lays down.** `uvx schema-sidecar skills install` copies the skills into the folder an agent reads, and `skills list`, `path` and `status` name, locate and check them. `publish.yml` dispatches `pypi.yml` on each release tag.
-- **The scaffold lays down a project from the template the skill carries, with no network.** It checks the copy's files against the git tree its record names, and the record against the pin, then writes the answers file as a clone's would, so `just update` works as before. `LINKML_TEMPLATE_SRC` still wins, and a skill with no copy fetches the template.
-
-## [0.6.0] - 2026-11-13
+## [0.6.0] - 2026-11-15
 
 ### Added
 
 - **An empty repository gets the project at its root.** The scaffold picks the root, with the schema in `src/<slug>/schema/`, when the folder holds nothing but git's files, a README, a license and an agent's folders, and `.linkml/` otherwise; `--layout` overrides. An empty folder below a repository's root is refused until `--layout` says which, since `just setup` there would nest a repository. The preflight's `layout` line says which, and `GH_ACTION_PYPI` and `GH_ACTION_DOCS_PREVIEW` turn on the template's two optional workflows there.
 - **A `merged` recipe in every sidecar's `project.justfile`.** It writes the schema with its imports merged in and its own shape kept, as `project/linkml/<slug>.yaml`: the file a release attaches and a KTL bundle adapts. `--repair project.justfile` no longer gives an adopted schema's sidecar the doorway recipe.
+- **The `schema-sidecar` package on PyPI carries both skills, the Claude Code plugin manifest and the template linkml-sidecar lays down.** `uvx schema-sidecar skills install` copies the skills into the folder an agent reads, and `skills list`, `path` and `status` name, locate and check them. `publish.yml` dispatches `pypi.yml` on each release tag.
+- **The scaffold lays down a project from the template the skill carries, with no network.** It checks the copy's files against the git tree its record names, and the record against the pin, then writes the answers file as a clone's would, so `just update` works as before. `LINKML_TEMPLATE_SRC` still wins, and a skill with no copy fetches the template.
 
 ### Changed
 
