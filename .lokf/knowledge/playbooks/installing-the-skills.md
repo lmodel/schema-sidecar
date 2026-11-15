@@ -22,7 +22,7 @@ sources:
   - resource: .claude-plugin/marketplace.json
 generated:
   by: process:ktl-librarian
-  at: "2026-10-22T18:19:05Z"
+  at: "2026-11-15T03:16:32Z"
 status: draft
 verified:
   - by: process:ktl-librarian
@@ -70,7 +70,7 @@ git clone https://git.example.com/mirrors/linkml-sidecar.git
 gh skill install ./linkml-sidecar/skills --from-local --all --scope user --agent claude-code
 ```
 
-Point it at the copy's `skills/` folder, not its root: a working copy's `website/node_modules/` can hold other skills.
+Point it at the copy's `skills/` folder, not its root.
 
 ## For your user, not the repository
 

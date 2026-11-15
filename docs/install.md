@@ -53,7 +53,7 @@ git clone https://git.example.com/mirrors/schema-sidecar.git
 gh skill install ./schema-sidecar/skills --from-local --all --scope user --agent claude-code
 ```
 
-Point it at the copy's `skills/` folder, not its root: a working copy's `website/node_modules/` can hold other skills.
+Point it at the copy's `skills/` folder, not its root.
 
 ## Install for your user, not into the repository
 

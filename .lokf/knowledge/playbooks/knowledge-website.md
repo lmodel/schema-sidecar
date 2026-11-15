@@ -2,55 +2,58 @@
 type: Playbook
 id: https://w3id.org/lmodel/schema-sidecar/knowledge/playbooks/knowledge-website
 title: Knowledge website
-description: "How the website in website/ is built, previewed and published: an Astro Starlight site with a page per concept and its trust label, the lokf export files under knowledge/, and the README as its home page, deployed to GitHub Pages by knowledge-website.yaml once KNOWLEDGE_WEBSITE_ENABLED is true."
+description: "How the website in website/ is built, previewed and published: a Hugo site with a page per concept and its trust label, the lokf export files under knowledge/, and the README as its home page, deployed to GitHub Pages by knowledge-website.yaml once KNOWLEDGE_WEBSITE_ENABLED is true."
 genre: how-to
 resource: website/README.md
 tags:
   - website
   - github pages
-  - astro
+  - hugo
   - KNOWLEDGE_WEBSITE_ENABLED
 references:
   - https://w3id.org/lmodel/schema-sidecar/knowledge/references/knowledge-trust-ladder
 sources:
   - resource: website/README.md
-  - resource: website/site.config.mjs
+  - resource: website/site.toml
+  - resource: website/hugo.toml
+  - resource: website/scripts/build.sh
   - resource: .github/workflows/knowledge-website.yaml
   - resource: website
 generated:
   by: process:ktl-librarian
-  at: "2026-10-21T22:47:54Z"
+  at: "2026-11-15T03:16:32Z"
 status: draft
 ---
 
 # Overview
 
-The folder `website/` builds the site that the Knowledge website workflow publishes to GitHub Pages, at `https://w3id.org/lmodel/schema-sidecar/`. Every page comes from a file the repository already holds, so a change to the site is a change to that file.
+The folder `website/` builds the site that the Knowledge website workflow publishes to GitHub Pages, at `https://lmodel.github.io/schema-sidecar/`. Hugo builds it. Every page comes from a file the repository already holds, so a change to the site is a change to that file.
 
-- Each concept in `.lokf/knowledge/` becomes a page under `knowledge/`, with its trust label from `knowledge-report.sh`, its sources and its typed relations both ways.
+- Each concept in `.lokf/knowledge/` becomes a page under `knowledge/`, with its trust label from `knowledge-report.sh`, its sources and its relations both ways. The bundle also gives the health page and the graph.
 - The four files `lokf export` writes are served under `knowledge/`, beside each concept's own Markdown file and its JSON-LD. The bundle log is served as an Atom feed, `knowledge/log.xml`.
 - The README becomes the home page.
 
-The README of `website/` also describes pages for `docs/`, `CHANGELOG.md` releases, the LinkML schema and SQLite data. `site.config.mjs` leaves each of these on `"auto"` or empty, and an `"auto"` part shows only when the repository has it.
+The build also looks for `docs/`, the figures in `.assets/`, `CHANGELOG.md` and a LinkML schema, and shows each one it finds. The data is the one part a setting turns on: `browse` in `site.toml` names a folder of SQLite databases.
 
 ## Preview it
 
-Preview the site with Node.js 22.12 or later and [uv](https://docs.astral.sh/uv/):
+Preview the site with bash, git and [uv](https://docs.astral.sh/uv/). Run these from `website/`:
 
 ```bash
-cd website
-npm ci --ignore-scripts
-npm run dev        # http://localhost:4321/linkml-sidecar/
-npm run build      # dist/, then checks every link between its pages
+scripts/build.sh          # dist/, with the search index, then checks every link between its pages
+scripts/build.sh serve    # http://localhost:1313/schema-sidecar/, rebuilt as you edit
+scripts/build.sh preview  # the site as it will be published, at http://localhost:1313/
 ```
 
-Both commands run `npm run sync` first. It runs `lokf export` from the sidecar's own environment in `.lokf/` and writes the generated pages, and nothing it writes is committed. `node scripts/config.mjs` prints what the sync will read.
+`PORT=1400 scripts/build.sh serve` uses another port. Hugo and Pagefind come from PyPI, at the versions `website/pyproject.toml` names and the hashes `website/uv.lock` holds. `scripts/prepare.sh` runs first. It runs `lokf export` from the toolkit that `.lokf/uv.lock` pins.
 
 ## What to edit
 
-- **A page's words:** edit the file it comes from, the README or a concept. A concept changes through the librarian and the curator like any other change to the bundle.
-- **The site's values and options:** edit `site.config.mjs`. A comment above each option says what it takes.
-- **Its look:** edit `src/styles/custom.css`, which is this repository's own and is loaded last.
+- **A page's words:** edit the file it comes from: the README, a page under `docs/`, or a concept. A concept changes through the librarian and the curator like any other change to the bundle.
+- **The site's own values:** edit `website/site.toml`: its address, title and description, the repository, and the optional settings. A comment above each says what it takes.
+- **Its look:** edit `website/assets/css/custom.css`, which is this repository's own and is loaded last.
+
+Those two files and `website/README.md` are the repository's own. Every other file in `website/` is a copy of the ktl-website skill's template, and the skill's repair replaces it.
 
 ## Publishing
 

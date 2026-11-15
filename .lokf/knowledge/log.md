@@ -1,5 +1,9 @@
 # Change Log
 
+## 2026-11-15
+
+* **Changed**: Knowledge website describes the Hugo site that replaced the Astro one, and two playbooks no longer name the Astro site's files.
+
 ## 2026-11-13
 
 * **Added**: Beside a KTL bundle, from `docs/architecture.md`, the README and both skills, in place of KTL mode, which 0.6.0 removed.

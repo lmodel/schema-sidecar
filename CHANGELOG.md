@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- **The README shows the KTL scorecard badge.**
+- **`codeql.yml` scans the Python, the JavaScript and the workflows with CodeQL.**
+- **`SECURITY.md` says how to report a vulnerability and what holds each surface that executes here.**
+
+### Changed
+
+- **The knowledge website is built with Hugo from the ktl-website templates**, set by `website/site.toml`, in place of the Astro site.
+- **The release job installs semantic-release with `npm ci` from `.github/release/package-lock.json`**, which pins every package it pulls in by hash.
+- **The bundle's sidecar and the website's tools require Python 3.11 or later**, as KTL's templates do.
+
+### Security
+
+- **The sidecar copies are at Knowledge Trust Ladder [v0.66.0](https://github.com/noelmcloughlin/knowledge-trust-ladder/blob/v0.66.0/CHANGELOG.md), and `.lokf/pyproject.toml` pins `ktl==0.66.0`**, which the librarian installs its skill from.
+
 ## [0.6.1] - 2026-11-15
 
 ### Fixed
