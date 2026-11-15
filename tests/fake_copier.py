@@ -2,7 +2,7 @@
 """A stand-in for copier, for the fast tests.
 
 It takes the exact command the scaffold runs (`copy --trust --defaults
---vcs-ref REF --data-file FILE --quiet SRC DST`), reads the answers, and
+[--vcs-ref REF] --data-file FILE --quiet SRC DST`), reads the answers, and
 renders the few template files the scaffold and the tests touch, in the
 shape linkml-project-copier v0.5.0 gives them. It skips a destination file
 that already exists when the template's `_skip_if_exists` would, so the
@@ -123,7 +123,9 @@ def main(argv):
         print(f"fake copier: unexpected command {argv!r}", file=sys.stderr)
         return 2
     args = argv[1:]
-    ref = args[args.index("--vcs-ref") + 1]
+    # A template folder with no git, as the package carries, comes with no
+    # --vcs-ref, and copier then records the folder and no commit.
+    ref = args[args.index("--vcs-ref") + 1] if "--vcs-ref" in args else None
     answers_file = args[args.index("--data-file") + 1]
     positional = [a for i, a in enumerate(args) if not a.startswith("--") and args[i - 1] not in ("--vcs-ref", "--data-file")]
     src, dst = positional[-2], Path(positional[-1])
@@ -134,7 +136,7 @@ def main(argv):
     author = f"{answers['full_name']} <{answers['email']}>"
     files = {
         ".copier-answers.yml": "# Changes here will be overwritten by Copier\n"
-        + "".join(f"{k}: {json.dumps(v) if isinstance(v, bool) else v}\n" for k, v in sorted({"_commit": ref, "_src_path": src, **answers}.items())),
+        + "".join(f"{k}: {json.dumps(v) if isinstance(v, bool) else v}\n" for k, v in sorted({**({"_commit": ref} if ref else {}), "_src_path": src, **answers}.items())),
         "justfile": JUSTFILE,
         "project.justfile": PROJECT_JUSTFILE,
         "config.public.mk": CONFIG_PUBLIC_MK.format(slug=slug, author=author, description=answers["project_description"]),

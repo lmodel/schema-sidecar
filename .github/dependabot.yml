@@ -25,3 +25,12 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
+
+  # The build backend of the schema-sidecar package, pinned by hash
+  # (.github/pypi/requirements.txt), which pypi.yml builds every release from.
+  - package-ecosystem: "pip"
+    directory: "/.github/pypi"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps)"

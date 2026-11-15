@@ -52,6 +52,8 @@ Each of these is a setting on the machine or the runner, never in the repository
 
 ## The template without github.com
 
+The schema-sidecar package on PyPI carries the template inside this skill, in `assets/`, beside a record of its tag, its commit and the git tree of its files. Skills installed from the package lay down the project from that copy with no network: the scaffold checks the files against the record, and the record against the pin, before it runs copier. The answers file still names `gh:linkml/linkml-project-copier` at the pinned tag, so `just update` later reaches the template as a clone's would. A source named in `LINKML_TEMPLATE_SRC` takes the copy's place.
+
 A company copy of linkml-project-copier takes the place of github.com in one of two ways. Either way the scaffold checks that the copy's tag names the commit it pins, so the copy must carry the template's tags.
 
 - A git rule, which every clone on the machine follows. The answers file still names the template as `gh:linkml/linkml-project-copier`, so a teammate who reaches GitHub can run `just update` too:

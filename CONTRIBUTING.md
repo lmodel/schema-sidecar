@@ -4,7 +4,7 @@
 
 ## Development setup
 
-There is no build step: the skills are Markdown, YAML, shell and Python.
+The skills need no build step: they are Markdown, YAML, shell and Python. Only the PyPI package is built, as below.
 
 ```bash
 git clone https://github.com/lmodel/schema-sidecar.git
@@ -20,6 +20,13 @@ git clone --branch v0.5.0 https://github.com/linkml/linkml-project-copier .templ
 LINKML_SIDECAR_SLOW=1 uv run --no-project --with-requirements tests/requirements.txt pytest -m slow
 ```
 
+To build the package, carry the template from that clone first; the build fails without it:
+
+```bash
+python3 scripts/carry-template.py --clone .template-cache/linkml-project-copier
+uv build --build-constraints .github/pypi/requirements.txt --require-hashes
+```
+
 To try a change end to end, install from your clone into a throwaway consumer repository: `bash scripts/smoke-test-install.sh "$PWD"` does exactly that, then runs the installed preflight and the scaffold's dry run.
 
 ## Layout
@@ -31,6 +38,8 @@ To try a change end to end, install from your clone into a throwaway consumer re
 | `skills/linkml-sidecar/templates/` | Every file the sidecar writes that the template does not: the sidecar README, the dummies, the pointers, the workflow, the preflight. |
 | `skills/linkml-sidecar/references/template-assumptions.md` | The catalogue: what the template assumes of a root, what the scaffold does, what upstream could remove. |
 | `skills/linkml-author/SKILL.md` | Day to day: replace the dummy, evolve the model, run the gate. Its `references/` hold the metamodel and the pitfalls. |
+| `pyproject.toml`, `src/schema_sidecar/` | The schema-sidecar package on PyPI: both skills, the template in linkml-sidecar's `assets/`, and the command that installs them. |
+| `scripts/carry-template.py` | Writes the template at the pin, and its record, into `carried-template/` for the build. |
 | `tests/` | The scripts on throwaway hosts; `tests/fake_copier.py` stands in for copier offline. |
 | `scripts/validate-repository.sh` | The contract: skill shape, links, lint, budgets, the pin, the pins in the workflow, prerequisites rows, invisible characters. |
 | `scripts/smoke-test-install.sh` | The install path: the skills installed into a throwaway repository with `npx skills`, then run from there. |
@@ -40,7 +49,7 @@ To try a change end to end, install from your clone into a throwaway consumer re
 - Run `bash scripts/validate-repository.sh` and `pytest`. CI runs both plus ShellCheck, `actionlint`, markdownlint, lychee, codespell, the install smoke test and the slow tests.
 - Run `gh skill publish --dry-run` if you have the GitHub CLI: the Agent Skills spec check `validate.yml` runs.
 - If a change alters what a skill *does*, add a line or two under `## [Unreleased]` in `CHANGELOG.md`. The reasoning belongs beside the code.
-- Moving the template pin: change `LINKML_TEMPLATE_REF` and `LINKML_TEMPLATE_SHA` in the scaffold driver, re-walk `template-assumptions.md` against the new version and bump its heading, re-run the slow tests, and update the version in `SKILL.md`'s Sources note. The contract holds every mention to the one pin.
+- Moving the template pin: change `LINKML_TEMPLATE_REF` and `LINKML_TEMPLATE_SHA` in the scaffold driver, re-walk `template-assumptions.md` against the new version and bump its heading, re-run the slow tests, update the version in `SKILL.md`'s Sources note, and push the new tag to `lmodel/linkml-project-copier`, where `pypi.yml` fetches the template. The contract holds every mention to the one pin.
 - A template file under `templates/github/` or `templates/forgejo/` names every action by commit SHA with its version in a comment; Dependabot does not reach either, so copy each bump of the repository's own workflows into both in the same pull request. The contract fails until they agree.
 - `actionlint` cannot read the Forgejo template, which names Codeberg's runner label and each action by its full address, so `tests/test_forgejo_workflow.py` holds its shape. Run a change to it once with `forgejo-runner exec --image ghcr.io/catthehacker/ubuntu:act-latest`, Codeberg's default image.
 - The pull request template's checklist is the short form of this list.
@@ -59,4 +68,4 @@ AI assistance is welcome; these skills exist for agents to run. You are still th
 
 ## Releasing (maintainers)
 
-Each merge to `main` that carries a `feat:`, `fix:`, `security:` or breaking commit waits in `semantic-release.yml` for a reviewer of the `release` environment; once approved, it promotes `## [Unreleased]` to the next version. Then run `publish.yml` by hand with that version: it checks the contract and the tests again, and `gh skill publish` creates the tag and the release, so both skills release together under that tag. A pull request whose commits would release needs a typed title, since a squash merge takes its subject from it. Installers read the tag; the plugin marketplace reads `main`, and `plugin.json` carries no `version` so that it always does.
+Each merge to `main` that carries a `feat:`, `fix:`, `security:` or breaking commit waits in `semantic-release.yml` for a reviewer of the `release` environment; once approved, it promotes `## [Unreleased]` to the next version. Then run `publish.yml` by hand with that version: it checks the contract and the tests again, and `gh skill publish` creates the tag and the release, so both skills release together under that tag. It then dispatches `pypi.yml`, which builds the schema-sidecar package from the tag and uploads it where the `PYPI_RELEASE_ENABLED` variable says: unset, nowhere; `testpypi`, TestPyPI; `true`, PyPI. Before the first upload, limit the `pypi` and `testpypi` environments to `v*` tags and register each index's pending publisher: owner `lmodel`, repository `schema-sidecar`, workflow `pypi.yml`, and that environment. A pull request whose commits would release needs a typed title, since a squash merge takes its subject from it. Installers read the tag; the plugin marketplace reads `main`, and `plugin.json` carries no `version` so that it always does.

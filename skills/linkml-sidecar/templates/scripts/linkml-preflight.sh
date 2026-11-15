@@ -546,15 +546,24 @@ else info session "attended: a person can confirm each guessed fact, and choose 
 # url.<base>.insteadOf rule, which applies when copier clones it too. Any
 # HTTP answer counts as reachable, and curl asks through the same proxy
 # variables git and uv read.
+# The schema-sidecar package carries the template in the skill, two folders
+# above this script, and the scaffold uses it when no source is named; then
+# only the index is asked. A host's copy of this script has none beside it.
+carried=""
+skill="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." 2>/dev/null && pwd -P)"
+[ -z "${LINKML_TEMPLATE_SRC:-}" ] && [ -n "$skill" ] && [ -f "$skill/assets/linkml-project-copier.json" ] && carried=1
 tsrc="${LINKML_TEMPLATE_SRC:-gh:linkml/linkml-project-copier}"
 case "$tsrc" in gh:*) tsrc="https://github.com/${tsrc#gh:}.git" ;; esac
 have git && tsrc="$(git ls-remote --get-url "$tsrc" 2>/dev/null || printf '%s' "$tsrc")"
 thost="$(hostof "$tsrc")"; thost="${thost:-$tsrc}"
+[ -n "$carried" ] && info network "the template is carried in the skill, so the scaffold fetches none"
+needs="the template from $thost and packages from $ihost"
+[ -n "$carried" ] && needs="packages from $ihost"
 if [ "${LINKML_PREFLIGHT_OFFLINE:-}" = 1 ]; then
-  info network "not checked (LINKML_PREFLIGHT_OFFLINE=1); the scaffold needs the template from $thost and packages from $ihost"
+  info network "not checked (LINKML_PREFLIGHT_OFFLINE=1); the scaffold needs $needs"
 elif have curl; then
   net=""
-  case "$tsrc" in
+  [ -n "$carried" ] || case "$tsrc" in
     http://*|https://*)
       if curl -sI --max-time 4 "$tsrc" >/dev/null 2>&1; then net="$thost"
       else warn network "$thost unreachable - copier cannot fetch the template; a company copy goes in LINKML_TEMPLATE_SRC, or in a git url.<copy>.insteadOf rule"; fi ;;
@@ -567,7 +576,7 @@ elif have curl; then
   else warn network "$ihost unreachable - uv cannot install copier, just or linkml; a company mirror goes in UV_DEFAULT_INDEX"; fi
   [ -n "$net" ] && info network "$net reachable"
 else
-  warn network "curl not installed - reachability not checked; the scaffold needs the template from $thost and packages from $ihost"
+  warn network "curl not installed - reachability not checked; the scaffold needs $needs"
 fi
 
 printf 'Preflight: %d missing, %d warning(s).%s\n' "$missing" "$warns" "${disables:+ Missing disables: $disables.}"

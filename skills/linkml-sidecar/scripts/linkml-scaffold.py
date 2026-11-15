@@ -24,7 +24,10 @@ the work, in this order:
    rules;
 3. verify that the pinned tag still names the pinned commit, so `--trust`
    is given to a template that was read, not to whatever the tag points
-   at today;
+   at today. A copy of the template carried inside this skill, as the
+   schema-sidecar package installs it, is checked instead against the
+   record beside it: the pinned tag and commit, and the git tree of its
+   files, so it needs no network;
 4. pre-seed every file the skill owns into a staging directory beside
    `.linkml/`, with the placeholders substituted by `str.replace` (never
    sed: a value holding sed's delimiter would change the command rather
@@ -63,6 +66,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import hashlib
 import json
 import os
 import posixpath
@@ -81,6 +85,16 @@ DOORWAY = "linkml_schema"
 MARKER = "# ---- linkml-sidecar: the linkml_schema doorway"
 MERGED_MARKER = "# ---- linkml-sidecar: the merged schema"
 STAGING_PREFIX = ".linkml-staging-"
+# The template as copier reads it from GitHub, and as every answers file
+# names it, however the copy was made.
+TEMPLATE_SOURCE = "gh:linkml/linkml-project-copier"
+# The template at the pin, carried inside this skill by the schema-sidecar
+# package, and the record of where it came from: the tag, the commit and the
+# git tree of its files. scripts/carry-template.py in the skills repository
+# writes both when the package is built; a clone of the repository holds
+# neither, and fetches the template instead.
+CARRIED = SKILL_DIR / "assets" / "linkml-project-copier"
+CARRIED_RECORD = SKILL_DIR / "assets" / "linkml-project-copier.json"
 # What tells a LinkML schema project apart from any other folder, by its
 # files and never by its name: linkml-project-copier's answers naming that
 # template, or the config.public.mk that it and the older
@@ -359,6 +373,86 @@ def template_url(src):
     return src
 
 
+def git_object(kind, body):
+    return hashlib.sha1(f"{kind} {len(body)}\0".encode() + body).digest()
+
+
+def tree_id(folder):
+    """The git tree id of a folder's files, as `git rev-parse <commit>^{tree}`
+    gives it for the commit they were copied from.
+
+    Bytecode a Python run may leave is skipped, and an empty folder counts
+    as absent, as git has none. A file is executable when its owner may run
+    it; where Windows keeps no such bit, every file reads as plain, as all of
+    the template's are.
+    """
+
+    def tree(path):
+        entries = []
+        for child in path.iterdir():
+            if child.name == "__pycache__" or child.suffix == ".pyc":
+                continue
+            name = child.name.encode("utf-8")
+            if child.is_dir() and not child.is_symlink():
+                digest = tree(child)
+                if digest is not None:
+                    entries.append((name + b"/", b"40000 " + name, digest))
+            else:
+                executable = os.name != "nt" and child.stat().st_mode & 0o100
+                mode = b"100755" if executable else b"100644"
+                entries.append((name, mode + b" " + name, git_object("blob", child.read_bytes())))
+        if not entries:
+            return None
+        entries.sort(key=lambda entry: entry[0])
+        return git_object("tree", b"".join(head + b"\0" + digest for _, head, digest in entries))
+
+    return (tree(folder) or git_object("tree", b"")).hex()
+
+
+def carried_template(ref, sha):
+    """The record of the template this skill carries, once its files are
+    checked against it and it against the pin; None when the skill carries
+    none."""
+    if not CARRIED_RECORD.is_file():
+        return None
+    try:
+        record = json.loads(read(CARRIED_RECORD))
+    except ValueError as exc:
+        raise Refused(2, f"{CARRIED_RECORD} is not JSON ({exc}); reinstall the schema-sidecar package")
+    if not isinstance(record, dict) or not all(isinstance(record.get(key), str) for key in ("source", "ref", "commit", "tree")):
+        raise Refused(2, f"{CARRIED_RECORD} lacks the source, ref, commit or tree; reinstall the schema-sidecar package")
+    if (record["ref"], record["commit"]) != (ref, sha):
+        raise Refused(
+            2,
+            f"the template this skill carries is {record['ref']} ({record['commit'][:12]}), and the pin names {ref} ({sha[:12]}); "
+            "the package and the scaffold disagree, so reinstall the package",
+        )
+    if not CARRIED.is_dir():
+        raise Refused(2, f"{CARRIED_RECORD} is there and {CARRIED} is not; reinstall the schema-sidecar package")
+    found = tree_id(CARRIED)
+    if found != record["tree"]:
+        raise Refused(
+            2,
+            f"the files in {CARRIED} are not the tree {record['tree'][:12]} of {ref}, as its record says (found {found[:12]}); "
+            "something changed them since the package was built, so reinstall it",
+        )
+    return record
+
+
+def record_source(stage, record, ref):
+    """Make the answers file name the template as a clone would: copier,
+    reading a folder that is no git repository, records the folder and no
+    commit, and `just update` could then find neither."""
+    answers = stage / ".copier-answers.yml"
+    if not answers.is_file():
+        return
+    lines = [line for line in read(answers).splitlines() if not line.startswith(("_commit:", "_src_path:"))]
+    at = next((i for i, line in enumerate(lines) if not line.startswith("#")), len(lines))
+    lines[at:at] = [f"_commit: {ref}", f"_src_path: {record['source']}"]
+    answers.write_bytes(("\n".join(lines) + "\n").encode("utf-8"))
+    say("scaffold", f"answers name {record['source']} at {ref}, as a clone's would; the files came from the carried copy")
+
+
 def check_pin(src, ref, sha, skip):
     url = template_url(src)
     if skip or not re.match(r"^(https?|git|ssh)://|^git@", url):
@@ -621,9 +715,15 @@ def copier_command():
     return ["uvx", "--from", "copier>=9.4.0,<10", "--with", "jinja2-time", "copier"]
 
 
-def run_copier(host, stage, facts, src, ref, dry):
+def run_copier(host, stage, facts, src, ref, dry, carried=None):
+    """Run copier into the staging directory. A carried template is a plain
+    folder, with no tags for `--vcs-ref` to name, so it goes without one, and
+    the answers file is then made to name the pin as a clone's would."""
     answers = answers_text(facts)
-    cmd = copier_command() + ["copy", "--trust", "--defaults", "--vcs-ref", ref, "--data-file", "ANSWERS", "--quiet", src, stage.name]
+    if carried:
+        src = str(CARRIED)
+    vcs = [] if carried else ["--vcs-ref", ref]
+    cmd = copier_command() + ["copy", "--trust", "--defaults", *vcs, "--data-file", "ANSWERS", "--quiet", src, stage.name]
     say("scaffold", f"{'would run' if dry else 'run'} in {host}: {' '.join(shlex.quote(c) for c in cmd)}")
     if dry:
         for line in answers.rstrip("\n").splitlines():
@@ -642,6 +742,8 @@ def run_copier(host, stage, facts, src, ref, dry):
     for line in (done.stdout + done.stderr).splitlines():
         if line.strip():
             say("scaffold", f"copier: {line.rstrip()}")
+    if carried:
+        record_source(stage, carried, ref)
 
 
 def after_copy(host, stage, facts, ref, dry, adopt):
@@ -1162,7 +1264,10 @@ def main(argv=None):
     if not host.is_dir():
         say("scaffold", f"no such directory: {args.host}")
         return 2
-    src = os.environ.get("LINKML_TEMPLATE_SRC", "gh:linkml/linkml-project-copier")
+    # A source named by hand wins; otherwise the template this skill carries,
+    # and failing that GitHub.
+    given = os.environ.get("LINKML_TEMPLATE_SRC", "")
+    src = given or TEMPLATE_SOURCE
     ref = os.environ.get("LINKML_TEMPLATE_REF", "")
     sha = os.environ.get("LINKML_TEMPLATE_SHA", "")
     if not ref or not sha:
@@ -1225,14 +1330,19 @@ def main(argv=None):
         validate(facts, adopted=bool(adopt))
         validate_host(host, facts, layout)
         place_schema(facts)
-        say("scaffold", f"layout {layout}; host {host}; template {src} at {ref}")
+        carried = None if given else carried_template(ref, sha)
+        shown_src = f"carried in this skill (copied from {carried.get('copied_from') or carried['source']})" if carried else src
+        say("scaffold", f"layout {layout}; host {host}; template {shown_src} at {ref}")
         if layout == "root" and blockers:
             more = ", ..." if len(blockers) > 5 else ""
             say("handoff", f"--layout root in a folder that holds {', '.join(blockers[:5])}{more}: the project is laid beside them, and a name both hold stops the run")
         for token in ("PROJ_NAME", "PROJ_SLUG", "LICENSE_ID", "SCHEMA_ID", "SCHEMA_DIR", "DOCS_URL"):
             if facts.get(token):
                 say("handoff", f"{token}={facts[token]}")
-        check_pin(src, ref, sha, os.environ.get("LINKML_TEMPLATE_SKIP_PIN_CHECK") == "1")
+        if carried:
+            say("scaffold", f"pin verified offline: the carried template is {ref} ({sha[:12]}), tree {carried['tree'][:12]}")
+        else:
+            check_pin(src, ref, sha, os.environ.get("LINKML_TEMPLATE_SKIP_PIN_CHECK") == "1")
         _label = SIDECAR if layout == "sidecar" else ""
         if dry:
             stage = host / SIDECAR if layout == "sidecar" else host
@@ -1242,7 +1352,7 @@ def main(argv=None):
             _stage = stage
         if layout == "root":
             preseed_root(stage, facts, dry)
-            run_copier(host, stage, facts, src, ref, dry)
+            run_copier(host, stage, facts, src, ref, dry, carried)
             after_copy_root(host, stage, facts, ref, dry)
             land_root(host, stage, facts, dry)
             stage = None
@@ -1251,7 +1361,7 @@ def main(argv=None):
         preseed(host, stage, facts, dry, adopt)
         if not dry:
             refuse_clashes(host, stage)
-        run_copier(host, stage, facts, src, ref, dry)
+        run_copier(host, stage, facts, src, ref, dry, carried)
         after_copy(host, stage, facts, ref, dry, adopt)
         land(host, stage, dry)
         stage = None
