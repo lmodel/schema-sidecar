@@ -14,10 +14,9 @@
     "knowledge_bundle/**",
     // What the website's build writes from the files above (ktl-website Step 2).
     "website/dist/**",
-    "website/public/**",
-    "website/src/content/**",
-    "website/src/generated/**",
-    "website/node_modules/**"
+    "website/generated/**",
+    "website/resources/**",
+    "website/.venv/**"
   ],
   // Rules disabled for reasons specific to this repository's content:
   "config": {
