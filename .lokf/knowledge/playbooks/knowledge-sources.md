@@ -27,7 +27,7 @@ sources:
   - resource: website
 generated:
   by: process:ktl-librarian
-  at: "2026-10-22T18:19:05Z"
+  at: "2026-11-15T03:16:32Z"
 status: draft
 verified:
   - by: process:ktl-librarian
@@ -50,7 +50,7 @@ This bundle is derived from the repository's own files. Each row names a source,
 | `CONTRIBUTING.md`, `.github/pull_request_template.md`, `tests/conftest.py`, `scripts/smoke-test-install.sh` | the contributing playbook and the release policy | the checklist and the Releasing section |
 | `scripts/validate-repository.sh`, `.github/workflows/validate.yml`, `.github/dependabot.yml` | the repository contract | the numbered check comments and the job names |
 | `AI_COVENANT.md`, `CODE_OF_CONDUCT.md` | `Policy` | the section headings |
-| `website/`, `.github/workflows/knowledge-website.yaml` | the knowledge website playbook | `website/README.md` and the option comments in `website/site.config.mjs` |
+| `website/`, `.github/workflows/knowledge-website.yaml` | the knowledge website playbook | `website/README.md` and the comments in `website/site.toml` |
 
 ## Left out on purpose
 
