@@ -7,6 +7,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Added
 
 - **The README shows the KTL scorecard badge.**
+- **`codeql.yml` scans the Python, the JavaScript and the workflows with CodeQL.**
 
 ### Changed
 
