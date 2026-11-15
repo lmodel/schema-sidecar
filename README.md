@@ -3,6 +3,7 @@
 [![Validate](https://github.com/lmodel/schema-sidecar/actions/workflows/validate.yml/badge.svg)](https://github.com/lmodel/schema-sidecar/actions/workflows/validate.yml)
 [![Licence](https://img.shields.io/github/license/lmodel/schema-sidecar?label=licence)](LICENSE)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/lmodel/schema-sidecar/badge)](https://scorecard.dev/viewer/?uri=github.com/lmodel/schema-sidecar)
+[![KTL scorecard](https://img.shields.io/endpoint?url=https://lmodel.github.io/schema-sidecar/badge.json)](https://lmodel.github.io/schema-sidecar/health/)
 
 schema-sidecar gives any repository a [LinkML](https://linkml.io) data model: one schema file from which JSON Schema, Pydantic models, OWL, SHACL, TypeScript and a documentation site are generated. Two [Agent Skills](https://agentskills.io) do the work, on the project shape that [linkml-project-copier](https://github.com/linkml/linkml-project-copier) defines.
 
