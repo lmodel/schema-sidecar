@@ -61,11 +61,11 @@ jobs:
         with:
           node-version: 24
 
-      # .github/release/package-lock.json pins the release tools and every
+      # .release/package-lock.json pins the release tools and every
       # package they pull in, and Dependabot keeps it current. They are not a
       # dependency of the project.
       - name: Install semantic-release from its lockfile
-        run: npm ci --prefix .github/release --no-audit --no-fund --ignore-scripts
+        run: npm ci --prefix .release --no-audit --no-fund --ignore-scripts
 
       # Would these commits release? The types are .releaserc.json's: the
       # Angular preset's feat/fix plus this repository's `security`, and any
@@ -123,7 +123,7 @@ jobs:
       - name: Preview the next version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: .github/release/node_modules/.bin/semantic-release --dry-run
+        run: .release/node_modules/.bin/semantic-release --dry-run
 
   release:
     if: github.event_name == 'push'
@@ -151,7 +151,7 @@ jobs:
           node-version: 24
 
       - name: Install semantic-release from its lockfile
-        run: npm ci --prefix .github/release --no-audit --no-fund --ignore-scripts
+        run: npm ci --prefix .release --no-audit --no-fund --ignore-scripts
 
       # Always --dry-run: semantic-release computes the next version and
       # this repository's Unreleased notes but writes nothing and creates no
@@ -166,7 +166,7 @@ jobs:
         id: plan
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: .github/release/node_modules/.bin/semantic-release --dry-run
+        run: .release/node_modules/.bin/semantic-release --dry-run
 
       - name: Promote CHANGELOG.md and commit
         if: steps.plan.outputs.next_version != ''
