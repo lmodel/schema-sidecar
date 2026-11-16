@@ -8,7 +8,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - **The release tools are in `.release/` and the PyPI build backend in `.pypi/`**, outside `.github/`, where Dependabot's pull requests for them were refused.
 
-## [0.7.0] - 2026-11-15
+## [0.7.0] - 2026-11-16
 
 ### Added
 
@@ -21,6 +21,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - **The knowledge website is built with Hugo from the ktl-website templates**, set by `website/site.toml`, in place of the Astro site.
 - **The release job installs semantic-release with `npm ci` from `.github/release/package-lock.json`**, which pins every package it pulls in by hash.
 - **The bundle's sidecar and the website's tools require Python 3.11 or later**, as KTL's templates do.
+- **The release tools are in `.release/` and the PyPI build backend in `.pypi/`**, outside `.github/`, where Dependabot's pull requests for them were refused.
 
 ### Fixed
 
