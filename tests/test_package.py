@@ -46,7 +46,7 @@ from conftest import REPO, load_scaffold_module, pin, template_src
 
 SRC = REPO / "src"
 SKILLS = sorted(p.parent.name for p in (REPO / "skills").glob("*/SKILL.md"))
-CONSTRAINTS = REPO / ".github" / "pypi" / "requirements.txt"
+CONSTRAINTS = REPO / ".pypi" / "requirements.txt"
 ASSETS = "skills/linkml-sidecar/assets/"
 
 
