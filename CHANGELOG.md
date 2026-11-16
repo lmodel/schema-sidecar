@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+
+- **The release tools are in `.release/` and the PyPI build backend in `.pypi/`**, outside `.github/`, where Dependabot's pull requests for them were refused.
+
 ## [0.7.0] - 2026-11-15
 
 ### Added

@@ -27,18 +27,19 @@ updates:
       prefix: "chore(deps)"
 
   # The build backend of the schema-sidecar package, pinned by hash
-  # (.github/pypi/requirements.txt), which pypi.yml builds every release from.
+  # (.pypi/requirements.txt), which pypi.yml builds every release from.
+  # Outside .github/, where Dependabot may change nothing but workflows.
   - package-ecosystem: "pip"
-    directory: "/.github/pypi"
+    directory: "/.pypi"
     schedule:
       interval: "weekly"
     commit-message:
       prefix: "chore(deps)"
 
-  # The release job's tools, which .github/release/package-lock.json pins
+  # The release job's tools, which .release/package-lock.json pins
   # with every package they pull in.
   - package-ecosystem: npm
-    directory: "/.github/release"
+    directory: "/.release"
     schedule:
       interval: monthly
     commit-message:

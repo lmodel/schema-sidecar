@@ -18,7 +18,7 @@ command, so it has to earn the trust the other installers have:
   template, as the same release;
 - the standard library alone, on Python 3.9, the oldest Python the package
   claims;
-- a build from the hashes .github/pypi/requirements.txt holds that makes the
+- a build from the hashes .pypi/requirements.txt holds that makes the
   same bytes twice, into a folder holding the two files pypi.yml expects,
   with the template and its record in linkml-sidecar's assets/.
 
@@ -46,7 +46,7 @@ from conftest import REPO, load_scaffold_module, pin, template_src
 
 SRC = REPO / "src"
 SKILLS = sorted(p.parent.name for p in (REPO / "skills").glob("*/SKILL.md"))
-CONSTRAINTS = REPO / ".github" / "pypi" / "requirements.txt"
+CONSTRAINTS = REPO / ".pypi" / "requirements.txt"
 ASSETS = "skills/linkml-sidecar/assets/"
 
 
@@ -282,7 +282,7 @@ needs_uv = pytest.mark.skipif(uv is None, reason="uv is not installed")
 
 
 def build(out: Path, source: Path) -> None:
-    """Build as pypi.yml does, from the build backend at the hashes .github/pypi/requirements.txt holds."""
+    """Build as pypi.yml does, from the build backend at the hashes .pypi/requirements.txt holds."""
     subprocess.run(
         [uv, "build", "--quiet", "--build-constraints", str(CONSTRAINTS), "--require-hashes", "--out-dir", str(out), str(source)],
         check=True,

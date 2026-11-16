@@ -63,7 +63,7 @@ jobs:
         run: python3 scripts/carry-template.py
 
       - name: Build the source distribution and the wheel
-        run: uv build --python 3.12 --build-constraints .github/pypi/requirements.txt --require-hashes --out-dir dist
+        run: uv build --python 3.12 --build-constraints .pypi/requirements.txt --require-hashes --out-dir dist
 
       # uv writes a .gitignore into dist/, so hidden files are not counted.
       - name: Check the files carry the tag's version
@@ -78,7 +78,7 @@ jobs:
 
       - name: Check a second build makes the same bytes
         run: |
-          uv build --python 3.12 --build-constraints .github/pypi/requirements.txt --require-hashes --out-dir "$RUNNER_TEMP/again"
+          uv build --python 3.12 --build-constraints .pypi/requirements.txt --require-hashes --out-dir "$RUNNER_TEMP/again"
           for file in dist/*; do
             cmp "$file" "$RUNNER_TEMP/again/${file#dist/}" || { echo "::error::$file came out different from a second build."; exit 1; }
           done

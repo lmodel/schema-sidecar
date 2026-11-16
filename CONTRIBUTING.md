@@ -24,7 +24,7 @@ To build the package, carry the template from that clone first; the build fails 
 
 ```bash
 python3 scripts/carry-template.py --clone .template-cache/linkml-project-copier
-uv build --build-constraints .github/pypi/requirements.txt --require-hashes
+uv build --build-constraints .pypi/requirements.txt --require-hashes
 ```
 
 To try a change end to end, install from your clone into a throwaway consumer repository: `bash scripts/smoke-test-install.sh "$PWD"` does exactly that, then runs the installed preflight and the scaffold's dry run.
