@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Security
+
+- **The sidecar copies and the skills pin are at Knowledge Trust Ladder [v0.69.2](https://github.com/noelmcloughlin/knowledge-trust-ladder/compare/v0.69.0...v0.69.2).** The release changed `.github/workflows/knowledge-sync.yaml`, `.lokf/scripts/knowledge-apply.py` and `.lokf/scripts/knowledge-sync.sh` here.
+
 ## [0.7.1] - 2026-11-18
 
 ### Security
