@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -818,11 +818,11 @@ wheels = [
 
 [[package]]
 name = "ktl"
-version = "0.70.3"
+version = "0.71.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/85/13/edbba4c4ce6a8056b1491ad2f015e475f40cb91cc138077b311f69c1135f/ktl-0.70.3.tar.gz", hash = "sha256:088160e4444fbdfd17f79aaeaf07adea7082af5a034d1d48902a86807c682048", size = 863036, upload-time = "2026-11-19T21:10:01.133Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/08/ae/fd5b916f34cf3a0f00aca419fb10854ab25c93d430ca238354137d46c5d7/ktl-0.71.0.tar.gz", hash = "sha256:a707ed6d7e0acedf38a4bde8be8c910e3f2fa594376fbb9f3c575edd4b2664eb", size = 866277, upload-time = "2026-11-27T19:47:32.061Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/73/56/1cc4ec68be344c19f77bb3a354b4c294038d3cea994291e2355bbf943ffd/ktl-0.70.3-py3-none-any.whl", hash = "sha256:b750466f5e55aeeef04ce3722751314b75e69cc7dd3548167752537639e14578", size = 978558, upload-time = "2026-11-19T21:09:59.607Z" },
+    { url = "https://files.pythonhosted.org/packages/22/b1/af63bf6f2d087cae51076482c4ad80ced4a60eb47ff5460246ba7d5d2207/ktl-0.71.0-py3-none-any.whl", hash = "sha256:242e2c9b356114bb22de53a2efff55d84efd9338519a20937eb574b67171f47d", size = 981304, upload-time = "2026-11-27T19:47:30.474Z" },
 ]
 
 [[package]]
@@ -982,7 +982,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ktl", specifier = "==0.70.3" },
+    { name = "ktl", specifier = "==0.71.0" },
     { name = "lokf", extras = ["build", "shacl"], specifier = ">=0.10.0" },
     { name = "rust-just", specifier = "==1.47.0" },
 ]

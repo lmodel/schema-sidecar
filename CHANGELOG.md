@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Security
+
+- **The sidecar copies and the skills pin are at Knowledge Trust Ladder [v0.71.0](https://github.com/noelmcloughlin/knowledge-trust-ladder/compare/v0.70.3...v0.71.0).** The release changed `.github/workflows/knowledge-registrar.yaml`, `.github/workflows/knowledge-librarian.yaml`, `.github/workflows/knowledge-release.yaml`, `.lokf/scripts/knowledge-conventions.sh`, `.lokf/scripts/knowledge-sync.sh`, `website/pyproject.toml`, `website/uv.lock` and `.github/workflows/knowledge-website.yaml` here.
+
 ## [0.7.1] - 2026-11-19
 
 ### Security
